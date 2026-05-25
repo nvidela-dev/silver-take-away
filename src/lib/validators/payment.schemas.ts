@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import { isoDateSchema, paymentMethodSchema, uuidSchema } from "./shared";
+import { isoDateSchema, paymentMethodSchema, uuidSchema } from './shared';
 
 export const schedulePaymentSchema = z.object({
   billId: uuidSchema,

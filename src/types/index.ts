@@ -1,28 +1,26 @@
 // ---- Enums ----
 
-export type UserRole = "admin" | "owner" | "ap_clerk" | "approver" | "employee";
+export type UserRole = 'admin' | 'owner' | 'ap_clerk' | 'approver' | 'employee';
 
-export type BillStatus =
-  | "draft"
-  | "awaiting_approval"
-  | "approved"
-  | "scheduled"
-  | "initiated"
-  | "paid"
-  | "archived"
-  | "rejected"
-  | "payment_failed";
+export type BillStatus = | 'draft'
+  | 'awaiting_approval'
+  | 'approved'
+  | 'scheduled'
+  | 'initiated'
+  | 'paid'
+  | 'archived'
+  | 'rejected'
+  | 'payment_failed';
 
-export type PaymentMethodType = "ach" | "wire" | "check" | "card";
+export type PaymentMethodType = 'ach' | 'wire' | 'check' | 'card';
 
-export type PaymentStatus =
-  | "pending"
-  | "scheduled"
-  | "initiated"
-  | "in_transit"
-  | "paid"
-  | "failed"
-  | "cancelled";
+export type PaymentStatus = | 'pending'
+  | 'scheduled'
+  | 'initiated'
+  | 'in_transit'
+  | 'paid'
+  | 'failed'
+  | 'cancelled';
 
 // ---- Core Entities ----
 
@@ -134,14 +132,13 @@ export interface VendorWithRelations extends Vendor {
 
 // ---- Table / Filter Types ----
 
-export type BillTab =
-  | "overview"
-  | "drafts"
-  | "approvals"
-  | "payment"
-  | "history";
+export type BillTab = | 'overview'
+  | 'drafts'
+  | 'approvals'
+  | 'payment'
+  | 'history';
 
-export type PaymentTab = "overview" | "needs_review" | "pending" | "history";
+export type PaymentTab = 'overview' | 'needs_review' | 'pending' | 'history';
 
 export interface BillFilters {
   search?: string;
@@ -175,7 +172,7 @@ export interface PaymentFilters {
   dueDateTo?: string;
 }
 
-export type SortDirection = "asc" | "desc";
+export type SortDirection = 'asc' | 'desc';
 
 export interface SortConfig {
   column: string;
@@ -264,18 +261,17 @@ export interface UpdateVendorInput {
 
 // ---- State Machine ----
 
-export type BillActionType =
-  | "submit_for_approval"
-  | "approve"
-  | "reject"
-  | "schedule_payment"
-  | "initiate_payment"
-  | "mark_as_paid"
-  | "cancel_payment"
-  | "retry_payment"
-  | "archive"
-  | "unschedule"
-  | "delete";
+export type BillActionType = | 'submit_for_approval'
+  | 'approve'
+  | 'reject'
+  | 'schedule_payment'
+  | 'initiate_payment'
+  | 'mark_as_paid'
+  | 'cancel_payment'
+  | 'retry_payment'
+  | 'archive'
+  | 'unschedule'
+  | 'delete';
 
 // ---- Server Action Signatures (reference, implemented in lib/actions/*) ----
 //
@@ -305,6 +301,5 @@ export type BillActionType =
 
 // ---- Result envelope ----
 
-export type ActionResult<T> =
-  | { ok: true; data: T }
+export type ActionResult<T> = | { ok: true; data: T }
   | { ok: false; error: { code: string; message: string } };

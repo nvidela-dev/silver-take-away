@@ -1,32 +1,18 @@
-import type { Config } from "jest";
+import type { Config } from 'jest';
 
-const baseConfig: Config = {
-  preset: "ts-jest",
-  moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1",
-  },
-};
-
+// Multi-project Jest scaffold. PR-0 only ships unit tests; the `integration`
+// and `components` projects come back in their respective PRs along with the
+// libraries they need (test DB harness, jest-environment-jsdom + RTL).
 const config: Config = {
   projects: [
     {
-      ...baseConfig,
-      displayName: "unit",
-      testEnvironment: "node",
-      testMatch: ["<rootDir>/src/__tests__/unit/**/*.test.ts"],
-    },
-    {
-      ...baseConfig,
-      displayName: "integration",
-      testEnvironment: "node",
-      testMatch: ["<rootDir>/src/__tests__/integration/**/*.test.ts"],
-    },
-    {
-      ...baseConfig,
-      displayName: "components",
-      testEnvironment: "jsdom",
-      testMatch: ["<rootDir>/src/__tests__/components/**/*.test.tsx"],
-      setupFilesAfterEnv: ["@testing-library/jest-dom"],
+      preset: 'ts-jest',
+      displayName: 'unit',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/src/__tests__/unit/**/*.test.ts'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
     },
   ],
 };

@@ -1,2 +1,2 @@
-export * from "./require-auth";
-export * from "./require-role";
+export * from './require-auth';
+export * from './require-role';

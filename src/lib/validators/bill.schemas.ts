@@ -1,11 +1,11 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 import {
   isoDateSchema,
   positiveMoneyStringSchema,
   sumMoneyStrings,
   uuidSchema,
-} from "./shared";
+} from './shared';
 
 const lineItemInputSchema = z.object({
   id: uuidSchema.optional(),
@@ -21,8 +21,8 @@ const billCoreFields = {
   currency: z
     .string()
     .length(3)
-    .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code.")
-    .default("USD"),
+    .regex(/^[A-Z]{3}$/, 'Currency must be a 3-letter ISO code.')
+    .default('USD'),
   description: z.string().max(2000).optional(),
   invoiceUrl: z.url().optional(),
 };
@@ -32,13 +32,13 @@ export const createBillSchema = z
     vendorId: uuidSchema,
     amount: positiveMoneyStringSchema,
     ...billCoreFields,
-    lineItems: z.array(lineItemInputSchema).min(1, "At least one line item is required."),
+    lineItems: z.array(lineItemInputSchema).min(1, 'At least one line item is required.'),
   })
   .refine(
     (data) => sumMoneyStrings(data.lineItems.map((li) => li.amount)) === Number(data.amount),
     {
-      message: "Line item amounts must sum to the bill total.",
-      path: ["lineItems"],
+      message: 'Line item amounts must sum to the bill total.',
+      path: ['lineItems'],
     },
   );
 
@@ -57,13 +57,13 @@ export const updateBillSchema = z
     (data) => {
       if (!data.lineItems || !data.amount) return true;
       return (
-        sumMoneyStrings(data.lineItems.map((li) => li.amount)) ===
-        Number(data.amount)
+        sumMoneyStrings(data.lineItems.map((li) => li.amount))
+        === Number(data.amount)
       );
     },
     {
-      message: "Line item amounts must sum to the bill total.",
-      path: ["lineItems"],
+      message: 'Line item amounts must sum to the bill total.',
+      path: ['lineItems'],
     },
   );
 
@@ -77,13 +77,12 @@ export const bulkEditBillsSchema = z
     categoryId: uuidSchema.optional(),
   })
   .refine(
-    (data) =>
-      data.dueDate !== undefined ||
-      data.invoiceDate !== undefined ||
-      data.amount !== undefined ||
-      data.description !== undefined ||
-      data.categoryId !== undefined,
-    { message: "At least one field must be provided to bulk edit." },
+    (data) => data.dueDate !== undefined
+      || data.invoiceDate !== undefined
+      || data.amount !== undefined
+      || data.description !== undefined
+      || data.categoryId !== undefined,
+    { message: 'At least one field must be provided to bulk edit.' },
   );
 
 export const billIdSchema = uuidSchema;

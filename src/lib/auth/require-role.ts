@@ -1,10 +1,11 @@
-import type { User, UserRole } from "@/types";
+import type { User, UserRole } from '@/types';
 
 export class ForbiddenError extends Error {
-  readonly code = "FORBIDDEN";
-  constructor(message = "You are not authorized to perform this action.") {
+  readonly code = 'FORBIDDEN';
+
+  constructor(message = 'You are not authorized to perform this action.') {
     super(message);
-    this.name = "ForbiddenError";
+    this.name = 'ForbiddenError';
   }
 }
 

@@ -1,4 +1,4 @@
-import type { BillActionType, BillStatus } from "@/types";
+import type { BillActionType, BillStatus } from '@/types';
 
 /**
  * Status transitions driven by user actions.
@@ -12,37 +12,37 @@ import type { BillActionType, BillStatus } from "@/types";
  */
 export const TRANSITION_MAP = {
   draft: {
-    submit_for_approval: "awaiting_approval",
-    archive: "archived",
+    submit_for_approval: 'awaiting_approval',
+    archive: 'archived',
   },
   awaiting_approval: {
-    approve: "approved",
-    reject: "rejected",
+    approve: 'approved',
+    reject: 'rejected',
   },
   approved: {
-    schedule_payment: "scheduled",
-    mark_as_paid: "paid",
-    archive: "archived",
+    schedule_payment: 'scheduled',
+    mark_as_paid: 'paid',
+    archive: 'archived',
   },
   scheduled: {
-    initiate_payment: "initiated",
-    cancel_payment: "approved",
-    unschedule: "approved",
+    initiate_payment: 'initiated',
+    cancel_payment: 'approved',
+    unschedule: 'approved',
   },
   initiated: {
-    mark_as_paid: "paid",
-    cancel_payment: "approved",
+    mark_as_paid: 'paid',
+    cancel_payment: 'approved',
   },
   paid: {
-    archive: "archived",
+    archive: 'archived',
   },
   archived: {},
   rejected: {
-    archive: "archived",
+    archive: 'archived',
   },
   payment_failed: {
-    retry_payment: "initiated",
-    archive: "archived",
+    retry_payment: 'initiated',
+    archive: 'archived',
   },
 } as const satisfies Record<
   BillStatus,
@@ -50,10 +50,11 @@ export const TRANSITION_MAP = {
 >;
 
 /** Statuses from which a hard delete is allowed (drafts only, per spec §6). */
-const DELETABLE_STATUSES = new Set<BillStatus>(["draft"]);
+const DELETABLE_STATUSES = new Set<BillStatus>(['draft']);
 
 export class InvalidTransitionError extends Error {
-  readonly code = "INVALID_TRANSITION";
+  readonly code = 'INVALID_TRANSITION';
+
   constructor(
     readonly current: BillStatus,
     readonly action: BillActionType,
@@ -61,7 +62,7 @@ export class InvalidTransitionError extends Error {
     super(
       `Cannot perform action "${action}" on a bill in status "${current}".`,
     );
-    this.name = "InvalidTransitionError";
+    this.name = 'InvalidTransitionError';
   }
 }
 
@@ -86,7 +87,7 @@ export function assertValidTransition(
 export function getAvailableActions(status: BillStatus): BillActionType[] {
   const actions = Object.keys(TRANSITION_MAP[status]) as BillActionType[];
   if (DELETABLE_STATUSES.has(status)) {
-    return [...actions, "delete"];
+    return [...actions, 'delete'];
   }
   return actions;
 }

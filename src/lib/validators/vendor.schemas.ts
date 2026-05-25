@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import { paymentMethodSchema, uuidSchema } from "./shared";
+import { paymentMethodSchema, uuidSchema } from './shared';
 
 const vendorPaymentMethodInputSchema = z.object({
   methodType: paymentMethodSchema,
@@ -8,11 +8,11 @@ const vendorPaymentMethodInputSchema = z.object({
   bankName: z.string().max(100).optional(),
   accountNumberLast4: z
     .string()
-    .regex(/^\d{4}$/, "Must be 4 digits.")
+    .regex(/^\d{4}$/, 'Must be 4 digits.')
     .optional(),
   routingNumberLast4: z
     .string()
-    .regex(/^\d{4}$/, "Must be 4 digits.")
+    .regex(/^\d{4}$/, 'Must be 4 digits.')
     .optional(),
   mailingAddress: z.string().max(500).optional(),
 });
@@ -31,8 +31,8 @@ export const createVendorSchema = z
       return defaults.length <= 1;
     },
     {
-      message: "Only one payment method may be marked as default.",
-      path: ["paymentMethods"],
+      message: 'Only one payment method may be marked as default.',
+      path: ['paymentMethods'],
     },
   );
 
@@ -44,11 +44,10 @@ export const updateVendorSchema = z
     ownerId: uuidSchema.nullable().optional(),
   })
   .refine(
-    (data) =>
-      data.name !== undefined ||
-      data.email !== undefined ||
-      data.ownerId !== undefined,
-    { message: "At least one field must be provided to update." },
+    (data) => data.name !== undefined
+      || data.email !== undefined
+      || data.ownerId !== undefined,
+    { message: 'At least one field must be provided to update.' },
   );
 
 export const vendorIdSchema = uuidSchema;

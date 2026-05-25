@@ -6,7 +6,9 @@ See [REQUIREMENTS.md](./REQUIREMENTS.md) for the full spec and [PR-PLAN.md](./PR
 
 ## Stack
 
-Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Tailwind v4 · shadcn/ui · Drizzle ORM · NeonDB · Clerk · Jest
+Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Drizzle ORM · NeonDB · Zod · Jest · ESLint (Airbnb)
+
+UI tooling (Tailwind, shadcn/ui, react-hook-form, TanStack Table, nuqs, sonner, etc.) lands with the PRs that need it, not before.
 
 ## Setup
 
@@ -17,16 +19,10 @@ yarn install
 
 # 2. Configure environment
 cp .env.example .env.local
-# Fill in DATABASE_URL (Neon) and Clerk keys.
+# Fill in DATABASE_URL (Neon) when wiring it up in PR-1.
 
-# 3. Apply the schema to your Neon database
+# 3. Apply the schema to your Neon database (once DATABASE_URL is set)
 yarn db:push
-
-# 4. Seed demo data (lands in PR-2)
-yarn db:seed
-
-# 5. Run the dev server
-yarn dev
 ```
 
 ## Scripts
@@ -36,15 +32,12 @@ yarn dev
 | `yarn dev` | Run the dev server on `localhost:3000`. |
 | `yarn build` | Production build. |
 | `yarn typecheck` | Type-check without emitting. |
-| `yarn lint` | ESLint. |
-| `yarn test` | Run all Jest projects (unit, integration, components). |
-| `yarn test:unit` | Pure unit tests (state machine, validators, utils). |
-| `yarn test:integration` | Server actions against a test DB. |
-| `yarn test:components` | RTL component tests. |
+| `yarn lint` | ESLint (Airbnb ruleset). |
+| `yarn test` | Run all Jest projects. |
+| `yarn test:unit` | Pure unit tests (state machine, validators). |
 | `yarn db:generate` | Generate a Drizzle migration from the schema. |
 | `yarn db:migrate` | Apply pending migrations. |
 | `yarn db:push` | Push the schema directly (dev convenience). |
-| `yarn db:seed` | Populate the database with demo data. |
 
 ## Architecture
 
@@ -52,24 +45,22 @@ Layered (actions → services → repositories) with a pure state machine. See [
 
 ```
 src/
-├── app/                  Next.js App Router
-├── components/ui/        shadcn/ui primitives
+├── app/                  Next.js App Router (minimal stubs — UI in PR-1+)
 ├── db/
 │   ├── schema/           Drizzle table definitions (one file per table)
 │   └── migrations/       drizzle-kit generated SQL
 ├── lib/
-│   ├── actions/          Server actions (thin orchestrators)
-│   ├── services/         Business logic — state machine, transitions
-│   ├── repositories/     Drizzle data-access layer (tx-aware)
-│   ├── validators/       Zod schemas
-│   ├── auth/             Clerk wrappers, role guards
-│   ├── queries/          Server-component read paths
-│   └── utils.ts          Money/date helpers, `cn()`
+│   ├── auth/             Clerk wrappers, role guards (stubs — wired in PR-1)
+│   ├── services/         Pure business logic (state machine lives here)
+│   └── validators/       Zod schemas
+├── middleware.ts         Auth middleware stub (real config in PR-1)
 ├── types/                Shared TS interfaces
-└── __tests__/            unit · integration · components
+└── __tests__/            Unit tests proving the type contracts
 ```
+
+The `actions/`, `repositories/`, and `queries/` directories show up in later PRs alongside the code that fills them — they aren't scaffolded ahead of use.
 
 ## Status
 
-- **PR-0 (this PR)** — Foundation: schema, types, validators, state machine, folder scaffold, unit tests.
+- **PR-0 (this PR)** — Schema, types, validators, state machine, ESLint (Airbnb). No UI, no features. Reviewable as a pure contract layer.
 - PR-1 → PR-9 — See [PR-PLAN.md](./PR-PLAN.md).

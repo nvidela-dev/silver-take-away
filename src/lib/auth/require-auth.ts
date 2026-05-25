@@ -1,4 +1,4 @@
-import type { User } from "@/types";
+import type { User } from '@/types';
 
 /**
  * Resolves the current Clerk session to the local `users` row.
@@ -8,5 +8,5 @@ import type { User } from "@/types";
  * later swap is a no-op for callers.
  */
 export async function requireAuth(): Promise<User> {
-  throw new Error("requireAuth() is not implemented yet — wired up in PR-1.");
+  throw new Error('requireAuth() is not implemented yet — wired up in PR-1.');
 }
