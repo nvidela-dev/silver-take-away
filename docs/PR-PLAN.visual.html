@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bill Pay MVP — PR Plan Visual</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-900 antialiased">
+  <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <header class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <p class="text-sm font-semibold uppercase tracking-wide text-teal-700">Bill Pay MVP</p>
+      <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">PR Plan Visual</h1>
+      <p class="mt-2 max-w-4xl text-sm text-slate-600">Single-source view generated from <code>docs/PR-PLAN.md</code> and <code>docs/CHECKLIST.md</code>. No time-based planning; sequence is review-driven.</p>
+      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
+        <span class="rounded-md bg-emerald-100 px-2.5 py-1 text-emerald-900">DONE</span>
+        <span class="rounded-md bg-sky-100 px-2.5 py-1 text-sky-900">READY</span>
+        <span class="rounded-md bg-amber-100 px-2.5 py-1 text-amber-900">BLOCKED</span>
+        <span class="rounded-md bg-violet-100 px-2.5 py-1 text-violet-900">IN PROGRESS</span>
+      </div>
+    </header>
+
+    <section class="mt-6 grid gap-4 md:grid-cols-3">
+      <article class="rounded-lg border border-emerald-300 bg-emerald-50 p-4 shadow-sm">
+        <h2 class="text-base font-semibold text-emerald-900">Baseline</h2>
+        <p class="mt-2 text-sm text-emerald-900"><code>PR-0</code> is merged and locked. Remaining PRs are active backlog.</p>
+      </article>
+      <article class="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
+        <h2 class="text-base font-semibold text-slate-900">Planning Rule</h2>
+        <p class="mt-2 text-sm text-slate-700">No day/week windows. Work advances by mergeable PR slices only.</p>
+      </article>
+      <article class="rounded-lg border border-violet-300 bg-violet-50 p-4 shadow-sm">
+        <h2 class="text-base font-semibold text-violet-900">Feature Gate</h2>
+        <p class="mt-2 text-sm text-violet-900"><code>PR-3</code> is the required minimal Clerk + NeonDB integration checkpoint before feature work.</p>
+      </article>
+    </section>
+
+    <section class="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 class="text-lg font-semibold text-slate-900">Backlog Sequence</h2>
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+
+      <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2">
+          <span class="text-xs font-bold text-slate-700">PR-1</span>
+          <span class="truncate text-sm font-medium text-slate-800">Shell Contracts &amp; Navigation Skeleton</span>
+        </div>
+        <span class="text-slate-400">→</span>
+      </div>
+    
+
+      <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+          <span class="text-xs font-bold text-slate-700">PR-2</span>
+          <span class="truncate text-sm font-medium text-slate-800">Domain Data Layer Core</span>
+        </div>
+        <span class="text-slate-400">→</span>
+      </div>
+    
+
+      <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+          <span class="text-xs font-bold text-slate-700">PR-3</span>
+          <span class="truncate text-sm font-medium text-slate-800">Minimal Clerk + NeonDB Integration Gate</span>
+        </div>
+        <span class="text-slate-400">→</span>
+      </div>
+    
+
+      <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+          <span class="text-xs font-bold text-slate-700">PR-4</span>
+          <span class="truncate text-sm font-medium text-slate-800">Vendor Management</span>
+        </div>
+        <span class="text-slate-400">→</span>
+      </div>
+    
+
+      <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+          <span class="text-xs font-bold text-slate-700">PR-5</span>
+          <span class="truncate text-sm font-medium text-slate-800">Bill Draft CRUD</span>
+        </div>
+        <span class="text-slate-400">→</span>
+      </div>
+    
+
+      <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+          <span class="text-xs font-bold text-slate-700">PR-6</span>
+          <span class="truncate text-sm font-medium text-slate-800">Bill Lifecycle Actions</span>
+        </div>
+        <span class="text-slate-400">→</span>
+      </div>
+    
+
+      <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+          <span class="text-xs font-bold text-slate-700">PR-7</span>
+          <span class="truncate text-sm font-medium text-slate-800">Bills Views (Filters, Bulk, History, Detail)</span>
+        </div>
+        <span class="text-slate-400">→</span>
+      </div>
+    
+
+      <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+          <span class="text-xs font-bold text-slate-700">PR-8</span>
+          <span class="truncate text-sm font-medium text-slate-800">Payments Surface</span>
+        </div>
+        <span class="text-slate-400">→</span>
+      </div>
+    
+
+      <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+          <span class="text-xs font-bold text-slate-700">PR-9</span>
+          <span class="truncate text-sm font-medium text-slate-800">Export, QA Hardening &amp; Documentation</span>
+        </div>
+        
+      </div>
+    
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <h2 class="text-lg font-semibold text-slate-900">Current Execution PRs</h2>
+      <div class="mt-4 space-y-4">
+
+      <article class="rounded-lg border border-sky-300 bg-white p-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-lg font-semibold text-slate-900">PR-1: Shell Contracts &amp; Navigation Skeleton</h3>
+          <span class="rounded-md px-2.5 py-1 text-xs font-semibold bg-sky-100 text-sky-900">READY</span>
+        </div>
+        <p class="mt-3 text-sm text-slate-700"><span class="font-semibold text-slate-900">Objective:</span> Establish app shell and route skeleton without feature behavior.</p>
+        <div class="mt-4 grid gap-3 md:grid-cols-2">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Must Ship</p>
+            <ul class="mt-2 space-y-2"><li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Dashboard layout shell with stable navigation to Bills, Payments, Vendors.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Placeholder pages for each route with consistent empty states.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Shared UI contracts for page title/action/header sections.</li></ul>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Out of Scope</p>
+            <ul class="mt-2 space-y-2"><li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Auth providers and external identity wiring.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Domain data reads/writes.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Vendor/bill/payment business actions.</li></ul>
+          </div>
+        </div>
+        <div class="mt-4 grid gap-3 md:grid-cols-2">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Dependencies</p>
+            <ul class="mt-2 space-y-2"><li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"><code>PR-0</code> merged baseline.</li></ul>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Estimated Effort</p>
+            <p class="mt-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700">Small</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Acceptance Gates</p>
+          <ul class="mt-2 space-y-2"><li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR1-G1:</strong> Bills, Payments, and Vendors routes are reachable from shared nav.</li>
+<li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR1-G2:</strong> Dashboard shell layout is reused across feature routes.</li>
+<li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR1-G3:</strong> Placeholder routes render without runtime errors in dev and build.</li></ul>
+        </div>
+      </article>
+    
+
+      <article class="rounded-lg border border-amber-300 bg-white p-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-lg font-semibold text-slate-900">PR-2: Domain Data Layer Core</h3>
+          <span class="rounded-md px-2.5 py-1 text-xs font-semibold bg-amber-100 text-amber-900">BLOCKED</span>
+        </div>
+        <p class="mt-3 text-sm text-slate-700"><span class="font-semibold text-slate-900">Objective:</span> Deliver repository/service primitives for bills, payments, vendors, line items, and activity logs.</p>
+        <div class="mt-4 grid gap-3 md:grid-cols-2">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Must Ship</p>
+            <ul class="mt-2 space-y-2"><li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Repository modules with tx/db-friendly signatures.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"><code>bill-transitions</code> and <code>payment-lifecycle</code> services with transaction boundaries.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Deterministic seed script (<code>db:seed</code>) for local verification.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Integration tests for happy path and rollback behavior.</li></ul>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Out of Scope</p>
+            <ul class="mt-2 space-y-2"><li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Clerk auth wiring.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Protected route behavior.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">End-user feature workflows.</li></ul>
+          </div>
+        </div>
+        <div class="mt-4 grid gap-3 md:grid-cols-2">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Dependencies</p>
+            <ul class="mt-2 space-y-2"><li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"><code>PR-1</code> merged.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Drizzle schema and migrations from <code>PR-0</code>.</li></ul>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Estimated Effort</p>
+            <p class="mt-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700">Medium</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Acceptance Gates</p>
+          <ul class="mt-2 space-y-2"><li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR2-G1:</strong> Repository APIs cover required read/write operations and accept tx/db handles.</li>
+<li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR2-G2:</strong> Lifecycle services execute side effects inside single transaction scopes.</li>
+<li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR2-G3:</strong> <code>db:seed</code> produces deterministic demo data across supported entities.</li>
+<li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR2-G4:</strong> Integration tests pass for lifecycle happy path and atomic rollback failure path.</li></ul>
+        </div>
+      </article>
+    
+
+      <article class="rounded-lg border border-amber-300 bg-white p-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-lg font-semibold text-slate-900">PR-3: Minimal Clerk + NeonDB Integration Gate</h3>
+          <span class="rounded-md px-2.5 py-1 text-xs font-semibold bg-amber-100 text-amber-900">BLOCKED</span>
+        </div>
+        <p class="mt-3 text-sm text-slate-700"><span class="font-semibold text-slate-900">Objective:</span> Establish the minimum production integration baseline (identity + database) before feature delivery.</p>
+        <div class="mt-4 grid gap-3 md:grid-cols-2">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Must Ship</p>
+            <ul class="mt-2 space-y-2"><li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Clerk provider wired in app layout.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"><code>proxy.ts</code> route protection for dashboard surfaces.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Minimal Clerk webhook handling for user sync (<code>user.created</code>, <code>user.updated</code>) with idempotent upsert.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"><code>requireAuth()</code> local-user resolution and <code>requireRole()</code> authorization guard.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">NeonDB runtime connection configuration validated in app runtime.</li></ul>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Out of Scope</p>
+            <ul class="mt-2 space-y-2"><li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Vendor/bill/payment feature UX.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Advanced role matrix beyond helper-level guard checks.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">UI polish beyond auth flow correctness.</li></ul>
+          </div>
+        </div>
+        <div class="mt-4 grid gap-3 md:grid-cols-2">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Dependencies</p>
+            <ul class="mt-2 space-y-2"><li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"><code>PR-2</code> merged.</li>
+<li class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">Clerk and Neon environment variables configured.</li></ul>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Estimated Effort</p>
+            <p class="mt-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700">Medium</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Acceptance Gates</p>
+          <ul class="mt-2 space-y-2"><li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR3-G1:</strong> Unauthenticated dashboard requests redirect to sign-in.</li>
+<li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR3-G2:</strong> Authenticated users can access dashboard shell routes.</li>
+<li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR3-G3:</strong> Clerk webhook user events sync idempotently into local <code>users</code> records.</li>
+<li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR3-G4:</strong> <code>requireAuth()</code> and <code>requireRole()</code> enforce expected access behavior.</li>
+<li class="border-l-2 border-slate-300 pl-3 text-sm text-slate-700"><strong>PR3-G5:</strong> App can execute a DB read/write path using configured NeonDB connection.</li></ul>
+        </div>
+      </article>
+    
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <h2 class="text-lg font-semibold text-slate-900">Upcoming PRs</h2>
+      <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+
+      <article class="rounded-lg border border-amber-300 bg-white p-4 shadow-sm">
+        <div class="flex items-start justify-between gap-2">
+          <h4 class="text-base font-semibold text-slate-900">PR-4: Vendor Management</h4>
+          <span class="rounded-md px-2 py-1 text-[11px] font-semibold bg-amber-100 text-amber-900">BLOCKED</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-700">Ship vendor CRUD and default payment method management.</p>
+        <p class="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">Depends on <code>PR-3</code> merged.</p>
+      </article>
+    
+
+      <article class="rounded-lg border border-amber-300 bg-white p-4 shadow-sm">
+        <div class="flex items-start justify-between gap-2">
+          <h4 class="text-base font-semibold text-slate-900">PR-5: Bill Draft CRUD</h4>
+          <span class="rounded-md px-2 py-1 text-[11px] font-semibold bg-amber-100 text-amber-900">BLOCKED</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-700">Enable draft-only bill authoring with line-item validation.</p>
+        <p class="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">Depends on <code>PR-4</code> merged.</p>
+      </article>
+    
+
+      <article class="rounded-lg border border-amber-300 bg-white p-4 shadow-sm">
+        <div class="flex items-start justify-between gap-2">
+          <h4 class="text-base font-semibold text-slate-900">PR-6: Bill Lifecycle Actions</h4>
+          <span class="rounded-md px-2 py-1 text-[11px] font-semibold bg-amber-100 text-amber-900">BLOCKED</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-700">Deliver approval/payment transition actions on bills.</p>
+        <p class="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">Depends on <code>PR-5</code> merged.</p>
+      </article>
+    
+
+      <article class="rounded-lg border border-amber-300 bg-white p-4 shadow-sm">
+        <div class="flex items-start justify-between gap-2">
+          <h4 class="text-base font-semibold text-slate-900">PR-7: Bills Views (Filters, Bulk, History, Detail)</h4>
+          <span class="rounded-md px-2 py-1 text-[11px] font-semibold bg-amber-100 text-amber-900">BLOCKED</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-700">Complete the Bills surface for operational use.</p>
+        <p class="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">Depends on <code>PR-6</code> merged.</p>
+      </article>
+    
+
+      <article class="rounded-lg border border-amber-300 bg-white p-4 shadow-sm">
+        <div class="flex items-start justify-between gap-2">
+          <h4 class="text-base font-semibold text-slate-900">PR-8: Payments Surface</h4>
+          <span class="rounded-md px-2 py-1 text-[11px] font-semibold bg-amber-100 text-amber-900">BLOCKED</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-700">Ship dedicated payment operations views and actions.</p>
+        <p class="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">Depends on <code>PR-7</code> merged.</p>
+      </article>
+    
+
+      <article class="rounded-lg border border-amber-300 bg-white p-4 shadow-sm">
+        <div class="flex items-start justify-between gap-2">
+          <h4 class="text-base font-semibold text-slate-900">PR-9: Export, QA Hardening &amp; Documentation</h4>
+          <span class="rounded-md px-2 py-1 text-[11px] font-semibold bg-amber-100 text-amber-900">BLOCKED</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-700">Finish release readiness and operational confidence.</p>
+        <p class="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">Depends on <code>PR-8</code> merged.</p>
+      </article>
+    
+      </div>
+    </section>
+  </main>
+</body>
+</html>

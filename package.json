@@ -15,7 +15,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:seed": "node -e \"console.log('Seed script ships in PR-2.')\""
+    "db:seed": "node -e \"console.log('Seed script ships in PR-2.')\"",
+    "plan:visual": "node scripts/generate-plan-visual.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.4.1",
