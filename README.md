@@ -19,11 +19,34 @@ yarn install
 
 # 2. Configure environment
 cp .env.example .env.local
-# Fill in DATABASE_URL (Neon) when wiring it up in PR-1.
+# Fill in DATABASE_URL + Clerk env vars.
 
 # 3. Apply the schema to your Neon database (once DATABASE_URL is set)
 yarn db:push
 ```
+
+## Deploy to Vercel (Neon + Clerk)
+
+1. Create a Neon Postgres project and copy the pooled connection string into `DATABASE_URL`.
+2. In Clerk, create a Next.js application and copy:
+   - `CLERK_SECRET_KEY`
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+   - `CLERK_WEBHOOK_SECRET`
+3. In Vercel project settings, add all env vars from `.env.example` to:
+   - `Production`
+   - `Preview`
+   - `Development` (optional if you use local env only)
+4. In Clerk webhooks, add endpoint:
+   - `https://<your-vercel-domain>/api/webhooks/clerk`
+   - subscribe to `user.created` and `user.updated`
+   - use the matching `CLERK_WEBHOOK_SECRET`
+5. Run schema migration against Neon before first production usage:
+   - locally: `yarn db:push`
+   - or CI/release job: `yarn db:migrate`
+6. Deploy to Vercel and verify:
+   - `/sign-in` renders Clerk sign-in
+   - `/bills` redirects unauthenticated users
+   - webhook delivery succeeds in Clerk dashboard logs
 
 ## Scripts
 
@@ -35,9 +58,12 @@ yarn db:push
 | `yarn lint` | ESLint (Airbnb ruleset). |
 | `yarn test` | Run all Jest projects. |
 | `yarn test:unit` | Pure unit tests (state machine, validators). |
+| `yarn test:integration` | Integration test project (placeholder until PR-2). |
+| `yarn test:components` | Component test project (placeholder until PR-3+). |
 | `yarn db:generate` | Generate a Drizzle migration from the schema. |
 | `yarn db:migrate` | Apply pending migrations. |
 | `yarn db:push` | Push the schema directly (dev convenience). |
+| `yarn db:seed` | Seed placeholder (real seed in PR-2). |
 
 ## Architecture
 

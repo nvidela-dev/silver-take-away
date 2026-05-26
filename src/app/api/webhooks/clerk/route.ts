@@ -5,8 +5,11 @@ import type { WebhookEvent } from '@clerk/nextjs/server';
 import { sql } from 'drizzle-orm';
 import { Webhook } from 'svix';
 
-import { db } from '@/db';
+import { assertDatabaseConfigured, db } from '@/db';
 import { users } from '@/db/schema';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 function buildFullName(firstName: string | null, lastName: string | null): string {
   const fullName = `${firstName ?? ''} ${lastName ?? ''}`.trim();
@@ -25,6 +28,15 @@ function selectPrimaryEmail(data: UserJSON): string | null {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+    assertDatabaseConfigured();
+  } catch (error) {
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 },
+    );
+  }
+
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
   if (!webhookSecret) {
     return NextResponse.json(

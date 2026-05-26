@@ -2,7 +2,7 @@ import type { User } from '@/types';
 import { auth } from '@clerk/nextjs/server';
 import { eq } from 'drizzle-orm';
 
-import { db } from '@/db';
+import { assertDatabaseConfigured, db } from '@/db';
 import { users } from '@/db/schema';
 
 export class UnauthorizedError extends Error {
@@ -22,6 +22,8 @@ export class UnauthorizedError extends Error {
  * later swap is a no-op for callers.
  */
 export async function requireAuth(): Promise<User> {
+  assertDatabaseConfigured();
+
   const authState = await auth();
   if (!authState.userId) {
     throw new UnauthorizedError();
