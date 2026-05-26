@@ -10,9 +10,12 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:unit": "jest --selectProjects unit",
+    "test:integration": "jest --selectProjects integration",
+    "test:components": "jest --selectProjects components",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "db:seed": "node -e \"console.log('Seed script ships in PR-2.')\""
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

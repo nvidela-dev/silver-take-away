@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "vendor_payment_methods_one_default_per_vendor" ON "vendor_payment_methods" USING btree ("vendor_id") WHERE "vendor_payment_methods"."is_default" = true;

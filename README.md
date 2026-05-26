@@ -53,12 +53,10 @@ src/
 │   ├── auth/             Clerk wrappers, role guards (stubs — wired in PR-1)
 │   ├── services/         Pure business logic (state machine lives here)
 │   └── validators/       Zod schemas
-├── middleware.ts         Auth middleware stub (real config in PR-1)
+├── proxy.ts              Auth proxy stub (real config in PR-1)
 ├── types/                Shared TS interfaces
 └── __tests__/            Unit tests proving the type contracts
 ```
-
-The `actions/`, `repositories/`, and `queries/` directories show up in later PRs alongside the code that fills them — they aren't scaffolded ahead of use.
 
 ## Status
 

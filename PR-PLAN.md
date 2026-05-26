@@ -20,7 +20,7 @@ Each PR maps 1:1 to a merge. Dependencies are strictly sequential — no PR can 
 - **All Zod validators** in `lib/validators/` (bill.schemas.ts, payment.schemas.ts, vendor.schemas.ts) — including line item sum validation
 - **State machine** in `lib/services/state-machine.ts` — `TRANSITION_MAP` constant + `assertValidTransition` pure function
 - Complete folder structure with empty barrel files for actions, services, repositories, auth, queries
-- `next.config.js` with security headers
+- `next.config.ts` with security headers
 - `jest.config.ts` with multi-project setup (unit, integration, components)
 - `.env.example` with all required env vars (DATABASE_URL, CLERK_*, NEXT_PUBLIC_CLERK_*)
 - `package.json` scripts: `dev`, `build`, `db:generate`, `db:migrate`, `db:push`, `db:seed`, `test`, `test:unit`, `test:integration`, `test:components`
@@ -52,8 +52,8 @@ src/
 ├── lib/queries/                 # Empty barrel files
 ├── __tests__/unit/state-machine.test.ts
 ├── __tests__/unit/validators.test.ts
-├── next.config.js               # Security headers
-├── middleware.ts                 # Stub (implemented PR-1)
+├── next.config.ts               # Security headers
+├── proxy.ts                     # Stub (implemented PR-1)
 └── jest.config.ts
 ```
 
@@ -68,7 +68,7 @@ src/
 **Scope:**
 - Clerk provider setup in `app/layout.tsx`
 - Sign-in and sign-up pages under `app/(auth)/`
-- `middleware.ts` — Clerk middleware protecting all `(dashboard)` routes, public webhook endpoint
+- `proxy.ts` — Clerk proxy protecting all `(dashboard)` routes, public webhook endpoint
 - Clerk webhook handler at `app/api/webhooks/clerk/route.ts` — creates/updates `users` table rows on `user.created` / `user.updated` events. Svix signature verification.
 - `lib/auth/require-auth.ts` — wraps `currentUser()`, resolves to local `User` record by `clerk_id`
 - `lib/auth/require-role.ts` — checks user role against allowed roles, throws on mismatch

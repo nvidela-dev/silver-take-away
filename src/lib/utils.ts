@@ -1,0 +1,22 @@
+/**
+ * Formats an ISO date (`YYYY-MM-DD`) into a locale-aware date string.
+ */
+export function formatDate(value: string, locale = 'en-US'): string {
+  return new Date(`${value}T00:00:00.000Z`).toLocaleDateString(locale);
+}
+
+/**
+ * Formats a money decimal string (`numeric(12,2)` shape) for display.
+ */
+export function formatMoney(
+  amount: string,
+  currency = 'USD',
+  locale = 'en-US',
+): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(amount));
+}
