@@ -1,5 +1,5 @@
-// Placeholder route — the dashboard shell ships in PR-1.
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return null;
+  redirect('/bills');
 }

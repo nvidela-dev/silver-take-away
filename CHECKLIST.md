@@ -1,400 +1,195 @@
 # Bill Pay MVP — Progress Checklist
 
-> **Usage:** Check off items as they are completed. Each top-level section is a PR. Items within a section can be done in any order unless noted.
+Status legend: `READY`, `BLOCKED`, `IN PROGRESS`, `DONE`
 
 ---
 
-## PR-0: Foundation & Schema
+## PR-0: Foundation & Schema [DONE]
 
-### Project Init
-- [ ] Create Next.js app (App Router, TypeScript strict, Tailwind, src/ directory)
-- [ ] Install core dependencies: drizzle-orm, @neondatabase/serverless, drizzle-kit, zod, date-fns
-- [ ] Install UI dependencies: @tanstack/react-table, nuqs, react-hook-form, @hookform/resolvers, sonner, lucide-react, papaparse
-- [ ] Install test dependencies: jest, @testing-library/react, @testing-library/jest-dom, ts-jest
-- [ ] shadcn/ui init + install components (Table, Button, Badge, Dialog, Popover, DropdownMenu, Select, Input, Tabs, Separator, Form, Card, Checkbox, Label, Textarea)
-- [ ] Create `.env.example` with all required env vars
-
-### Config Files
-- [ ] `next.config.ts` — security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
-- [ ] `jest.config.ts` — multi-project setup (unit, integration, components)
-- [ ] `drizzle.config.ts` — NeonDB connection, schema path, migrations output
-- [ ] `tsconfig.json` — strict mode, path aliases (@/)
-
-### Database Schema (`db/schema/`)
-- [ ] Enum: `user_role` (admin, owner, ap_clerk, approver, employee)
-- [ ] Enum: `bill_status` (draft, awaiting_approval, approved, scheduled, initiated, paid, archived, rejected, payment_failed)
-- [ ] Enum: `payment_method_type` (ach, wire, check, card)
-- [ ] Enum: `payment_status` (pending, scheduled, initiated, in_transit, paid, failed, cancelled)
-- [ ] Table: `users` (id, clerk_id, email, full_name, role, created_at, updated_at)
-- [ ] Table: `vendors` (id, name, email, owner_id FK, created_at, updated_at)
-- [ ] Table: `vendor_payment_methods` (id, vendor_id FK, method_type, is_default, bank_name, account_number_last4, routing_number_last4, mailing_address, created_at)
-- [ ] Table: `categories` (id, name, created_at)
-- [ ] Table: `bills` (id, vendor_id FK, created_by FK, status, invoice_number, invoice_date, due_date, amount, currency, description, invoice_url, created_at, updated_at)
-- [ ] Table: `bill_line_items` (id, bill_id FK CASCADE, description, amount, category_id FK, sort_order)
-- [ ] Table: `payments` (id, bill_id FK, created_by FK, amount, payment_method, status, scheduled_date, initiated_date, arrival_date, cancelled_at, failure_reason, created_at, updated_at)
-- [ ] Table: `bill_activity_log` (id, bill_id FK CASCADE, actor_id FK, action, metadata jsonb, created_at)
-- [ ] All indexes defined (bills: status, vendor_id, due_date, created_by; payments: bill_id, created_by, status, scheduled_date)
-- [ ] Run `drizzle-kit generate` — migration SQL generated successfully
-- [ ] DB client export (`db/index.ts`)
-
-### TypeScript Types (`types/index.ts`)
-- [ ] All enums: UserRole, BillStatus, PaymentMethodType, PaymentStatus, BillActionType
-- [ ] Core entities: User, Vendor, VendorPaymentMethod, Category, Bill, BillLineItem, Payment, BillActivityLog
-- [ ] Composite types: BillWithRelations, PaymentWithRelations, VendorWithRelations
-- [ ] Table types: BillTab, PaymentTab, BillFilters (with search, isUnscheduled), PaymentFilters (with search), SortConfig, SortDirection, PaginationConfig
-- [ ] Input types: CreateBillInput (with invoiceUrl), UpdateBillInput, BulkEditBillsInput, SchedulePaymentInput, ApproveRejectInput
-- [ ] Server action signatures documented as comments
-
-### Validators (`lib/validators/`)
-- [ ] `bill.schemas.ts` — createBillSchema, updateBillSchema, bulkEditBillsSchema, billIdSchema, approveRejectSchema
-- [ ] `payment.schemas.ts` — schedulePaymentSchema, paymentIdSchema
-- [ ] `vendor.schemas.ts` — createVendorSchema, updateVendorSchema, vendorIdSchema
-- [ ] Line item sum validation in createBillSchema
-
-### State Machine (`lib/services/state-machine.ts`)
-- [ ] `TRANSITION_MAP` constant — maps [currentStatus][actionType] → nextStatus
-- [ ] `assertValidTransition(current, action)` — pure function, throws on invalid
-- [ ] `getAvailableActions(status)` — returns valid action types for a given status
-
-### Folder Structure
-- [ ] `lib/actions/` — empty barrel files (bills.ts, payments.ts, vendors.ts)
-- [ ] `lib/services/` — state-machine.ts + empty bill-transitions.ts, payment-lifecycle.ts
-- [ ] `lib/repositories/` — empty barrel files (bill.repo.ts, payment.repo.ts, vendor.repo.ts, line-item.repo.ts, activity-log.repo.ts)
-- [ ] `lib/auth/` — stub require-auth.ts, require-role.ts
-- [ ] `lib/queries/` — empty barrel files
-- [ ] `lib/utils.ts` — money formatting, date formatting helpers
-- [ ] `__tests__/unit/`, `__tests__/integration/`, `__tests__/components/`
-
-### Tests (PR-0)
-- [ ] Unit test: state machine — all valid transitions
-- [ ] Unit test: state machine — all invalid transitions throw
-- [ ] Unit test: state machine — getAvailableActions returns correct set per status
-- [ ] Unit test: Zod validators — happy path for each schema
-- [ ] Unit test: Zod validators — missing required fields
-- [ ] Unit test: Zod validators — boundary amounts (0, negative, max numeric(12,2))
-- [ ] Unit test: Zod validators — line item sum mismatch rejected
-
-### Final Checks
-- [ ] `npm run build` passes with zero errors
-- [ ] `npm run test:unit` passes
-- [ ] All imports resolve cleanly
+Completed baseline (locked):
+- [x] Next.js + TypeScript + core tooling scaffolded.
+- [x] Drizzle config, schema, and migrations created.
+- [x] Core domain enums/types/validators/state machine implemented.
+- [x] Security headers + `proxy.ts` stub configured.
+- [x] Jest unit project configured and passing.
+- [x] PR-0 support folders (`actions`, `repositories`, `queries`, `services`) scaffolded.
+- [x] Plan/checklist baseline updated and merged.
 
 ---
 
-## PR-1: Auth & Layout Shell
+## PR-1: Auth & Layout Shell [READY]
 
-### Clerk Setup
-- [ ] Clerk provider in `app/layout.tsx`
-- [ ] Sign-in page: `app/(auth)/sign-in/[[...sign-in]]/page.tsx`
-- [ ] Sign-up page: `app/(auth)/sign-up/[[...sign-up]]/page.tsx`
-- [ ] `proxy.ts` — clerkMiddleware, public routes (sign-in, sign-up, webhook)
-- [ ] Env vars configured: CLERK_SECRET_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, NEXT_PUBLIC_CLERK_SIGN_IN_URL, NEXT_PUBLIC_CLERK_SIGN_UP_URL
+### Ready Criteria
+- [x] PR-0 merged baseline is available.
+- [x] `users` table and DB client exist.
+- [ ] Clerk runtime secrets are present in environment.
 
-### Webhook & User Sync
-- [ ] `app/api/webhooks/clerk/route.ts` — POST handler
-- [ ] Svix signature verification
-- [ ] Handle `user.created` — insert into `users` table
-- [ ] Handle `user.updated` — update `users` table
-- [ ] Idempotent — duplicate delivery doesn't create duplicate rows
+### Execution Checklist
+- [ ] Wire Clerk provider in root layout.
+- [ ] Implement `proxy.ts` route protection for dashboard pages.
+- [ ] Add sign-in/sign-up routes and validate redirect behavior.
+- [ ] Implement Clerk webhook handler with signature verification.
+- [ ] Implement idempotent user upsert on `user.created` and `user.updated`.
+- [ ] Implement `requireAuth()` local-user resolution.
+- [ ] Implement `requireRole()` role guard integration path.
+- [ ] Build dashboard shell with nav to Bills, Payments, Vendors.
 
-### Auth Helpers
-- [ ] `lib/auth/require-auth.ts` — get Clerk session → lookup local User by clerk_id → return User or throw
-- [ ] `lib/auth/require-role.ts` — accept User + allowed roles array → throw if mismatch
-
-### Layout Shell
-- [ ] Dashboard layout: `app/(dashboard)/layout.tsx`
-- [ ] Sidebar component — nav links: Bills, Payments, Vendors
-- [ ] Active link highlighting
-- [ ] Top bar — user avatar/name from Clerk, sign-out button
-- [ ] Breadcrumb component (dynamic based on route)
-- [ ] Responsive: sidebar collapses to hamburger on mobile
-
-### Page Shells
-- [ ] `app/(dashboard)/bills/page.tsx` — empty shell with "Bills" heading
-- [ ] `app/(dashboard)/payments/page.tsx` — empty shell
-- [ ] `app/(dashboard)/vendors/page.tsx` — empty shell
-
-### DB Migration
-- [ ] Run migration against NeonDB (drizzle-kit push or migrate)
-- [ ] Verify all tables exist in DB
+### Done Criteria
+- [ ] **PR1-G1:** Unauthenticated requests to dashboard routes are redirected to sign-in.
+- [ ] **PR1-G2:** Authenticated user can navigate between Bills, Payments, and Vendors shell pages.
+- [ ] **PR1-G3:** Clerk `user.created` and `user.updated` webhook events upsert local `users` row idempotently.
+- [ ] **PR1-G4:** `requireAuth()` resolves current Clerk session to local user or throws typed auth error.
+- [ ] **PR1-G5:** `requireRole()` blocks unauthorized roles and allows authorized roles.
 
 ---
 
-## PR-2: Repositories, Services & Seed
+## PR-2: Repositories, Services & Seed [BLOCKED]
 
-### Repositories
-- [ ] `bill.repo.ts` — findById, findFiltered (search, pagination, sort, all filter dimensions), create, update, updateStatus (optimistic concurrency), delete, archive, count by status
-- [ ] `payment.repo.ts` — findById, findByBillId, findFiltered, create, updateStatus, updateScheduledDate, cancel
-- [ ] `vendor.repo.ts` — findById, findAll (with search), create, update, delete, countBillsByVendor
-- [ ] `line-item.repo.ts` — findByBillId, createMany, deleteByBillId, replaceForBill (atomic delete + recreate)
-- [ ] `activity-log.repo.ts` — create, findByBillId (ordered desc)
-- [ ] All repos accept `tx` parameter for transaction support
+### Ready Criteria
+- [ ] PR-1 is merged.
+- [ ] Auth helper implementations are stable.
 
-### Services
-- [ ] `bill-transitions.ts` — transitionBillStatus(db, billId, actionType, actor, payload?)
-  - [ ] Validates transition via state machine
-  - [ ] Wraps in db.transaction()
-  - [ ] Updates bill status with optimistic concurrency
-  - [ ] Creates activity log entry
-  - [ ] Creates payment record on schedule/mark-as-paid
-  - [ ] Reverts bill to approved on cancel payment
-  - [ ] Creates new payment on retry
-- [ ] `payment-lifecycle.ts` — payment-specific transitions
+### Execution Checklist
+- [ ] Implement `bill`, `payment`, `vendor`, `line-item`, `activity-log` repository modules.
+- [ ] Ensure repository signatures accept tx/db handles without layer-skipping.
+- [ ] Implement `bill-transitions` service with transaction-scoped side effects.
+- [ ] Implement `payment-lifecycle` service for payment status transitions.
+- [ ] Add deterministic seed script and wire `db:seed`.
+- [ ] Add integration tests for lifecycle happy path and batch atomic rollback.
 
-### Seed Script (`db/seed.ts`)
-- [ ] Create 6-8 users across all roles
-- [ ] Create 10-15 vendors with payment methods
-- [ ] Create 8-12 categories
-- [ ] Create 50+ bills distributed across all statuses
-- [ ] Create line items for each bill (1-5 per bill, sums match amount)
-- [ ] Create approval activity log entries for bills past draft
-- [ ] Create payment records for bills past approved
-- [ ] Create 3-8 activity log entries per bill
-- [ ] Script is deterministic (same output each run)
-- [ ] `npm run db:seed` works
-
-### Tests (PR-2)
-- [ ] Integration test: full bill lifecycle (create → submit → approve → schedule → initiate → paid)
-- [ ] Integration test: bulk approve atomicity
-- [ ] Integration test: optimistic concurrency conflict
-- [ ] Integration test: webhook idempotency
-- [ ] Unit test: auth role checks against full matrix
+### Done Criteria
+- [ ] **PR2-G1:** Repository methods support required read/write paths and accept tx/db handles without layer-skipping.
+- [ ] **PR2-G2:** Bill lifecycle transitions execute with required side effects (activity log + payment side effects) inside transactions.
+- [ ] **PR2-G3:** `db:seed` populates consistent deterministic demo dataset with bills/payments/activity logs.
+- [ ] **PR2-G4:** Integration test validates full happy-path lifecycle (`create -> submit -> approve -> schedule -> initiate -> paid`).
+- [ ] **PR2-G5:** Integration test validates all-or-nothing rollback on bulk transition failure.
 
 ---
 
-## PR-3: Vendor Management
+## PR-3: Vendor Management [BLOCKED]
 
-### Server Actions
-- [ ] `createVendor` — validate, auth, create vendor + payment methods in tx
-- [ ] `updateVendor` — validate, auth, update vendor fields
-- [ ] `deleteVendor` — check no associated bills, delete
-- [ ] `setDefaultPaymentMethod` — unset old + set new in tx
+### Ready Criteria
+- [ ] PR-2 is merged.
+- [ ] Seed data is available for local UI verification.
 
-### Pages
-- [ ] Vendor list page — table with search, columns (name, email, owner, # bills, default method)
-- [ ] Vendor create page / dialog — form with name, email, owner select, payment methods
-- [ ] Vendor edit page / dialog — pre-populated form
-- [ ] Vendor detail page — vendor info, payment methods, associated bills table
+### Execution Checklist
+- [ ] Implement vendor actions (`create`, `update`, `delete`, `setDefaultPaymentMethod`).
+- [ ] Build vendor list view with search and owner/default visibility.
+- [ ] Build create/edit vendor flow with payment methods editor.
+- [ ] Build vendor detail view with associated bills summary.
+- [ ] Add confirmation + toast feedback for all vendor mutations.
 
-### UI
-- [ ] Sonner toast setup (first use — `<Toaster />` in layout)
-- [ ] Success/error toasts on all vendor actions
-- [ ] Delete confirmation dialog
-- [ ] Empty state for vendor list
-
----
-
-## PR-4: Bill CRUD & Drafts Tab
-
-### Server Actions
-- [ ] `createBill` — validate (line item sum), auth, create bill + line items + activity log in tx
-- [ ] `updateBill` — validate, auth, draft-only guard, optimistic lock (updated_at), replace line items in tx
-- [ ] `deleteBill` — auth, draft-only guard, hard delete
-
-### Bill Form
-- [ ] Vendor select dropdown
-- [ ] Invoice fields: number, date, due date, amount, currency, description
-- [ ] Invoice file URL input
-- [ ] Dynamic line items: add row, remove row, description, amount, category select
-- [ ] Line item sum validation — real-time display of sum vs total, blocks submit on mismatch
-- [ ] React Hook Form + Zod resolver integration
-
-### Drafts Tab
-- [ ] TanStack React Table + shadcn DataTable setup
-- [ ] Columns: checkbox, vendor/owner (compound), status, amount, due date, invoice #, invoice date
-- [ ] Column configuration popover (add/remove/reorder)
-- [ ] Free-text search bar
-- [ ] Per-row context menu (⋮): edit, delete, view detail (detail page placeholder)
-- [ ] Row selection checkboxes
-- [ ] Pagination
+### Done Criteria
+- [ ] **PR3-G1:** Vendor create/update/delete behavior works with validation and authorization constraints.
+- [ ] **PR3-G2:** Default payment method switching guarantees one default method per vendor.
+- [ ] **PR3-G3:** Vendor list supports search + owner/default method visibility and navigates to detail.
+- [ ] **PR3-G4:** Destructive actions require confirmation and all vendor mutations surface success/error toasts.
 
 ---
 
-## PR-5: Bill Actions & Approval/Payment Tabs
+## PR-4: Bill CRUD & Drafts Tab [BLOCKED]
 
-### Server Actions
-- [ ] `submitForApproval` — draft-only, line items sum check, transition
-- [ ] `approveBill` — auth (admin/owner/approver), transition, activity log
-- [ ] `rejectBill` — auth, transition, note in activity log metadata
-- [ ] `schedulePayment` — auth, transition, create payment record
-- [ ] `initiatePayment` — auth, transition
-- [ ] `cancelPayment` — auth, cancel payment, revert bill to approved
-- [ ] `retryPayment` — auth, create new payment, transition
-- [ ] `markBillAsPaid` — auth, create payment with paid status
-- [ ] `archiveBill` — auth, confirmation required, transition
-- [ ] `unschedulePayment` — auth, remove scheduled date
+### Ready Criteria
+- [ ] PR-3 is merged.
 
-### Approval Tab
-- [ ] Table showing `awaiting_approval` bills
-- [ ] Approve button with optional note input
-- [ ] Reject button with required note input
-- [ ] Approver can edit bill fields (except amount, vendor, payment details)
-- [ ] Context menu: approve, reject, view detail
+### Execution Checklist
+- [ ] Implement draft bill create/update/delete actions with validation.
+- [ ] Build bill form with dynamic line items and sum enforcement.
+- [ ] Build Drafts table baseline (search, context menu, column visibility).
 
-### For Payment Tab
-- [ ] Table showing approved/scheduled/initiated bills
-- [ ] Schedule payment dialog (payment method select, date picker)
-- [ ] Pay now / initiate button
-- [ ] Cancel button (with confirmation)
-- [ ] Context menu: schedule, pay, cancel, unschedule, mark as paid, view detail
-
-### Shared
-- [ ] Archive flow with confirmation dialog
-- [ ] All actions create activity log entries
-- [ ] Optimistic concurrency on all transitions
-- [ ] Toast feedback on success/error
+### Done Criteria
+- [ ] **PR4-G1:** Draft bill can be created, edited, and deleted with validator safeguards.
+- [ ] **PR4-G2:** Line item sum mismatch blocks submission consistently.
+- [ ] **PR4-G3:** Drafts table supports search, row actions, and column visibility toggles.
+- [ ] **PR4-G4:** Draft-only guard prevents edit/delete for non-draft statuses.
 
 ---
 
-## PR-6: Filters, Sorts & Bulk Actions
+## PR-5: Bill Actions & Approval/Payment Tabs [BLOCKED]
 
-### Filter System
-- [ ] nuqs setup — useQueryState for all filter params
-- [ ] "+ Add filter" popover with dimension picker
-- [ ] Vendor filter — dropdown with search
-- [ ] Vendor owner filter — dropdown with search
-- [ ] Status filter — multi-select checkboxes
-- [ ] Amount filter — min/max number inputs
-- [ ] Payment method filter — multi-select
-- [ ] Category filter — multi-select with "Only" shortcut
-- [ ] Category exclusion toggle ("is not" mode)
-- [ ] Unscheduled filter — boolean toggle
-- [ ] Date range filters — invoice date, due date, payment send date, payment arrival date
-- [ ] Active filter chips — removable pills at top of table
-- [ ] "Remove filter" action on each chip
-- [ ] URL state persistence — back button restores filters
+### Ready Criteria
+- [ ] PR-4 is merged.
 
-### Sorting
-- [ ] Click column header to sort (asc → desc → none)
-- [ ] Sort indicator arrow in column header
-- [ ] Sort state in URL params
+### Execution Checklist
+- [ ] Implement transition actions for approval/payment/archive lifecycle.
+- [ ] Build Approval tab action flow.
+- [ ] Build For Payment tab action flow.
+- [ ] Enforce optimistic concurrency and transition logging for every action.
 
-### Pagination
-- [ ] Page size selector (10, 25, 50)
-- [ ] Page navigation (prev/next, page numbers)
-- [ ] Total count display
-
-### Bulk Actions
-- [ ] Bulk action bar — appears when rows selected, shows count + action buttons
-- [ ] Bulk approve
-- [ ] Bulk edit (amount, due date, invoice date, description, category) — dialog with fields
-- [ ] Bulk delete drafts — confirmation dialog
-- [ ] Bulk archive — confirmation dialog
-- [ ] Bulk schedule payment — dialog with method + date
-- [ ] Bulk pay now / initiate
-- [ ] Bulk cancel — confirmation dialog
-- [ ] Bulk retry
-- [ ] Bulk unschedule
-- [ ] Bulk mark as paid
-- [ ] All bulk ops: single transaction, all-or-nothing
-- [ ] Error message identifies failing record on batch failure
+### Done Criteria
+- [ ] **PR5-G1:** All status transitions enforce allowed-state map and reject invalid transitions.
+- [ ] **PR5-G2:** Approval and For Payment tabs reflect status changes immediately after action success.
+- [ ] **PR5-G3:** Transition side effects (payment creation/reversion/retry) are persisted correctly.
+- [ ] **PR5-G4:** Concurrency conflict path returns deterministic user-facing error without partial writes.
 
 ---
 
-## PR-7: History, Overview & Bill Detail
+## PR-6: Filters, Sorts & Bulk Actions [BLOCKED]
 
-### History Tab
-- [ ] Table showing paid + archived bills
-- [ ] Same filter/sort/search infrastructure
-- [ ] Archived bills show "Archived" status badge
+### Ready Criteria
+- [ ] PR-5 is merged.
 
-### Overview Tab
-- [ ] Status count cards (drafts, awaiting approval, approved, scheduled, initiated, paid, archived, rejected, payment_failed)
-- [ ] Each card links to the corresponding tab with status filter pre-applied
-- [ ] Counts update in real-time based on data
+### Execution Checklist
+- [ ] Implement URL-backed filters, sorting, and pagination.
+- [ ] Implement filter chips and supported filter dimensions.
+- [ ] Implement bulk action bar and supported batch operations.
+- [ ] Enforce transactional rollback for bulk failures.
 
-### Bill Detail Page
-- [ ] Route: `app/(dashboard)/bills/[id]/page.tsx`
-- [ ] Header: vendor name, status badge, amount, currency, invoice #
-- [ ] Dates section: invoice date, due date, payment send/arrival dates
-- [ ] Overdue badge (red, computed)
-- [ ] Line items table: description, amount, category
-- [ ] Payment status section: linked payment record, method, status, dates
-- [ ] Activity log timeline: chronological events with actor avatar/name, action description, timestamp, metadata
-- [ ] Invoice file preview/download link (if invoice_url set)
-- [ ] Action buttons: contextual based on current status + user role (uses getAvailableActions)
-- [ ] Breadcrumbs: Bills > [Tab] > INV-[number]
+### Done Criteria
+- [ ] **PR6-G1:** Filter/sort state is URL-backed and browser navigation preserves state.
+- [ ] **PR6-G2:** Supported filter dimensions apply correctly to bills dataset.
+- [ ] **PR6-G3:** Bulk action bar executes supported actions across selected rows.
+- [ ] **PR6-G4:** Any invalid record in bulk mutation rolls back whole batch with clear error response.
 
 ---
 
-## PR-8: Payments Surface
+## PR-7: History, Overview & Bill Detail [BLOCKED]
 
-### Payment Server Actions (if not in PR-5)
-- [ ] Payment-specific: cancelPayment, editPaymentDate, markPaymentAsPaid, retryPayment, unschedulePayment
+### Ready Criteria
+- [ ] PR-6 is merged.
 
-### Payments Page
-- [ ] Route: `app/(dashboard)/payments/page.tsx`
-- [ ] Tab navigation: Overview, Needs Review, Pending, History
-- [ ] Overview: all payments mixed status
-- [ ] Needs Review: pending payments requiring action
-- [ ] Pending: scheduled/initiated/in-transit
-- [ ] History: paid/cancelled/failed
+### Execution Checklist
+- [ ] Build History and Overview tabs for bills.
+- [ ] Build bill detail page sections (header, line items, payment info, activity log).
+- [ ] Add overdue badge behavior and validate status conditions.
 
-### Payments Table
-- [ ] Reuses DataTable infrastructure from Bills
-- [ ] Payment-specific columns: vendor, bill invoice #, amount, payment method, status, payment date, arrival date
-- [ ] Compound date column: send date + arrival date stacked vertically
-- [ ] Free-text search bar
-- [ ] Payment filters via nuqs: search, vendor, status, amount, method, arrival date, payment date, due date
-- [ ] Filter chips
-- [ ] Column sorting: due date, payment date, arrival date
-- [ ] Per-row context menu
-- [ ] Row selection + bulk action bar
-
-### Payments Bulk Actions
-- [ ] Cancel
-- [ ] Edit payment date
-- [ ] Mark as paid
-- [ ] Retry
-- [ ] Unschedule
-
-### Payment Detail
-- [ ] Route: `app/(dashboard)/payments/[id]/page.tsx`
-- [ ] Payment info: amount, method, status, dates, initiated by (creator)
-- [ ] Link back to originating bill detail
-- [ ] Failure reason display (if failed)
+### Done Criteria
+- [ ] **PR7-G1:** History and Overview tabs show correct status grouping and counts.
+- [ ] **PR7-G2:** Bill detail page renders canonical data (header, line items, payment info, activity log).
+- [ ] **PR7-G3:** Overdue badge appears only for overdue non-paid/non-archived bills.
 
 ---
 
-## PR-9: Export, Polish & Tests
+## PR-8: Payments Surface [BLOCKED]
 
-### CSV Export
-- [ ] papaparse integration
-- [ ] Bills tab: export button in table header
-- [ ] Payments tab: export button in table header
-- [ ] Export respects current filters and visible columns
-- [ ] Browser download dialog triggered
-- [ ] Handles edge cases: commas in descriptions, unicode vendor names
+### Ready Criteria
+- [ ] PR-7 is merged.
 
-### Polish
-- [ ] Responsive audit: 375px, 768px, 1440px, 2560px — all pages
-- [ ] Skeleton loaders on all tables during data fetch
-- [ ] Loading/disabled state on action buttons during mutations
-- [ ] Empty state component for tables with no results
-- [ ] Error boundary for failed queries
-- [ ] Toast audit: every server action success/error shows toast
-- [ ] Keyboard navigation: tab through table rows, enter to open detail
-- [ ] Focus management: dialogs trap focus, return focus on close
+### Execution Checklist
+- [ ] Build payments tabs and payments table baseline.
+- [ ] Implement payment-specific row and bulk actions.
+- [ ] Build payment detail page and bill linkage.
 
-### Tests
-- [ ] Integration: full bill lifecycle end-to-end
-- [ ] Integration: bulk approve atomicity (success case)
-- [ ] Integration: bulk approve atomicity (failure case — partial rollback)
-- [ ] Integration: concurrent status transition conflict
-- [ ] Integration: Clerk webhook create + update + idempotency
-- [ ] Component: Bills table renders correct tabs
-- [ ] Component: Bills table applies filters to URL
-- [ ] Component: Bills table sorts by column click
-- [ ] Component: Bill form — vendor select, line items, sum validation
-- [ ] Component: Bill form — submission calls correct action
-- [ ] Component: Approve/reject buttons per role and status
-- [ ] Component: Confirmation dialogs render and execute
+### Done Criteria
+- [ ] **PR8-G1:** Payments tabs show correct status groupings and record membership.
+- [ ] **PR8-G2:** Payment actions mutate payment/bill states correctly for supported flows.
+- [ ] **PR8-G3:** Payment detail links to originating bill and displays lifecycle metadata.
 
-### README
-- [ ] Product description — what the product does
-- [ ] Prioritized workflows — what was built and why
-- [ ] What was left out and why
-- [ ] Setup instructions (clone, env vars, install, db migrate, db seed, dev)
-- [ ] Architecture decisions — layered architecture, state machine, URL state, etc.
-- [ ] Data model explanation with ER diagram reference
-- [ ] Test instructions (npm test, npm run test:unit, etc.)
+---
+
+## PR-9: Export, Polish & Tests [BLOCKED]
+
+### Ready Criteria
+- [ ] PR-8 is merged.
+
+### Execution Checklist
+- [ ] Implement CSV export for bills/payments filtered views.
+- [ ] Execute responsive and loading/empty/error UX polish pass.
+- [ ] Complete integration/component test targets for merged behavior.
+- [ ] Finalize README with shipped workflows/setup/architecture/tests.
+
+### Done Criteria
+- [ ] **PR9-G1:** CSV export matches active filters and selected visibility rules.
+- [ ] **PR9-G2:** Core pages pass responsive QA at 375/768/1440/2560 widths.
+- [ ] **PR9-G3:** Integration and component suites cover target scenarios and pass in CI.
+- [ ] **PR9-G4:** README reflects shipped behavior, setup, architecture, and test commands.
