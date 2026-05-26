@@ -15,7 +15,7 @@
 - [ ] Create `.env.example` with all required env vars
 
 ### Config Files
-- [ ] `next.config.js` — security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
+- [ ] `next.config.ts` — security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
 - [ ] `jest.config.ts` — multi-project setup (unit, integration, components)
 - [ ] `drizzle.config.ts` — NeonDB connection, schema path, migrations output
 - [ ] `tsconfig.json` — strict mode, path aliases (@/)
@@ -87,7 +87,7 @@
 - [ ] Clerk provider in `app/layout.tsx`
 - [ ] Sign-in page: `app/(auth)/sign-in/[[...sign-in]]/page.tsx`
 - [ ] Sign-up page: `app/(auth)/sign-up/[[...sign-up]]/page.tsx`
-- [ ] `middleware.ts` — clerkMiddleware, public routes (sign-in, sign-up, webhook)
+- [ ] `proxy.ts` — clerkMiddleware, public routes (sign-in, sign-up, webhook)
 - [ ] Env vars configured: CLERK_SECRET_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, NEXT_PUBLIC_CLERK_SIGN_IN_URL, NEXT_PUBLIC_CLERK_SIGN_UP_URL
 
 ### Webhook & User Sync

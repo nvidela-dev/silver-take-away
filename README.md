@@ -1,0 +1,64 @@
+# Bill Pay MVP
+
+Accounts payable management — bills flow `draft → awaiting_approval → approved → scheduled → initiated → paid` with role-based access, bulk operations, and configurable table views.
+
+See [REQUIREMENTS.md](./REQUIREMENTS.md) for the full spec and [PR-PLAN.md](./PR-PLAN.md) for the delivery plan.
+
+## Stack
+
+Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Drizzle ORM · NeonDB · Zod · Jest · ESLint (Airbnb)
+
+UI tooling (Tailwind, shadcn/ui, react-hook-form, TanStack Table, nuqs, sonner, etc.) lands with the PRs that need it, not before.
+
+## Setup
+
+```bash
+# 1. Install dependencies
+corepack enable
+yarn install
+
+# 2. Configure environment
+cp .env.example .env.local
+# Fill in DATABASE_URL (Neon) when wiring it up in PR-1.
+
+# 3. Apply the schema to your Neon database (once DATABASE_URL is set)
+yarn db:push
+```
+
+## Scripts
+
+| Command | Purpose |
+|---|---|
+| `yarn dev` | Run the dev server on `localhost:3000`. |
+| `yarn build` | Production build. |
+| `yarn typecheck` | Type-check without emitting. |
+| `yarn lint` | ESLint (Airbnb ruleset). |
+| `yarn test` | Run all Jest projects. |
+| `yarn test:unit` | Pure unit tests (state machine, validators). |
+| `yarn db:generate` | Generate a Drizzle migration from the schema. |
+| `yarn db:migrate` | Apply pending migrations. |
+| `yarn db:push` | Push the schema directly (dev convenience). |
+
+## Architecture
+
+Layered (actions → services → repositories) with a pure state machine. See [REQUIREMENTS.md §12](./REQUIREMENTS.md) for the SOLID breakdown and transaction boundaries.
+
+```
+src/
+├── app/                  Next.js App Router (minimal stubs — UI in PR-1+)
+├── db/
+│   ├── schema/           Drizzle table definitions (one file per table)
+│   └── migrations/       drizzle-kit generated SQL
+├── lib/
+│   ├── auth/             Clerk wrappers, role guards (stubs — wired in PR-1)
+│   ├── services/         Pure business logic (state machine lives here)
+│   └── validators/       Zod schemas
+├── proxy.ts              Auth proxy stub (real config in PR-1)
+├── types/                Shared TS interfaces
+└── __tests__/            Unit tests proving the type contracts
+```
+
+## Status
+
+- **PR-0 (this PR)** — Schema, types, validators, state machine, ESLint (Airbnb). No UI, no features. Reviewable as a pure contract layer.
+- PR-1 → PR-9 — See [PR-PLAN.md](./PR-PLAN.md).

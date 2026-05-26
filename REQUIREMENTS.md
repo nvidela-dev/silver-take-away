@@ -122,10 +122,10 @@ UI layer uses **Tailwind CSS** for all styling with **shadcn/ui** as the compone
 | `papaparse` | CSV export. Edge cases (commas in descriptions, unicode vendor names, quoted fields) aren't worth debugging manually. |
 | `svix` (optional) | Clerk webhook signature verification. Can also verify manually, but Svix is Clerk's recommended library for production webhook security. |
 
-### 3.5 Middleware
+### 3.5 Proxy
 
 ```typescript
-// middleware.ts (Next.js root)
+// proxy.ts (Next.js root)
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
 const isPublicRoute = createRouteMatcher([
@@ -145,14 +145,14 @@ export const config = {
 };
 ```
 
-All `(dashboard)` routes are protected by default. The Clerk webhook endpoint is explicitly public since it receives unsigned POST requests from Clerk's servers. Role-based authorization happens at the server action layer, not in middleware — middleware only gates authentication (is there a session?), actions gate authorization (does this user's role permit this operation?).
+All `(dashboard)` routes are protected by default. The Clerk webhook endpoint is explicitly public since it receives unsigned POST requests from Clerk's servers. Role-based authorization happens at the server action layer, not in proxy — proxy only gates authentication (is there a session?), actions gate authorization (does this user's role permit this operation?).
 
 ### 3.6 Security
 
-**Headers** — configured in `next.config.js`, not middleware. The Next.js equivalent of Helmet:
+**Headers** — configured in `next.config.ts`, not proxy. The Next.js equivalent of Helmet:
 
-```javascript
-// next.config.js
+```typescript
+// next.config.ts
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -162,7 +162,7 @@ const securityHeaders = [
   // HSTS handled by Vercel at the edge — not set manually
 ];
 
-module.exports = {
+export default {
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];
   },
@@ -176,7 +176,7 @@ module.exports = {
 | CSRF | Next.js server actions validate Origin header automatically. No extra work. |
 | SQL injection | Drizzle ORM parameterizes all queries. Only a risk if writing raw SQL, which we don't. |
 | XSS | React escapes all rendered content. No `dangerouslySetInnerHTML` usage in this project. |
-| Auth session | Clerk middleware protects all non-public routes. Session tokens are httpOnly cookies managed by Clerk. |
+| Auth session | Clerk proxy protects all non-public routes. Session tokens are httpOnly cookies managed by Clerk. |
 | Webhook integrity | `svix` verifies Clerk webhook signatures — prevents spoofed webhook payloads. |
 
 **Deferred to production (not MVP):**
@@ -701,7 +701,7 @@ Vendor owners see only bills for their assigned vendors in Approvals and History
 ### 8.4 Shared / Infrastructure
 
 - Clerk authentication with webhook sync to local `users` table
-- Role-based middleware and server action guards
+- Role-based proxy and server action guards
 - Activity log rendering on bill detail
 - Seed script with realistic demo data (10+ vendors, 50+ bills, payments)
 - Responsive layout — sidebar navigation, breadcrumbs
