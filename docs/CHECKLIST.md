@@ -81,106 +81,59 @@
 
 ---
 
-## PR-1: Auth & Layout Shell
+## PR-1: Clerk
 
-### Clerk Setup
+### Identity Setup
 - [ ] Clerk provider in `app/layout.tsx`
 - [ ] Sign-in page: `app/(auth)/sign-in/[[...sign-in]]/page.tsx`
 - [ ] Sign-up page: `app/(auth)/sign-up/[[...sign-up]]/page.tsx`
-- [ ] `proxy.ts` — clerkMiddleware, public routes (sign-in, sign-up, webhook)
-- [ ] Env vars configured: CLERK_SECRET_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, NEXT_PUBLIC_CLERK_SIGN_IN_URL, NEXT_PUBLIC_CLERK_SIGN_UP_URL
+- [ ] Configure Clerk env vars and validate boot/runtime behavior
 
-### Webhook & User Sync
+### Route Protection (Identity-Only)
+- [ ] `proxy.ts`/middleware protects dashboard routes using Clerk session only
+- [ ] Public routes for auth flows are explicitly configured
+- [ ] Unauthenticated users are redirected to `/sign-in`
+
+### Validation
+- [ ] Auth routes render correctly in local/dev builds
+- [ ] Protected routes allow authenticated Clerk users
+- [ ] `npm run build` passes with Clerk enabled
+
+---
+
+## PR-2: Neon
+
+### Database Connectivity
+- [ ] Configure `DATABASE_URL` and Drizzle client for Neon
+- [ ] Verify connection from runtime/server context
+- [ ] Add/verify DB health-check query path
+
+### Schema + Migration
+- [ ] Run `db:generate` and confirm migration output
+- [ ] Run `db:migrate` or `db:push` against Neon
+- [ ] Verify baseline tables/enums/indexes exist in Neon
+
+### Validation
+- [ ] `npm run build` passes with Neon config in place
+- [ ] App can execute basic read/write path against Neon
+
+---
+
+## PR-3: Clerk-Neon Integration
+
+### Webhook Sync
 - [ ] `app/api/webhooks/clerk/route.ts` — POST handler
 - [ ] Svix signature verification
-- [ ] Handle `user.created` — insert into `users` table
-- [ ] Handle `user.updated` — update `users` table
-- [ ] Idempotent — duplicate delivery doesn't create duplicate rows
+- [ ] Handle `user.created` and `user.updated` with idempotent upsert into Neon `users`
 
-### Auth Helpers
-- [ ] `lib/auth/require-auth.ts` — get Clerk session → lookup local User by clerk_id → return User or throw
-- [ ] `lib/auth/require-role.ts` — accept User + allowed roles array → throw if mismatch
+### Integrated Auth Helpers
+- [ ] `lib/auth/require-auth.ts` resolves Clerk session to local Neon `users` record
+- [ ] `lib/auth/require-role.ts` enforces role checks from local user data
 
-### Layout Shell
-- [ ] Dashboard layout: `app/(dashboard)/layout.tsx`
-- [ ] Sidebar component — nav links: Bills, Payments, Vendors
-- [ ] Active link highlighting
-- [ ] Top bar — user avatar/name from Clerk, sign-out button
-- [ ] Breadcrumb component (dynamic based on route)
-- [ ] Responsive: sidebar collapses to hamburger on mobile
-
-### Page Shells
-- [ ] `app/(dashboard)/bills/page.tsx` — empty shell with "Bills" heading
-- [ ] `app/(dashboard)/payments/page.tsx` — empty shell
-- [ ] `app/(dashboard)/vendors/page.tsx` — empty shell
-
-### DB Migration
-- [ ] Run migration against NeonDB (drizzle-kit push or migrate)
-- [ ] Verify all tables exist in DB
-
----
-
-## PR-2: Repositories, Services & Seed
-
-### Repositories
-- [ ] `bill.repo.ts` — findById, findFiltered (search, pagination, sort, all filter dimensions), create, update, updateStatus (optimistic concurrency), delete, archive, count by status
-- [ ] `payment.repo.ts` — findById, findByBillId, findFiltered, create, updateStatus, updateScheduledDate, cancel
-- [ ] `vendor.repo.ts` — findById, findAll (with search), create, update, delete, countBillsByVendor
-- [ ] `line-item.repo.ts` — findByBillId, createMany, deleteByBillId, replaceForBill (atomic delete + recreate)
-- [ ] `activity-log.repo.ts` — create, findByBillId (ordered desc)
-- [ ] All repos accept `tx` parameter for transaction support
-
-### Services
-- [ ] `bill-transitions.ts` — transitionBillStatus(db, billId, actionType, actor, payload?)
-  - [ ] Validates transition via state machine
-  - [ ] Wraps in db.transaction()
-  - [ ] Updates bill status with optimistic concurrency
-  - [ ] Creates activity log entry
-  - [ ] Creates payment record on schedule/mark-as-paid
-  - [ ] Reverts bill to approved on cancel payment
-  - [ ] Creates new payment on retry
-- [ ] `payment-lifecycle.ts` — payment-specific transitions
-
-### Seed Script (`db/seed.ts`)
-- [ ] Create 6-8 users across all roles
-- [ ] Create 10-15 vendors with payment methods
-- [ ] Create 8-12 categories
-- [ ] Create 50+ bills distributed across all statuses
-- [ ] Create line items for each bill (1-5 per bill, sums match amount)
-- [ ] Create approval activity log entries for bills past draft
-- [ ] Create payment records for bills past approved
-- [ ] Create 3-8 activity log entries per bill
-- [ ] Script is deterministic (same output each run)
-- [ ] `npm run db:seed` works
-
-### Tests (PR-2)
-- [ ] Integration test: full bill lifecycle (create → submit → approve → schedule → initiate → paid)
-- [ ] Integration test: bulk approve atomicity
-- [ ] Integration test: optimistic concurrency conflict
-- [ ] Integration test: webhook idempotency
-- [ ] Unit test: auth role checks against full matrix
-
----
-
-## PR-3: Vendor Management
-
-### Server Actions
-- [ ] `createVendor` — validate, auth, create vendor + payment methods in tx
-- [ ] `updateVendor` — validate, auth, update vendor fields
-- [ ] `deleteVendor` — check no associated bills, delete
-- [ ] `setDefaultPaymentMethod` — unset old + set new in tx
-
-### Pages
-- [ ] Vendor list page — table with search, columns (name, email, owner, # bills, default method)
-- [ ] Vendor create page / dialog — form with name, email, owner select, payment methods
-- [ ] Vendor edit page / dialog — pre-populated form
-- [ ] Vendor detail page — vendor info, payment methods, associated bills table
-
-### UI
-- [ ] Sonner toast setup (first use — `<Toaster />` in layout)
-- [ ] Success/error toasts on all vendor actions
-- [ ] Delete confirmation dialog
-- [ ] Empty state for vendor list
+### Validation
+- [ ] Duplicate webhook deliveries do not create duplicate users
+- [ ] Authenticated requests resolve local user record correctly
+- [ ] Unauthorized roles are rejected correctly on protected flows
 
 ---
 

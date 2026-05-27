@@ -43,8 +43,8 @@ src/
 ├── types/index.ts               # All interfaces
 ├── lib/validators/              # All Zod schemas
 ├── lib/services/state-machine.ts
-├── lib/auth/require-auth.ts     # Stub (implemented PR-1)
-├── lib/auth/require-role.ts     # Stub (implemented PR-1)
+├── lib/auth/require-auth.ts     # Stub (implemented PR-3)
+├── lib/auth/require-role.ts     # Stub (implemented PR-3)
 ├── lib/actions/bills.ts         # Empty barrel
 ├── lib/actions/payments.ts      # Empty barrel
 ├── lib/actions/vendors.ts       # Empty barrel
@@ -53,92 +53,79 @@ src/
 ├── __tests__/unit/state-machine.test.ts
 ├── __tests__/unit/validators.test.ts
 ├── next.config.ts               # Security headers
-├── proxy.ts                     # Stub (implemented PR-1)
+├── proxy.ts                     # Stub (implemented PR-3)
 └── jest.config.ts
 ```
 
 ---
 
-## PR-1: Auth & Layout Shell
+## PR-1: Clerk
 
-**Branch:** `feat/auth-layout`
+**Branch:** `feat/clerk`
 **Depends on:** PR-0
-**Goal:** Authentication works end-to-end, users sync to the DB, and the dashboard has a navigable shell. After this PR, you can sign in, see a sidebar, and click through empty pages.
+**Goal:** Deliver Clerk-only setup and auth surface without Neon coupling.
 
 **Scope:**
 - Clerk provider setup in `app/layout.tsx`
 - Sign-in and sign-up pages under `app/(auth)/`
-- `proxy.ts` — Clerk proxy protecting all `(dashboard)` routes, public webhook endpoint
-- Clerk webhook handler at `app/api/webhooks/clerk/route.ts` — creates/updates `users` table rows on `user.created` / `user.updated` events. Svix signature verification.
-- `lib/auth/require-auth.ts` — wraps `currentUser()`, resolves to local `User` record by `clerk_id`
-- `lib/auth/require-role.ts` — checks user role against allowed roles, throws on mismatch
-- Dashboard layout at `app/(dashboard)/layout.tsx` — sidebar with nav links (Bills, Payments, Vendors), top bar with user menu, breadcrumb component
-- Empty page shells: `app/(dashboard)/bills/page.tsx`, `app/(dashboard)/payments/page.tsx`, `app/(dashboard)/vendors/page.tsx`
-- Run initial DB migration against NeonDB (`drizzle-kit push` or `drizzle-kit migrate`)
+- Clerk middleware/proxy setup with public auth routes
+- Basic auth gating behavior for dashboard routes (identity only)
+- Clerk environment variable wiring and validation
 
 **Acceptance criteria:**
-- Unauthenticated users redirected to `/sign-in`
-- Signed-in users see the dashboard shell
-- Clerk webhook creates a `users` row (verify in DB)
-- `requireAuth()` returns the correct local `User`
-- `requireRole()` throws for unauthorized roles
-- Sidebar navigation works between all three sections
+- `/sign-in` and `/sign-up` render correctly
+- Unauthenticated access to protected routes redirects to sign-in
+- Authenticated Clerk session is available in server components/actions
+- `npm run build` passes with Clerk enabled
 
-**FRs addressed:** FR-22 (RBAC foundation), FR-27 (Clerk webhook sync)
+**FRs addressed:** FR-22 (RBAC foundation, identity layer only)
 
 ---
 
-## PR-2: Repositories, Services & Seed
+## PR-2: Neon
 
-**Branch:** `feat/repos-seed`
+**Branch:** `feat/neon`
 **Depends on:** PR-1
-**Goal:** The entire data access and business logic layer is built and tested. The seed script populates a realistic demo environment. After this PR, the DB is full of data and every server action can be built by composing existing repos and services.
+**Goal:** Deliver Neon-only database setup and connectivity without Clerk-Neon sync logic.
 
 **Scope:**
-- **All repository files** — each accepts a `tx` (transaction handle) or `db` client:
-  - `bill.repo.ts` — findById, findFiltered (with search, pagination, sorting), create, update, updateStatus (with optimistic concurrency WHERE), delete, archive
-  - `payment.repo.ts` — findById, findByBillId, findFiltered, create, updateStatus, updateScheduledDate
-  - `vendor.repo.ts` — findById, findAll, create, update, delete
-  - `line-item.repo.ts` — findByBillId, createMany, deleteByBillId, replaceForBill (delete + recreate in tx)
-  - `activity-log.repo.ts` — create, findByBillId (ordered by created_at desc)
-- **Bill transition service** (`lib/services/bill-transitions.ts`) — `transitionBillStatus(db, billId, action, actor)` function that wraps the state machine + repo calls + activity log + payment creation in a single transaction. All side effects (payment creation on schedule, bill revert on cancel, etc.) handled here.
-- **Payment lifecycle service** (`lib/services/payment-lifecycle.ts`) — payment status transitions
-- **Auth helpers unit tests** — role check matrix
-- **Seed script** (`db/seed.ts`) — generates all demo data per §10: 6-8 users, 10-15 vendors, categories, 50+ bills across all statuses, payments, activity logs. Deterministic (same output each run) so the demo is reproducible.
-- `package.json` script: `db:seed` runs the seed
+- Configure Neon DB connection (`DATABASE_URL`) and Drizzle runtime
+- Validate schema migration flow (`db:generate`, `db:migrate`/`db:push`)
+- Confirm all baseline tables/enums/indexes are present in Neon
+- Add a minimal DB health query path for runtime verification
+- Keep auth-to-user syncing out of scope for this PR
 
 **Acceptance criteria:**
-- `npm run db:seed` populates the DB with realistic data
-- Bills exist in every status, payments in every status
-- Activity logs exist for every bill
-- Integration test: create bill → submit → approve → schedule → initiate → paid (full lifecycle through repos/services)
-- Integration test: bulk approve 5 bills in a transaction, verify atomicity
+- App can connect to Neon successfully from runtime
+- Migration flow runs cleanly against Neon
+- Baseline schema exists and is queryable
+- `npm run build` passes with Neon configuration enabled
 
-**FRs addressed:** FR-30 (seed data), FR-04 (invalid transition rejection), FR-05 (approve/reject), FR-18 (atomic bulk ops)
+**FRs addressed:** Infrastructure prerequisite for all data-backed FRs
 
 ---
 
-## PR-3: Vendor Management
+## PR-3: Clerk-Neon Integration
 
-**Branch:** `feat/vendors`
+**Branch:** `feat/clerk-neon-integration`
 **Depends on:** PR-2
-**Goal:** Full vendor CRUD surface. First real user-facing feature.
+**Goal:** Connect Clerk identity to Neon data model before feature delivery.
 
 **Scope:**
-- Vendor server actions: `createVendor`, `updateVendor`, `deleteVendor`, `setDefaultPaymentMethod`
-- Vendor list page — search, table with columns (name, email, owner, # of bills, default payment method)
-- Vendor create/edit form — name, email, owner selection (user dropdown), payment methods (add/remove, set default)
-- Vendor detail page — vendor info, payment methods list, associated bills table (links to bill detail, built in PR-8)
-- Toast notifications for action feedback (sonner setup — first use, reused everywhere after)
+- Implement Clerk webhook handler (`user.created`, `user.updated`) with Svix verification
+- Idempotent upsert into local `users` table in Neon
+- Implement `requireAuth()` resolution from Clerk session to local DB user
+- Implement `requireRole()` guards against local role data
+- Finalize protected route behavior using integrated auth + DB user resolution
 
 **Acceptance criteria:**
-- Create a vendor with payment method → appears in list
-- Edit vendor, change default payment method → persists
-- Delete vendor with no bills → succeeds
-- Delete vendor with bills → blocked with error
-- Vendor detail shows associated bills (empty for now — populated once bills exist)
+- Clerk webhook events create/update local `users` rows in Neon
+- Duplicate webhook deliveries are idempotent
+- `requireAuth()` returns the expected local user for authenticated requests
+- `requireRole()` blocks unauthorized role access
+- Protected routes enforce integrated auth correctly
 
-**FRs addressed:** FR-10 (vendor CRUD), FR-11 (default payment method), FR-29 (toasts)
+**FRs addressed:** FR-22 (RBAC enforcement), FR-27 (Clerk webhook sync)
 
 ---
 
@@ -358,9 +345,9 @@ src/
 
 ```
 PR-0 Foundation
-  └─→ PR-1 Auth & Layout
-       └─→ PR-2 Repos, Services & Seed
-            └─→ PR-3 Vendors
+  └─→ PR-1 Clerk
+       └─→ PR-2 Neon
+            └─→ PR-3 Clerk-Neon Integration
                  └─→ PR-4 Surface Scaffolding
                       └─→ PR-5 Bill CRUD & Drafts
                            └─→ PR-6 Bill Actions & Tabs
@@ -375,9 +362,9 @@ PR-0 Foundation
 | PR | Effort | Cumulative |
 |---|---|---|
 | PR-0 Foundation | 2-3h | 2-3h |
-| PR-1 Auth & Layout | 2-3h | 4-6h |
-| PR-2 Repos & Seed | 3-4h | 7-10h |
-| PR-3 Vendors | 2-3h | 9-13h |
+| PR-1 Clerk | 1-2h | 3-5h |
+| PR-2 Neon | 1-2h | 4-7h |
+| PR-3 Clerk-Neon Integration | 2-3h | 6-10h |
 | PR-4 Surface Scaffolding | 1-2h | 10-15h |
 | PR-5 Bill CRUD & Drafts | 3-4h | 13-19h |
 | PR-6 Bill Actions & Tabs | 3-4h | 16-23h |
@@ -386,4 +373,4 @@ PR-0 Foundation
 | PR-9 Payments Surface | 2-3h | 23-33h |
 | PR-10 Export, Polish & Tests | 3-4h | 26-37h |
 
-**Total estimated: 26-37 hours** depending on pace and debugging time.
+**Total estimated: 24-35 hours** depending on pace and debugging time.
