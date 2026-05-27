@@ -9,9 +9,14 @@ import type { User } from '@/types';
 export const dynamic = 'force-dynamic';
 
 interface UserSyncState {
-  status: 'not-configured' | 'signed-out' | 'synced' | 'error';
+  status: 'not-configured' | 'blocked' | 'signed-out' | 'synced' | 'error';
   message: string;
   user?: User;
+}
+
+interface NeonHealth {
+  status: 'ready' | 'schema-missing' | 'error';
+  message: string;
 }
 
 interface BadgeProps {
@@ -39,20 +44,63 @@ async function getNeonHealth() {
   try {
     assertDatabaseConfigured();
     await db.execute(sql`select 1 as ok`);
-    return { ok: true, message: 'Connected to Neon' };
+    const schemaResult = await db.execute(
+      sql`select to_regclass('public.users')::text as users_table`,
+    );
+    const rows = schemaResult.rows as { users_table: string | null }[];
+    const hasUsersTable = Boolean(rows[0]?.users_table);
+
+    if (!hasUsersTable) {
+      return {
+        status: 'schema-missing',
+        message: 'Connected to Neon, but the app schema is missing. Run the migration.',
+      } satisfies NeonHealth;
+    }
+
+    return {
+      status: 'ready',
+      message: 'Connected to Neon and app schema is present.',
+    } satisfies NeonHealth;
   } catch (error) {
     return {
-      ok: false,
+      status: 'error',
       message: (error as Error).message,
-    };
+    } satisfies NeonHealth;
   }
 }
 
-async function getUserSyncState(): Promise<UserSyncState> {
+function getSafeSyncErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : '';
+
+  if (message.startsWith('Failed query: insert into "users"')) {
+    return [
+      'User sync reached Neon, but the users table rejected the write.',
+      'Confirm the app schema has been applied, then retry sign-in.',
+    ].join(' ');
+  }
+
+  return 'User sync failed. Check Clerk session, webhook settings, and Neon schema.';
+}
+
+async function getUserSyncState(neonHealth: NeonHealth): Promise<UserSyncState> {
   if (!isClerkConfigured()) {
     return {
       status: 'not-configured',
       message: 'Set Clerk env vars to enable sign-in and user sync.',
+    };
+  }
+
+  if (neonHealth.status === 'schema-missing') {
+    return {
+      status: 'blocked',
+      message: 'Apply the app schema to Neon before syncing Clerk users.',
+    };
+  }
+
+  if (neonHealth.status === 'error') {
+    return {
+      status: 'blocked',
+      message: 'Fix the Neon connection before syncing Clerk users.',
     };
   }
 
@@ -73,7 +121,7 @@ async function getUserSyncState(): Promise<UserSyncState> {
   } catch (error) {
     return {
       status: 'error',
-      message: (error as Error).message,
+      message: getSafeSyncErrorMessage(error),
     };
   }
 }
@@ -141,10 +189,8 @@ function SyncDetails({ user }: SyncDetailsProps) {
 }
 
 export default async function Home() {
-  const [neonHealth, userSync] = await Promise.all([
-    getNeonHealth(),
-    getUserSyncState(),
-  ]);
+  const neonHealth = await getNeonHealth();
+  const userSync = await getUserSyncState(neonHealth);
   const clerkConfigured = isClerkConfigured();
   const signedIn = userSync.status === 'synced';
   const syncedUser = userSync.status === 'synced' ? userSync.user : undefined;
@@ -222,9 +268,13 @@ export default async function Home() {
         <div className="grid gap-4 lg:grid-cols-3">
           <HealthCard
             badge={
-              neonHealth.ok
+              neonHealth.status === 'ready'
                 ? <Badge tone="green">OK</Badge>
-                : <Badge tone="red">ERROR</Badge>
+                : (
+                  <Badge tone={neonHealth.status === 'schema-missing' ? 'amber' : 'red'}>
+                    {neonHealth.status === 'schema-missing' ? 'SCHEMA' : 'ERROR'}
+                  </Badge>
+                )
             }
             title="Neon"
           >

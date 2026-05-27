@@ -19,6 +19,7 @@ export async function upsertLocalUserFromClerkProfile(
       clerkId: profile.clerkId,
       email: profile.email,
       fullName: profile.fullName,
+      role: 'employee',
     })
     .onConflictDoUpdate({
       target: users.clerkId,
