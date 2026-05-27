@@ -1,31 +1,14 @@
 import { headers } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { UserJSON } from '@clerk/backend';
 import type { WebhookEvent } from '@clerk/nextjs/server';
-import { sql } from 'drizzle-orm';
 import { Webhook } from 'svix';
 
-import { assertDatabaseConfigured, db } from '@/db';
-import { users } from '@/db/schema';
+import { assertDatabaseConfigured } from '@/db';
+import { profileFromWebhookUser } from '@/lib/auth/clerk-user-profile';
+import { upsertLocalUserFromClerkProfile } from '@/lib/auth/user-sync';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function buildFullName(firstName: string | null, lastName: string | null): string {
-  const fullName = `${firstName ?? ''} ${lastName ?? ''}`.trim();
-  return fullName.length > 0 ? fullName : 'Unknown User';
-}
-
-function selectPrimaryEmail(data: UserJSON): string | null {
-  const primary = data.email_addresses.find(
-    (entry) => entry.id === data.primary_email_address_id,
-  );
-  if (primary?.email_address) {
-    return primary.email_address;
-  }
-
-  return data.email_addresses[0]?.email_address ?? null;
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -72,26 +55,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  const userData = event.data;
-  const email = selectPrimaryEmail(userData)
-    ?? `${userData.id}@no-email.clerk.local`;
-  const fullName = buildFullName(userData.first_name, userData.last_name);
+  const localUser = await upsertLocalUserFromClerkProfile(
+    profileFromWebhookUser(event.data),
+  );
 
-  await db
-    .insert(users)
-    .values({
-      clerkId: userData.id,
-      email,
-      fullName,
-    })
-    .onConflictDoUpdate({
-      target: users.clerkId,
-      set: {
-        email,
-        fullName,
-        updatedAt: sql`now()`,
-      },
-    });
-
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, userId: localUser.id });
 }
