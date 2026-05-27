@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { ClerkProvider } from '@clerk/nextjs';
 
+import './globals.css';
+
 export const metadata: Metadata = {
   title: 'Bill Pay',
   description: 'Accounts payable workflow management.',

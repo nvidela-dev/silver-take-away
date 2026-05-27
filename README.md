@@ -41,12 +41,15 @@ yarn db:push
    - `https://<your-vercel-domain>/api/webhooks/clerk`
    - subscribe to `user.created` and `user.updated`
    - use the matching `CLERK_WEBHOOK_SECRET`
-5. Run schema migration against Neon before first production usage:
+5. Keep Clerk sign-in/sign-up redirects pointed at `/` until the dashboard routes land.
+   The root page shows Clerk session, Neon health, and local user sync status.
+6. Run schema migration against Neon before first production usage:
    - locally: `yarn db:push`
    - or CI/release job: `yarn db:migrate`
-6. Deploy to Vercel and verify:
+7. Deploy to Vercel and verify:
    - `/sign-in` renders Clerk sign-in
    - `/api/health/db` returns `{ "ok": true }`
+   - signing in creates or updates a row in Neon `users`
    - protected routes redirect unauthenticated users once the dashboard shell is merged
    - webhook delivery succeeds in Clerk dashboard logs
 

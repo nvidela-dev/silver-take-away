@@ -5,6 +5,8 @@ import { eq } from 'drizzle-orm';
 import { assertDatabaseConfigured, db } from '@/db';
 import { users } from '@/db/schema';
 
+import { syncCurrentClerkUserToNeon } from './user-sync';
+
 export class UnauthorizedError extends Error {
   readonly code = 'UNAUTHENTICATED';
 
@@ -14,13 +16,6 @@ export class UnauthorizedError extends Error {
   }
 }
 
-/**
- * Resolves the current Clerk session to the local `users` row.
- *
- * Stubbed in PR-0 — the real implementation lands in PR-1 once Clerk is wired
- * up. Server actions and queries should import from here from day one so the
- * later swap is a no-op for callers.
- */
 export async function requireAuth(): Promise<User> {
   assertDatabaseConfigured();
 
@@ -36,9 +31,12 @@ export async function requireAuth(): Promise<User> {
     .limit(1);
 
   if (!user) {
-    throw new UnauthorizedError(
-      'Authenticated Clerk user is not synced to the local users table.',
-    );
+    const syncedUser = await syncCurrentClerkUserToNeon();
+    if (syncedUser?.clerkId === authState.userId) {
+      return syncedUser;
+    }
+
+    throw new UnauthorizedError('Authenticated Clerk user could not be synced to Neon.');
   }
 
   return user;
