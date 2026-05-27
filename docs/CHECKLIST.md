@@ -184,7 +184,33 @@
 
 ---
 
-## PR-4: Bill CRUD & Drafts Tab
+## PR-4: Bills/Payments Surface Scaffolding (Folders & Placeholders)
+
+### Route + Folder Scaffolding
+- [ ] Create `app/(dashboard)/bills/_components/` folder with placeholder components
+- [ ] Create `app/(dashboard)/payments/_components/` folder with placeholder components
+- [ ] Add placeholder route: `app/(dashboard)/bills/[id]/page.tsx`
+- [ ] Add placeholder route: `app/(dashboard)/payments/[id]/page.tsx`
+
+### Bills Placeholders
+- [ ] Add placeholder tab surfaces for: Drafts, For Approval, For Payment, History, Overview
+- [ ] Add placeholder table shell component contract for bills surface (props only, no data behavior)
+- [ ] Ensure breadcrumbs/nav labels resolve for placeholder bills routes
+
+### Payments Placeholders
+- [ ] Add placeholder tab surfaces for: Overview, Needs Review, Pending, History
+- [ ] Add placeholder table shell component contract for payments surface (props only, no data behavior)
+- [ ] Ensure breadcrumbs/nav labels resolve for placeholder payments routes
+
+### Contracts + Build Check
+- [ ] Add placeholder exports for future actions/queries where imports are expected in later PRs
+- [ ] `npm run build` passes with placeholder-only additions
+- [ ] Verify navigation reaches all placeholders without runtime errors
+- [ ] Confirm no real mutation/business logic was introduced in this PR
+
+---
+
+## PR-5: Bill CRUD & Drafts Tab
 
 ### Server Actions
 - [ ] `createBill` — validate (line item sum), auth, create bill + line items + activity log in tx
@@ -210,7 +236,7 @@
 
 ---
 
-## PR-5: Bill Actions & Approval/Payment Tabs
+## PR-6: Bill Actions & Approval/Payment Tabs
 
 ### Server Actions
 - [ ] `submitForApproval` — draft-only, line items sum check, transition
@@ -246,7 +272,7 @@
 
 ---
 
-## PR-6: Filters, Sorts & Bulk Actions
+## PR-7: Filters, Sorts & Bulk Actions
 
 ### Filter System
 - [ ] nuqs setup — useQueryState for all filter params
@@ -291,7 +317,7 @@
 
 ---
 
-## PR-7: History, Overview & Bill Detail
+## PR-8: History, Overview & Bill Detail
 
 ### History Tab
 - [ ] Table showing paid + archived bills
@@ -317,9 +343,9 @@
 
 ---
 
-## PR-8: Payments Surface
+## PR-9: Payments Surface
 
-### Payment Server Actions (if not in PR-5)
+### Payment Server Actions (if not in PR-6)
 - [ ] Payment-specific: cancelPayment, editPaymentDate, markPaymentAsPaid, retryPayment, unschedulePayment
 
 ### Payments Page
@@ -356,7 +382,7 @@
 
 ---
 
-## PR-9: Export, Polish & Tests
+## PR-10: Export, Polish & Tests
 
 ### CSV Export
 - [ ] papaparse integration

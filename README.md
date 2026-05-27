@@ -2,7 +2,7 @@
 
 Accounts payable management — bills flow `draft → awaiting_approval → approved → scheduled → initiated → paid` with role-based access, bulk operations, and configurable table views.
 
-See [REQUIREMENTS.md](./REQUIREMENTS.md) for the full spec and [PR-PLAN.md](./PR-PLAN.md) for the delivery plan.
+See [REQUIREMENTS.md](./docs/REQUIREMENTS.md) for the full spec and [PR-PLAN.md](./docs/PR-PLAN.md) for the delivery plan.
 
 ## Stack
 
@@ -67,7 +67,7 @@ yarn db:push
 
 ## Architecture
 
-Layered (actions → services → repositories) with a pure state machine. See [REQUIREMENTS.md §12](./REQUIREMENTS.md) for the SOLID breakdown and transaction boundaries.
+Layered (actions → services → repositories) with a pure state machine. See [REQUIREMENTS.md §12](./docs/REQUIREMENTS.md) for the SOLID breakdown and transaction boundaries.
 
 ```
 src/
@@ -87,4 +87,4 @@ src/
 ## Status
 
 - **PR-0 (this PR)** — Schema, types, validators, state machine, ESLint (Airbnb). No UI, no features. Reviewable as a pure contract layer.
-- PR-1 → PR-9 — See [PR-PLAN.md](./PR-PLAN.md).
+- PR-1 → PR-10 — See [PR-PLAN.md](./docs/PR-PLAN.md).

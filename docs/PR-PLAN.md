@@ -1,6 +1,6 @@
 # Bill Pay MVP — PR Plan
 
-**Total: 10 PRs (PR-0 through PR-9)**
+**Total: 11 PRs (PR-0 through PR-10)**
 Each PR maps 1:1 to a merge. Dependencies are strictly sequential — no PR can start until its predecessor is merged. This is intentional: each PR builds context that the next one consumes.
 
 ---
@@ -128,7 +128,7 @@ src/
 - Vendor server actions: `createVendor`, `updateVendor`, `deleteVendor`, `setDefaultPaymentMethod`
 - Vendor list page — search, table with columns (name, email, owner, # of bills, default payment method)
 - Vendor create/edit form — name, email, owner selection (user dropdown), payment methods (add/remove, set default)
-- Vendor detail page — vendor info, payment methods list, associated bills table (links to bill detail, built in PR-7)
+- Vendor detail page — vendor info, payment methods list, associated bills table (links to bill detail, built in PR-8)
 - Toast notifications for action feedback (sonner setup — first use, reused everywhere after)
 
 **Acceptance criteria:**
@@ -142,10 +142,39 @@ src/
 
 ---
 
-## PR-4: Bill CRUD & Drafts Tab
+## PR-4: Bills/Payments Surface Scaffolding (Folders & Placeholders)
+
+**Branch:** `feat/surface-scaffold`
+**Depends on:** PR-3
+**Goal:** Put all near-term folders, route placeholders, and component placeholders in place so downstream feature PRs only implement behavior.
+
+**Scope:**
+- Create missing feature folders and placeholder files for Bills and Payments surfaces:
+  - `app/(dashboard)/bills/_components/`
+  - `app/(dashboard)/payments/_components/`
+  - `app/(dashboard)/bills/[id]/page.tsx` (placeholder detail)
+  - `app/(dashboard)/payments/[id]/page.tsx` (placeholder detail)
+- Add placeholder tab shell components/pages for:
+  - Bills: Drafts, For Approval, For Payment, History, Overview
+  - Payments: Overview, Needs Review, Pending, History
+- Add placeholder shared table shell components (no real data wiring yet), with stable props/contracts for later PRs.
+- Add placeholder action/query module exports where needed so import structure is stable before implementation.
+- Ensure route-level breadcrumbs/nav labels are wired for these placeholders.
+
+**Acceptance criteria:**
+- All new placeholder routes compile and render.
+- Navigation can reach all placeholder tabs/details without runtime errors.
+- `npm run build` passes with scaffold-only changes.
+- No business mutations or real lifecycle logic are introduced in this PR.
+
+**FRs addressed:** None directly — this is execution scaffolding for subsequent feature PRs.
+
+---
+
+## PR-5: Bill CRUD & Drafts Tab
 
 **Branch:** `feat/bill-crud-drafts`
-**Depends on:** PR-3
+**Depends on:** PR-4
 **Goal:** Bills can be created, edited, and deleted. The Drafts tab is fully functional with the DataTable, column config, search, and context menu.
 
 **Scope:**
@@ -156,7 +185,7 @@ src/
 - Drafts tab — table showing draft bills, all columns (vendor/owner, status, amount, due date, invoice #, invoice date)
 - Column configuration (add/remove/reorder via popover)
 - Free-text search bar (searches vendor name, invoice number, description)
-- Per-row context menu (⋮) — edit, delete, view detail (detail page built in PR-7)
+- Per-row context menu (⋮) — edit, delete, view detail (detail page built in PR-8)
 - Row selection checkboxes
 
 **Acceptance criteria:**
@@ -172,10 +201,10 @@ src/
 
 ---
 
-## PR-5: Bill Actions & Approval/Payment Tabs
+## PR-6: Bill Actions & Approval/Payment Tabs
 
 **Branch:** `feat/bill-actions-tabs`
-**Depends on:** PR-4
+**Depends on:** PR-5
 **Goal:** All bill status transitions work. The Approval and For Payment tabs are functional. Users can move a bill through its entire lifecycle from the table UI.
 
 **Scope:**
@@ -203,10 +232,10 @@ src/
 
 ---
 
-## PR-6: Filters, Sorts & Bulk Actions
+## PR-7: Filters, Sorts & Bulk Actions
 
 **Branch:** `feat/filters-bulk`
-**Depends on:** PR-5
+**Depends on:** PR-6
 **Goal:** The full filter/sort system with URL state and all bulk operations.
 
 **Scope:**
@@ -233,10 +262,10 @@ src/
 
 ---
 
-## PR-7: History, Overview & Bill Detail
+## PR-8: History, Overview & Bill Detail
 
 **Branch:** `feat/history-overview-detail`
-**Depends on:** PR-6
+**Depends on:** PR-7
 **Goal:** The remaining Bills tabs and the full bill detail page.
 
 **Scope:**
@@ -265,10 +294,10 @@ src/
 
 ---
 
-## PR-8: Payments Surface
+## PR-9: Payments Surface
 
 **Branch:** `feat/payments`
-**Depends on:** PR-7
+**Depends on:** PR-8
 **Goal:** The entire Payments tab is functional — separate from Bills, with its own tabs, filters, sorts, bulk actions, and detail view.
 
 **Scope:**
@@ -296,10 +325,10 @@ src/
 
 ---
 
-## PR-9: Export, Polish & Tests
+## PR-10: Export, Polish & Tests
 
 **Branch:** `feat/export-polish-tests`
-**Depends on:** PR-8
+**Depends on:** PR-9
 **Goal:** Final deliverable quality. CSV export works, UI is polished, tests provide confidence, README is complete.
 
 **Scope:**
@@ -332,12 +361,13 @@ PR-0 Foundation
   └─→ PR-1 Auth & Layout
        └─→ PR-2 Repos, Services & Seed
             └─→ PR-3 Vendors
-                 └─→ PR-4 Bill CRUD & Drafts
-                      └─→ PR-5 Bill Actions & Tabs
-                           └─→ PR-6 Filters & Bulk
-                                └─→ PR-7 History, Overview & Detail
-                                     └─→ PR-8 Payments Surface
-                                          └─→ PR-9 Export, Polish & Tests
+                 └─→ PR-4 Surface Scaffolding
+                      └─→ PR-5 Bill CRUD & Drafts
+                           └─→ PR-6 Bill Actions & Tabs
+                                └─→ PR-7 Filters & Bulk
+                                     └─→ PR-8 History, Overview & Detail
+                                          └─→ PR-9 Payments Surface
+                                               └─→ PR-10 Export, Polish & Tests
 ```
 
 ## Estimated Effort
@@ -348,11 +378,12 @@ PR-0 Foundation
 | PR-1 Auth & Layout | 2-3h | 4-6h |
 | PR-2 Repos & Seed | 3-4h | 7-10h |
 | PR-3 Vendors | 2-3h | 9-13h |
-| PR-4 Bill CRUD & Drafts | 3-4h | 12-17h |
-| PR-5 Bill Actions & Tabs | 3-4h | 15-21h |
-| PR-6 Filters & Bulk | 3-4h | 18-25h |
-| PR-7 History, Overview & Detail | 2-3h | 20-28h |
-| PR-8 Payments Surface | 2-3h | 22-31h |
-| PR-9 Export, Polish & Tests | 3-4h | 25-35h |
+| PR-4 Surface Scaffolding | 1-2h | 10-15h |
+| PR-5 Bill CRUD & Drafts | 3-4h | 13-19h |
+| PR-6 Bill Actions & Tabs | 3-4h | 16-23h |
+| PR-7 Filters & Bulk | 3-4h | 19-27h |
+| PR-8 History, Overview & Detail | 2-3h | 21-30h |
+| PR-9 Payments Surface | 2-3h | 23-33h |
+| PR-10 Export, Polish & Tests | 3-4h | 26-37h |
 
-**Total estimated: 25-35 hours** depending on pace and debugging time.
+**Total estimated: 26-37 hours** depending on pace and debugging time.
