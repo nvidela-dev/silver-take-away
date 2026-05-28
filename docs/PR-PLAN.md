@@ -129,30 +129,38 @@ src/
 
 ---
 
-## PR-4: Bills/Payments Surface Scaffolding (Folders & Placeholders)
+## PR-4: Ready To Start Building
 
-**Branch:** `feat/surface-scaffold`
+**Branch:** `codex/dashboard-layout-shell`
 **Depends on:** PR-3
-**Goal:** Put all near-term folders, route placeholders, and component placeholders in place so downstream feature PRs only implement behavior.
+**Goal:** Make the app structurally ready for PR-5+ feature work without shipping bill, payment, or vendor behavior.
 
 **Scope:**
-- Create missing feature folders and placeholder files for Bills and Payments surfaces:
-  - `app/(dashboard)/bills/_components/`
-  - `app/(dashboard)/payments/_components/`
-  - `app/(dashboard)/bills/[id]/page.tsx` (placeholder detail)
-  - `app/(dashboard)/payments/[id]/page.tsx` (placeholder detail)
-- Add placeholder tab shell components/pages for:
-  - Bills: Drafts, For Approval, For Payment, History, Overview
-  - Payments: Overview, Needs Review, Pending, History
-- Add placeholder shared table shell components (no real data wiring yet), with stable props/contracts for later PRs.
-- Add placeholder action/query module exports where needed so import structure is stable before implementation.
-- Ensure route-level breadcrumbs/nav labels are wired for these placeholders.
+- Add the UI/building dependencies now: shadcn-compatible primitives, `@tanstack/react-table`, `react-hook-form`, `@hookform/resolvers`, `nuqs`, `sonner`, `lucide-react`, `papaparse`, and shared `cn` support utilities.
+- Create the protected dashboard shell with stable navigation for Bills, Payments, and Vendors.
+- Add bare placeholder routes for Bills, Payments, Vendors, and their detail routes.
+- Standardize shared UI primitives only: app shell/sidebar, page header, breadcrumb shape, tabs surface, empty state, status badge, metric card, placeholder table shell, and action toolbar shape.
+- Standardize shared interfaces/contracts for navigation items, breadcrumbs, surface tabs, status display metadata, table columns, row actions, bulk actions, and placeholder table state.
+- Add domain display maps for bill status, payment status, payment method, and user role labels/tones.
+- Update docs/checklist so PR-4 is explicitly the scaffolding and standardization PR.
+
+**Out of scope:**
+- No bill CRUD.
+- No payment lifecycle behavior.
+- No vendor CRUD.
+- No DB-backed dashboard queries.
+- No real table filtering/sorting/pagination behavior.
+- No real forms beyond reusable primitive availability.
+- No server action mutations.
 
 **Acceptance criteria:**
-- All new placeholder routes compile and render.
-- Navigation can reach all placeholder tabs/details without runtime errors.
-- `npm run build` passes with scaffold-only changes.
-- No business mutations or real lifecycle logic are introduced in this PR.
+- `yarn lint`, `yarn typecheck`, `yarn build`, and `yarn test:unit` pass.
+- Unauthenticated dashboard access redirects/protects correctly.
+- Authenticated dashboard shell renders.
+- Bills, Payments, and Vendors placeholder routes are navigable.
+- Placeholder detail routes render without runtime errors.
+- Mobile width does not overflow.
+- No business mutations or real lifecycle logic are introduced.
 
 **FRs addressed:** None directly — this is execution scaffolding for subsequent feature PRs.
 
@@ -348,7 +356,7 @@ PR-0 Foundation
   └─→ PR-1 Clerk
        └─→ PR-2 Neon
             └─→ PR-3 Clerk-Neon Integration
-                 └─→ PR-4 Surface Scaffolding
+                 └─→ PR-4 Ready To Start Building
                       └─→ PR-5 Bill CRUD & Drafts
                            └─→ PR-6 Bill Actions & Tabs
                                 └─→ PR-7 Filters & Bulk
@@ -365,7 +373,7 @@ PR-0 Foundation
 | PR-1 Clerk | 1-2h | 3-5h |
 | PR-2 Neon | 1-2h | 4-7h |
 | PR-3 Clerk-Neon Integration | 2-3h | 6-10h |
-| PR-4 Surface Scaffolding | 1-2h | 10-15h |
+| PR-4 Ready To Start Building | 1-2h | 10-15h |
 | PR-5 Bill CRUD & Drafts | 3-4h | 13-19h |
 | PR-6 Bill Actions & Tabs | 3-4h | 16-23h |
 | PR-7 Filters & Bulk | 3-4h | 19-27h |

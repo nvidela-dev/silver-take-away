@@ -137,29 +137,48 @@
 
 ---
 
-## PR-4: Bills/Payments Surface Scaffolding (Folders & Placeholders)
+## PR-4: Ready To Start Building
 
-### Route + Folder Scaffolding
-- [ ] Create `app/(dashboard)/bills/_components/` folder with placeholder components
-- [ ] Create `app/(dashboard)/payments/_components/` folder with placeholder components
-- [ ] Add placeholder route: `app/(dashboard)/bills/[id]/page.tsx`
-- [ ] Add placeholder route: `app/(dashboard)/payments/[id]/page.tsx`
+### Ready Criteria
+- [ ] PR-3 is merged into `main`
+- [ ] Clerk authenticated dashboard access works
+- [ ] Neon schema and user sync are available for future feature PRs
 
-### Bills Placeholders
-- [ ] Add placeholder tab surfaces for: Drafts, For Approval, For Payment, History, Overview
-- [ ] Add placeholder table shell component contract for bills surface (props only, no data behavior)
-- [ ] Ensure breadcrumbs/nav labels resolve for placeholder bills routes
+### UI Toolchain
+- [ ] Add shadcn-compatible primitive setup and `cn` utility
+- [ ] Add `@tanstack/react-table`
+- [ ] Add `react-hook-form` and `@hookform/resolvers`
+- [ ] Add `nuqs`
+- [ ] Add `sonner`
+- [ ] Add `lucide-react`
+- [ ] Add `papaparse`
 
-### Payments Placeholders
-- [ ] Add placeholder tab surfaces for: Overview, Needs Review, Pending, History
-- [ ] Add placeholder table shell component contract for payments surface (props only, no data behavior)
-- [ ] Ensure breadcrumbs/nav labels resolve for placeholder payments routes
+### Dashboard Shell + Routes
+- [ ] Create protected dashboard shell with stable navigation for Bills, Payments, and Vendors
+- [ ] Add Bills placeholder route and tab surface
+- [ ] Add Payments placeholder route and tab surface
+- [ ] Add Vendors placeholder route
+- [ ] Add placeholder detail routes for Bills, Payments, and Vendors
+- [ ] Add `_components` folders/placeholders for each dashboard surface
 
-### Contracts + Build Check
-- [ ] Add placeholder exports for future actions/queries where imports are expected in later PRs
-- [ ] `npm run build` passes with placeholder-only additions
-- [ ] Verify navigation reaches all placeholders without runtime errors
-- [ ] Confirm no real mutation/business logic was introduced in this PR
+### Shared Primitives + Contracts
+- [ ] Add shared app shell/sidebar/page header/breadcrumb shape
+- [ ] Add tabs surface, empty state, status badge, metric card, placeholder table shell, and action toolbar
+- [ ] Add interfaces for navigation items, breadcrumbs, tabs, status display metadata, table columns, row actions, bulk actions, and placeholder table state
+- [ ] Add display maps for bill status, payment status, payment method, and user role
+- [ ] Add placeholder action/query exports where future imports are expected
+
+### Done Criteria
+- [ ] `yarn lint` passes
+- [ ] `yarn typecheck` passes
+- [ ] `yarn build` passes
+- [ ] `yarn test:unit` passes
+- [ ] Unauthenticated dashboard route redirects/protects correctly
+- [ ] Authenticated dashboard shell renders
+- [ ] Bills, Payments, Vendors placeholder routes are navigable
+- [ ] Placeholder detail routes render without runtime errors
+- [ ] Mobile width does not overflow
+- [ ] No bill CRUD, payment lifecycle, vendor CRUD, DB-backed dashboard queries, real table behavior, real forms, or server action mutations were introduced
 
 ---
 

@@ -259,6 +259,8 @@ export interface UpdateVendorInput {
   ownerId?: string | null;
 }
 
+export * from './ui';
+
 // ---- State Machine ----
 
 export type BillActionType = | 'submit_for_approval'
