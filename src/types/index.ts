@@ -120,6 +120,18 @@ export interface BillWithRelations extends Bill {
   payments: Payment[];
 }
 
+export interface DraftBillListItem extends Bill {
+  vendor: Pick<Vendor, 'id' | 'name' | 'email' | 'ownerId'>;
+  creator: Pick<User, 'id' | 'email' | 'fullName' | 'role'>;
+  lineItems: (BillLineItem & { category: Category | null })[];
+  lineItemCount: number;
+}
+
+export interface BillFormOptions {
+  vendors: Pick<Vendor, 'id' | 'name' | 'email' | 'ownerId'>[];
+  categories: Pick<Category, 'id' | 'name'>[];
+}
+
 export interface PaymentWithRelations extends Payment {
   bill: Bill & { vendor: Vendor };
   creator: User;
@@ -209,7 +221,9 @@ export interface UpdateBillInput {
   invoiceDate?: string;
   dueDate?: string;
   amount?: string;
+  currency?: string;
   description?: string;
+  invoiceUrl?: string;
   lineItems?: {
     id?: string;
     description?: string;

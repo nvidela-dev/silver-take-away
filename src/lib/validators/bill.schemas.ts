@@ -50,7 +50,13 @@ export const updateBillSchema = z
     invoiceNumber: z.string().min(1).max(50).optional(),
     invoiceDate: isoDateSchema.optional(),
     dueDate: isoDateSchema.optional(),
+    currency: z
+      .string()
+      .length(3)
+      .regex(/^[A-Z]{3}$/, 'Currency must be a 3-letter ISO code.')
+      .optional(),
     description: z.string().max(2000).optional(),
+    invoiceUrl: z.url().optional(),
     lineItems: z.array(lineItemInputSchema).min(1).optional(),
   })
   .refine(

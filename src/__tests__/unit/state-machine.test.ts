@@ -5,6 +5,10 @@ import {
   canDelete,
   getAvailableActions,
 } from '@/lib/services/state-machine';
+import {
+  DraftBillGuardError,
+  assertDraftBillEditable,
+} from '@/lib/services/bill-transitions';
 import type { BillActionType, BillStatus } from '@/types';
 
 const ALL_STATUSES: BillStatus[] = [
@@ -124,6 +128,22 @@ describe('canDelete', () => {
     expect(canDelete('draft')).toBe(true);
     for (const status of ALL_STATUSES.filter((s) => s !== 'draft')) {
       expect(canDelete(status)).toBe(false);
+    }
+  });
+});
+
+describe('assertDraftBillEditable', () => {
+  it('allows draft bill operations', () => {
+    expect(() => assertDraftBillEditable({ status: 'draft' })).not.toThrow();
+  });
+
+  it('rejects non-draft bill operations with a stable code', () => {
+    try {
+      assertDraftBillEditable({ status: 'approved' });
+      fail('expected throw');
+    } catch (err) {
+      expect(err).toBeInstanceOf(DraftBillGuardError);
+      expect((err as DraftBillGuardError).code).toBe('BILL_NOT_DRAFT');
     }
   });
 });
