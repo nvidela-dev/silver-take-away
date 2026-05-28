@@ -217,6 +217,11 @@ export async function updateDraftBill(
     }),
   );
 
+  const [bill] = await updateStatement;
+  if (!bill) {
+    throw input.expectedUpdatedAt ? new BillConflictError() : new BillNotFoundError();
+  }
+
   if (input.lineItems) {
     const lineItemRecords = toBillLineItemInsertRecords(
       input.id,
@@ -224,31 +229,16 @@ export async function updateDraftBill(
       input.lineItems.map((lineItem) => lineItem.id ?? createUuid()),
     );
 
-    const [updatedBills] = await db.batch([
-      updateStatement,
+    await db.batch([
       db.delete(billLineItems).where(eq(billLineItems.billId, input.id)),
       db.insert(billLineItems).values(lineItemRecords),
       logStatement,
     ]);
-    const [bill] = updatedBills;
-
-    if (!bill) {
-      throw input.expectedUpdatedAt ? new BillConflictError() : new BillNotFoundError();
-    }
 
     return bill;
   }
 
-  const [updatedBills] = await db.batch([
-    updateStatement,
-    logStatement,
-  ]);
-  const [bill] = updatedBills;
-
-  if (!bill) {
-    throw input.expectedUpdatedAt ? new BillConflictError() : new BillNotFoundError();
-  }
-
+  await logStatement;
   return bill;
 }
 

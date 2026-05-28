@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { assertDatabaseConfigured } from '@/db';
 import { requireAuth, UnauthorizedError } from '@/lib/auth/require-auth';
+import { ForbiddenError, requireRole } from '@/lib/auth/require-role';
 import {
   BillConflictError,
   BillNotFoundError,
@@ -30,10 +31,13 @@ import type {
 } from '@/types';
 
 type BillActionResult = ActionResult<Bill>;
+const BILL_EDITOR_ROLES = ['admin', 'owner', 'ap_clerk'] as const;
+const BILL_DELETE_ROLES = ['admin', 'owner'] as const;
 
 function toActionError(error: unknown): ActionResult<never> {
   if (
     error instanceof UnauthorizedError
+    || error instanceof ForbiddenError
     || error instanceof BillNotFoundError
     || error instanceof BillConflictError
     || error instanceof DraftBillGuardError
@@ -71,6 +75,7 @@ export async function createBill(input: CreateBillInput): Promise<BillActionResu
     assertDatabaseConfigured();
     const parsed = createBillSchema.parse(input);
     const actor = await requireAuth();
+    requireRole(actor, BILL_EDITOR_ROLES);
     const bill = await createDraftBill(parsed, actor);
     revalidatePath('/bills');
     return { ok: true, data: bill };
@@ -84,6 +89,7 @@ export async function updateBill(input: UpdateBillInput): Promise<BillActionResu
     assertDatabaseConfigured();
     const parsed = updateBillSchema.parse(input);
     const actor = await requireAuth();
+    requireRole(actor, BILL_EDITOR_ROLES);
     const bill = await getBillById(parsed.id);
     if (!bill) {
       throw new BillNotFoundError();
@@ -102,7 +108,8 @@ export async function deleteBill(id: string): Promise<ActionResult<{ id: string 
   try {
     assertDatabaseConfigured();
     const parsed = billIdSchema.parse(id);
-    await requireAuth();
+    const actor = await requireAuth();
+    requireRole(actor, BILL_DELETE_ROLES);
     const bill = await getBillById(parsed);
     if (!bill) {
       throw new BillNotFoundError();
