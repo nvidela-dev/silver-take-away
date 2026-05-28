@@ -8,21 +8,21 @@ import type {
 
 export const billStatusDisplay = {
   draft: { label: 'Draft', tone: 'slate' },
-  awaiting_approval: { label: 'For Approval', tone: 'amber' },
+  awaiting_approval: { label: 'Awaiting approval', tone: 'amber' },
   approved: { label: 'Approved', tone: 'blue' },
-  scheduled: { label: 'Scheduled', tone: 'sky' },
+  scheduled: { label: 'Ready for payment', tone: 'sky' },
   initiated: { label: 'Initiated', tone: 'violet' },
   paid: { label: 'Paid', tone: 'emerald' },
   archived: { label: 'Archived', tone: 'slate' },
   rejected: { label: 'Rejected', tone: 'rose' },
-  payment_failed: { label: 'Payment Failed', tone: 'rose' },
+  payment_failed: { label: 'Payment failed', tone: 'rose' },
 } as const satisfies Record<BillStatus, StatusDisplayMeta>;
 
 export const paymentStatusDisplay = {
   pending: { label: 'Pending', tone: 'amber' },
   scheduled: { label: 'Scheduled', tone: 'sky' },
   initiated: { label: 'Initiated', tone: 'violet' },
-  in_transit: { label: 'In Transit', tone: 'blue' },
+  in_transit: { label: 'In transit', tone: 'blue' },
   paid: { label: 'Paid', tone: 'emerald' },
   failed: { label: 'Failed', tone: 'rose' },
   cancelled: { label: 'Cancelled', tone: 'slate' },

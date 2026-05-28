@@ -8,19 +8,19 @@ export const dashboardNavigation = [
   {
     href: '/bills',
     label: 'Bills',
-    description: 'Invoice intake, approval, payment readiness, and history.',
+    description: 'Primary queue for intake, approvals, payment readiness, and history.',
     icon: 'receipt',
   },
   {
     href: '/payments',
     label: 'Payments',
-    description: 'Scheduled, initiated, failed, and completed payment records.',
+    description: 'Payment objects after bill approval: pending, paid, failed, and cancelled.',
     icon: 'credit-card',
   },
   {
     href: '/vendors',
-    label: 'Vendors',
-    description: 'Vendor profiles and payment method setup.',
+    label: 'Vendors Setup',
+    description: 'Supporting setup for vendor profiles and payment methods.',
     icon: 'building',
   },
 ] as const satisfies readonly NavigationItem[];
@@ -40,15 +40,15 @@ export const billTabs = [
   },
   {
     value: 'approvals',
-    label: 'For Approval',
+    label: 'For approval',
     href: '/bills?tab=approvals',
-    description: 'Bills awaiting approval decisions.',
+    description: 'Bills currently awaiting approval decisions.',
   },
   {
     value: 'payment',
-    label: 'For Payment',
+    label: 'For payment',
     href: '/bills?tab=payment',
-    description: 'Approved bills ready to schedule or pay.',
+    description: 'Approved bills ready to schedule or release for payment.',
   },
   {
     value: 'history',
@@ -67,7 +67,7 @@ export const paymentTabs = [
   },
   {
     value: 'needs_review',
-    label: 'Needs Review',
+    label: 'Needs review',
     href: '/payments?tab=needs_review',
     description: 'Payments needing user attention.',
   },
@@ -88,8 +88,8 @@ export const paymentTabs = [
 export const billPlaceholderTable = {
   title: 'Bills table shell',
   description: [
-    'Columns and actions are standardized here;',
-    'real bill rows land in PR-5.',
+    'Queue structure is standardized here;',
+    'real bill data and behavior land in PR-5.',
   ].join(' '),
   emptyMessage: 'Bill data wiring starts in PR-5.',
   columns: [
@@ -124,8 +124,20 @@ export const billPlaceholderTable = {
       isConfigurable: true,
     },
     {
+      id: 'paymentDate',
+      label: 'Payment Date',
+      isSortable: true,
+      isConfigurable: true,
+    },
+    {
       id: 'invoiceNumber',
       label: 'Invoice #',
+      isSortable: true,
+      isConfigurable: true,
+    },
+    {
+      id: 'invoiceDate',
+      label: 'Invoice Date',
       isSortable: true,
       isConfigurable: true,
     },
@@ -134,6 +146,32 @@ export const billPlaceholderTable = {
     {
       id: 'view',
       label: 'View detail',
+    },
+    {
+      id: 'approve',
+      label: 'Approve',
+      tone: 'emerald',
+    },
+    {
+      id: 'reject',
+      label: 'Reject',
+      tone: 'rose',
+      isDestructive: true,
+    },
+    {
+      id: 'schedule',
+      label: 'Schedule payment',
+      tone: 'sky',
+    },
+    {
+      id: 'release',
+      label: 'Release for payment',
+      tone: 'blue',
+    },
+    {
+      id: 'retry',
+      label: 'Retry payment',
+      tone: 'amber',
     },
     {
       id: 'archive',
@@ -160,7 +198,7 @@ export const billPlaceholderTable = {
 export const paymentPlaceholderTable = {
   title: 'Payments table shell',
   description: [
-    'Payment columns and row actions are fixed',
+    'Payment workspace contracts are fixed here',
     'before payment behavior lands.',
   ].join(' '),
   emptyMessage: 'Payment data wiring starts in the payments feature PR.',
@@ -213,6 +251,26 @@ export const paymentPlaceholderTable = {
       tone: 'rose',
       isDestructive: true,
     },
+    {
+      id: 'release',
+      label: 'Release payment',
+      tone: 'blue',
+    },
+    {
+      id: 'editDate',
+      label: 'Edit payment date',
+      tone: 'sky',
+    },
+    {
+      id: 'retry',
+      label: 'Retry payment',
+      tone: 'amber',
+    },
+    {
+      id: 'unschedule',
+      label: 'Unschedule',
+      tone: 'slate',
+    },
   ],
   bulkActions: [
     {
@@ -225,6 +283,18 @@ export const paymentPlaceholderTable = {
       id: 'markPaid',
       label: 'Mark paid',
       tone: 'emerald',
+      requiresSelection: true,
+    },
+    {
+      id: 'retry',
+      label: 'Retry selected',
+      tone: 'amber',
+      requiresSelection: true,
+    },
+    {
+      id: 'unschedule',
+      label: 'Unschedule selected',
+      tone: 'slate',
       requiresSelection: true,
     },
   ],

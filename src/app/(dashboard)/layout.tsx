@@ -65,7 +65,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             )}
           >
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Workspace
+              Bill Pay
             </p>
             <Separator className="my-3" />
             <nav aria-label="Sidebar navigation" className="grid gap-2">

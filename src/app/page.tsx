@@ -19,7 +19,7 @@ const scaffoldRoutes = [
   {
     href: '/bills',
     label: 'Bills',
-    description: 'List shell with tabs, metrics, actions, and placeholder table.',
+    description: 'Primary Bill Pay queue with tabs and table shell.',
     icon: ReceiptText,
   },
   {
@@ -31,7 +31,7 @@ const scaffoldRoutes = [
   {
     href: '/payments',
     label: 'Payments',
-    description: 'Payment surface with tabs, metrics, actions, and table shell.',
+    description: 'Payment workspace for release, status, and reconciliation.',
     icon: CreditCard,
   },
   {
@@ -42,8 +42,8 @@ const scaffoldRoutes = [
   },
   {
     href: '/vendors',
-    label: 'Vendors',
-    description: 'Vendor surface with metrics and a placeholder table contract.',
+    label: 'Vendors Setup',
+    description: 'Supporting setup for vendor profiles and payment methods.',
     icon: Building2,
   },
   {
@@ -60,21 +60,21 @@ export default function Home() {
       <div className="mx-auto grid w-full max-w-6xl gap-6">
         <header className="grid gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">
-            PR-4 scaffold
+            Bill Pay
           </p>
           <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight">
-                Ready to start building
+                Bills and payments workspace scaffold
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-                The runtime check has been replaced with direct access to every
-                scaffolded surface this PR introduces.
+                Open each route to review the product-aligned shells for Bills,
+                Payments, and supporting vendor setup.
               </p>
             </div>
             <Button asChild>
               <Link href="/bills">
-                Open dashboard
+                Open Bills
                 <ArrowRight aria-hidden className="size-4" />
               </Link>
             </Button>

@@ -30,19 +30,19 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
     <main className="grid gap-6">
       <PageHeader
         description={[
-          'Standardized payments surface for future scheduling,',
-          'payment state, and history work.',
+          'Track and operate payment records once bills move out of',
+          'approval and into payment workflows.',
         ].join(' ')}
-        eyebrow="PR-4 scaffold"
+        eyebrow="Bill Pay"
         title="Payments"
       />
       <SurfaceTabs activeValue={activeTab} tabs={paymentTabs} />
+      <PlaceholderTable state={paymentPlaceholderTable} />
       <div className="grid gap-3 md:grid-cols-3">
         <MetricCard label="Needs review" value="-" />
         <MetricCard label="Pending" value="-" />
         <MetricCard label="Completed" value="-" />
       </div>
-      <PlaceholderTable state={paymentPlaceholderTable} />
     </main>
   );
 }
