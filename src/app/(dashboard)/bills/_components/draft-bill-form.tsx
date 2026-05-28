@@ -1,20 +1,7 @@
-'use client';
-
-import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Save,
   X,
 } from 'lucide-react';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-} from 'react';
-import {
-  useFieldArray,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -25,8 +12,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { formatMoney } from '@/lib/utils';
-import { createBillSchema } from '@/lib/validators/bill.schemas';
-import { sumMoneyStrings } from '@/lib/validators/shared';
 import type {
   BillFormOptions,
   CreateBillInput,
@@ -34,13 +19,7 @@ import type {
 } from '@/types';
 
 import { DraftBillLineItems } from './draft-bill-line-items';
-import {
-  createDefaultDraftBillFormValues,
-  draftBillToFormValues,
-  emptyDraftBillLineItem,
-  normalizeDraftBillFormValues,
-  type DraftBillFormValues,
-} from './draft-bill-form-model';
+import { useDraftBillForm } from './use-draft-bill-form';
 
 interface DraftBillFormProps {
   editingBill: DraftBillListItem | null;
@@ -65,63 +44,17 @@ export function DraftBillForm({
     || options.vendors.length === 0
     || options.categories.length === 0;
 
-  const form = useForm<DraftBillFormValues>({
-    resolver: zodResolver(createBillSchema),
-    defaultValues: createDefaultDraftBillFormValues(),
-  });
   const {
-    control,
-    handleSubmit,
-    register,
-    reset,
-  } = form;
-  const lineItems = useFieldArray({
-    control,
-    name: 'lineItems',
-  });
-  const {
-    append,
     fields,
-    remove,
-  } = lineItems;
-  const watchedLineItems = useWatch({
-    control,
-    name: 'lineItems',
-  });
-  const watchedAmount = useWatch({
-    control,
-    name: 'amount',
-  });
-  const watchedCurrency = useWatch({
-    control,
-    name: 'currency',
-  });
-
-  const lineItemTotal = useMemo(
-    () => sumMoneyStrings(watchedLineItems.map((lineItem) => lineItem.amount || '0')),
-    [watchedLineItems],
-  );
-  const totalsMatch = lineItemTotal === Number(watchedAmount);
-
-  useEffect(() => {
-    reset(
-      editingBill
-        ? draftBillToFormValues(editingBill)
-        : createDefaultDraftBillFormValues(),
-    );
-  }, [editingBill, reset]);
-
-  const appendLineItem = useCallback(() => {
-    append({ ...emptyDraftBillLineItem });
-  }, [append]);
-
-  const removeLineItem = useCallback((index: number) => {
-    remove(index);
-  }, [remove]);
-
-  function handleValidSubmit(values: DraftBillFormValues) {
-    onSubmit(normalizeDraftBillFormValues(values));
-  }
+    handleSubmit,
+    lineItemTotal,
+    register,
+    appendLineItem,
+    removeLineItem,
+    submitDraftBill,
+    totalsMatch,
+    currency,
+  } = useDraftBillForm({ editingBill, onSubmit });
 
   return (
     <Card>
@@ -153,7 +86,7 @@ export function DraftBillForm({
           </div>
         ) : null}
         {!loadError && !formDisabled ? (
-          <form className="grid gap-4" onSubmit={handleSubmit(handleValidSubmit)}>
+          <form className="grid gap-4" onSubmit={handleSubmit(submitDraftBill)}>
             <div className="grid gap-3 md:grid-cols-3">
               <label
                 className="grid gap-1 text-sm font-medium text-slate-700"
@@ -277,7 +210,7 @@ export function DraftBillForm({
               >
                 Lines total
                 {' '}
-                {formatMoney(lineItemTotal.toFixed(2), watchedCurrency)}
+                {formatMoney(lineItemTotal.toFixed(2), currency)}
               </p>
               <div className="flex gap-2">
                 {editingBill ? (
