@@ -4,6 +4,10 @@ import {
   PlaceholderTable,
   SurfaceTabs,
 } from '@/components/shared';
+import {
+  UnauthorizedError,
+  ForbiddenError,
+} from '@/lib/auth';
 import { billPlaceholderTable, billTabs } from '@/lib/navigation';
 import { getBillFormOptions, listDraftBills } from '@/lib/queries';
 
@@ -32,11 +36,19 @@ async function loadDraftBillData() {
       getBillFormOptions(),
     ]);
     return { draftBills, billFormOptions, loadError: null };
-  } catch {
+  } catch (error) {
+    let loadError = 'Draft bills could not be loaded. Check the database connection.';
+    if (error instanceof UnauthorizedError) {
+      loadError = 'Sign in before creating or viewing bills.';
+    }
+    if (error instanceof ForbiddenError) {
+      loadError = 'Your account needs Bill Pay access before creating or viewing bills.';
+    }
+
     return {
       draftBills: [],
       billFormOptions: { vendors: [], categories: [] },
-      loadError: 'Draft bills could not be loaded. Check the database connection.',
+      loadError,
     };
   }
 }

@@ -5,7 +5,10 @@ import { eq } from 'drizzle-orm';
 import { assertDatabaseConfigured, db } from '@/db';
 import { users } from '@/db/schema';
 
-import { syncCurrentClerkUserToNeon } from './user-sync';
+import {
+  ensureBootstrapAdminRole,
+  syncCurrentClerkUserToNeon,
+} from './user-sync';
 
 export class UnauthorizedError extends Error {
   readonly code = 'UNAUTHENTICATED';
@@ -39,5 +42,5 @@ export async function requireAuth(): Promise<User> {
     throw new UnauthorizedError('Authenticated Clerk user could not be synced to Neon.');
   }
 
-  return user;
+  return ensureBootstrapAdminRole(user);
 }
