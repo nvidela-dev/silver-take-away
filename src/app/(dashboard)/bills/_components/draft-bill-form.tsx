@@ -59,9 +59,9 @@ export function DraftBillForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{editingBill ? 'Edit draft bill' : 'Create draft bill'}</CardTitle>
+        <CardTitle>{editingBill ? 'Edit bill' : 'New bill'}</CardTitle>
         <CardDescription>
-          Drafts stay editable until they are submitted for approval.
+          Save bill details and line items before approval.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -221,7 +221,7 @@ export function DraftBillForm({
                 ) : null}
                 <Button disabled={isPending || !totalsMatch} type="submit">
                   <Save aria-hidden className="size-4" />
-                  {editingBill ? 'Save draft' : 'Create draft'}
+                  {editingBill ? 'Save bill' : 'Create bill'}
                 </Button>
               </div>
             </div>

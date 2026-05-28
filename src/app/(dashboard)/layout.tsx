@@ -1,102 +1,59 @@
 import { UserButton } from '@clerk/nextjs';
-import {
-  Building2, CreditCard, Menu, ReceiptText,
-} from 'lucide-react';
+import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { dashboardNavigation } from '@/lib/navigation';
-import { cn } from '@/lib/utils';
 
-import { Breadcrumb } from './_components/breadcrumb';
+import { DashboardSidebar } from './_components/dashboard-sidebar';
 
 export const dynamic = 'force-dynamic';
-
-const navIconMap = {
-  receipt: ReceiptText,
-  'credit-card': CreditCard,
-  building: Building2,
-} as const;
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (
-    <div className="min-h-dvh bg-slate-50">
-      <div className="mx-auto grid max-w-7xl gap-4 p-4">
-        <header
-          className={cn(
-            'flex items-center justify-between gap-3 rounded-lg',
-            'border border-slate-200 bg-white px-4 py-3',
-          )}
-        >
-          <Breadcrumb />
-          {clerkEnabled ? (
-            <UserButton />
-          ) : (
-            <span className="text-sm text-slate-600">User</span>
-          )}
-        </header>
-
-        <details className="rounded-lg border border-slate-200 bg-white px-3 py-2 lg:hidden">
-          <summary className="flex cursor-pointer list-none items-center gap-2 font-semibold">
-            <Menu aria-hidden className="size-4" />
-            Menu
-          </summary>
-          <nav
-            aria-label="Mobile navigation"
-            className="mt-2 flex flex-wrap gap-3"
-          >
-            {dashboardNavigation.map((item) => (
-              <Button asChild key={item.href} size="sm" variant="secondary">
-                <Link href={item.href}>{item.label}</Link>
-              </Button>
-            ))}
-          </nav>
-        </details>
-
-        <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <aside
-            className={cn(
-              'hidden self-start rounded-lg border border-slate-200',
-              'bg-white p-4 lg:block',
-            )}
-          >
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Bill Pay
-            </p>
-            <Separator className="my-3" />
-            <nav aria-label="Sidebar navigation" className="grid gap-2">
-              {dashboardNavigation.map((item) => {
-                const Icon = navIconMap[item.icon ?? 'receipt'];
-
-                return (
-                  <Link
-                    className={cn(
-                      'grid gap-1 rounded-md px-3 py-2 text-slate-800',
-                      'no-underline hover:bg-slate-100',
-                    )}
-                    href={item.href}
-                    key={item.href}
-                  >
-                    <span className="flex items-center gap-2 font-medium">
-                      <Icon aria-hidden className="size-4" />
-                      {item.label}
-                    </span>
-                    <span className="text-xs leading-5 text-slate-500">
-                      {item.description}
-                    </span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </aside>
-
-          <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-4">
+    <div className="min-h-dvh bg-emerald-950 p-0 text-slate-950 lg:p-8">
+      <div
+        className={[
+          'mx-auto flex min-h-dvh max-w-[1320px] overflow-hidden bg-white',
+          'shadow-2xl lg:min-h-[calc(100dvh-4rem)] lg:rounded-lg',
+        ].join(' ')}
+      >
+        <DashboardSidebar clerkEnabled={clerkEnabled} />
+        <div className="flex min-w-0 flex-1 flex-col bg-white">
+          <header className="border-b border-slate-200 px-4 py-3 lg:hidden">
+            <div className="flex items-center justify-between gap-3">
+              <details className="relative">
+                <summary className="flex cursor-pointer list-none items-center gap-2 font-semibold">
+                  <Menu aria-hidden className="size-4" />
+                  Menu
+                </summary>
+                <nav
+                  aria-label="Mobile navigation"
+                  className={[
+                    'absolute left-0 top-8 z-20 grid w-56 gap-1 rounded-md',
+                    'border border-slate-200 bg-white p-2 shadow-lg',
+                  ].join(' ')}
+                >
+                  {dashboardNavigation.map((item) => (
+                    <Button asChild key={item.href} size="sm" variant="ghost">
+                      <Link href={item.href}>{item.label}</Link>
+                    </Button>
+                  ))}
+                </nav>
+              </details>
+              {clerkEnabled ? (
+                <UserButton />
+              ) : (
+                <span className="text-sm text-slate-600">User</span>
+              )}
+            </div>
+          </header>
+          <div className="min-w-0 flex-1 overflow-x-hidden px-4 py-5 sm:px-6 lg:px-10 lg:py-9">
             {children}
-          </section>
+          </div>
         </div>
       </div>
     </div>

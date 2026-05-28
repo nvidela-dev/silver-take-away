@@ -29,7 +29,7 @@ export const billTabs = [
   {
     value: 'overview',
     label: 'Overview',
-    href: '/bills',
+    href: '/bills?tab=overview',
     description: 'Bill counts and operational summary.',
   },
   {

@@ -24,6 +24,7 @@ interface DraftBillsTableProps {
   bills: DraftBillListItem[];
   deleteCandidateId: string | null;
   onCancelDelete: () => void;
+  onCreate: () => void;
   onDelete: (id: string) => void;
   onEdit: (bill: DraftBillListItem) => void;
   onRequestDelete: (id: string) => void;
@@ -126,6 +127,7 @@ export function DraftBillsTable({
   bills,
   deleteCandidateId,
   onCancelDelete,
+  onCreate,
   onDelete,
   onEdit,
   onRequestDelete,
@@ -133,10 +135,22 @@ export function DraftBillsTable({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Drafts</CardTitle>
-        <CardDescription>
-          Bills currently being prepared before approval.
-        </CardDescription>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle>Drafts</CardTitle>
+            <CardDescription>
+              Bills currently being prepared before approval.
+            </CardDescription>
+          </div>
+          <div className="flex gap-2">
+            <Button disabled type="button" variant="outline">
+              Recurring bills
+            </Button>
+            <Button onClick={onCreate} type="button" variant="accent">
+              New bill
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {bills.length === 0 ? (

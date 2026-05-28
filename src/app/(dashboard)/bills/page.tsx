@@ -22,7 +22,7 @@ function resolveActiveTab(tab?: string | string[]) {
     return value;
   }
 
-  return 'overview';
+  return 'drafts';
 }
 
 async function loadDraftBillData() {
@@ -55,10 +55,6 @@ export default async function BillsPage({ searchParams }: BillsPageProps) {
   return (
     <main className="grid gap-6">
       <PageHeader
-        description={[
-          'Review, approve, and prepare bills for payment from a single',
-          'queue-oriented workspace.',
-        ].join(' ')}
         eyebrow="Bill Pay"
         title="Bills"
       />

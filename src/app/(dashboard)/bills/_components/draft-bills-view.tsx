@@ -28,6 +28,7 @@ interface DraftBillsViewProps {
 export function DraftBillsView({ bills, loadError, options }: DraftBillsViewProps) {
   const router = useRouter();
   const [editingBill, setEditingBill] = useState<DraftBillListItem | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -35,11 +36,18 @@ export function DraftBillsView({ bills, loadError, options }: DraftBillsViewProp
   const selectBillForEdit = useCallback((bill: DraftBillListItem | null) => {
     setEditingBill(bill);
     setFormError(null);
+    setIsFormOpen(Boolean(bill));
   }, []);
 
   const cancelEdit = useCallback(() => {
     selectBillForEdit(null);
   }, [selectBillForEdit]);
+
+  const openCreateForm = useCallback(() => {
+    setEditingBill(null);
+    setFormError(null);
+    setIsFormOpen(true);
+  }, []);
 
   const cancelDelete = useCallback(() => {
     setDeleteCandidateId(null);
@@ -90,19 +98,32 @@ export function DraftBillsView({ bills, loadError, options }: DraftBillsViewProp
 
   return (
     <div className="grid gap-5">
-      <DraftBillForm
-        editingBill={editingBill}
-        formError={formError}
-        isPending={isPending}
-        loadError={loadError}
-        onCancelEdit={cancelEdit}
-        onSubmit={onSubmit}
-        options={options}
-      />
+      {isFormOpen ? (
+        <DraftBillForm
+          editingBill={editingBill}
+          formError={formError}
+          isPending={isPending}
+          loadError={loadError}
+          onCancelEdit={cancelEdit}
+          onSubmit={onSubmit}
+          options={options}
+        />
+      ) : null}
+      {!isFormOpen && formError ? (
+        <div
+          className={[
+            'rounded-md border border-rose-200 bg-rose-50 p-4',
+            'text-sm text-rose-950',
+          ].join(' ')}
+        >
+          {formError}
+        </div>
+      ) : null}
       <DraftBillsTable
         bills={bills}
         deleteCandidateId={deleteCandidateId}
         onCancelDelete={cancelDelete}
+        onCreate={openCreateForm}
         onDelete={onDelete}
         onEdit={selectBillForEdit}
         onRequestDelete={requestDelete}
