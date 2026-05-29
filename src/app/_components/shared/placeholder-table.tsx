@@ -1,11 +1,11 @@
-import { ActionToolbar } from '@/components/shared/action-toolbar';
+import { ActionToolbar } from '@/app/_components/shared/action-toolbar';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/app/_components/ui/card';
 import type { PlaceholderTableState } from '@/types';
 
 interface PlaceholderTableProps {

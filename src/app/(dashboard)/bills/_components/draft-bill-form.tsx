@@ -3,7 +3,7 @@ import {
   X,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/app/_components/ui/button';
 import { formatMoney } from '@/lib/utils';
 import type {
   BillFormOptions,

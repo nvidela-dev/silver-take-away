@@ -8,7 +8,7 @@ import type {
   UseFormRegister,
 } from 'react-hook-form';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/app/_components/ui/button';
 import type { DraftBillFormInput } from '@/lib/validators/bill.schemas';
 import type { BillFormOptions } from '@/types';
 

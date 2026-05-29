@@ -1,4 +1,4 @@
-import { DetailPlaceholder } from '@/components/shared';
+import { DetailPlaceholder } from '@/app/_components/shared';
 
 interface BillDetailPageProps {
   params: Promise<{

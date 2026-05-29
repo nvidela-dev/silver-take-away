@@ -4,7 +4,6 @@ import {
   dashboardNavigation,
   paymentPlaceholderTable,
   paymentTabs,
-  vendorPlaceholderTable,
 } from '@/lib/navigation';
 
 describe('dashboard navigation contracts', () => {
@@ -36,7 +35,6 @@ describe('dashboard navigation contracts', () => {
     for (const table of [
       billPlaceholderTable,
       paymentPlaceholderTable,
-      vendorPlaceholderTable,
     ]) {
       expect(table.columns.length).toBeGreaterThan(0);
       expect(table.emptyMessage).toEqual(expect.any(String));

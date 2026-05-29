@@ -3,7 +3,7 @@ import {
   PageHeader,
   PlaceholderTable,
   SurfaceTabs,
-} from '@/components/shared';
+} from '@/app/_components/shared';
 import {
   UnauthorizedError,
   ForbiddenError,

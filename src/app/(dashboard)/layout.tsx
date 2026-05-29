@@ -3,7 +3,7 @@ import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/app/_components/ui/button';
 import { dashboardNavigation } from '@/lib/navigation';
 
 import { DashboardSidebar } from './_components/dashboard-sidebar';

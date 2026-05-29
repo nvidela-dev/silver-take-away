@@ -10,7 +10,7 @@ import {
   useTransition,
 } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/app/_components/ui/button';
 import { createBill } from '@/lib/actions/bills/create-bill';
 import { deleteBill } from '@/lib/actions/bills/delete-bill';
 import { updateBill } from '@/lib/actions/bills/update-bill';

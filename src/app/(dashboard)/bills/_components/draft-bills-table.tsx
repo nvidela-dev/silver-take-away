@@ -7,15 +7,15 @@ import {
 } from 'lucide-react';
 import { useCallback } from 'react';
 
-import { StatusBadge } from '@/components/shared';
-import { Button } from '@/components/ui/button';
+import { StatusBadge } from '@/app/_components/shared';
+import { Button } from '@/app/_components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/app/_components/ui/card';
 import { billStatusDisplay } from '@/lib/display';
 import { formatDate, formatMoney } from '@/lib/utils';
 import type { DraftBillListItem } from '@/types';
