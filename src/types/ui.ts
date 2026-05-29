@@ -4,7 +4,7 @@ export interface NavigationItem {
   href: string;
   label: string;
   description: string;
-  icon?: 'receipt' | 'credit-card' | 'building';
+  icon?: 'receipt' | 'credit-card';
 }
 
 export interface SurfaceTab {

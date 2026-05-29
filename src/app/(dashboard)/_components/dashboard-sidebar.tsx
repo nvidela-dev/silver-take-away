@@ -2,7 +2,6 @@
 
 import { UserButton } from '@clerk/nextjs';
 import {
-  Building2,
   ChevronDown,
   CreditCard,
   ReceiptText,
@@ -16,7 +15,6 @@ import { cn } from '@/lib/utils';
 const navIconMap = {
   receipt: ReceiptText,
   'credit-card': CreditCard,
-  building: Building2,
 } as const;
 
 interface DashboardSidebarProps {

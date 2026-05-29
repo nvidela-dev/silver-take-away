@@ -17,12 +17,6 @@ export const dashboardNavigation = [
     description: 'Payment objects after bill approval: pending, paid, failed, and cancelled.',
     icon: 'credit-card',
   },
-  {
-    href: '/vendors',
-    label: 'Vendors Setup',
-    description: 'Supporting setup for vendor profiles and payment methods.',
-    icon: 'building',
-  },
 ] as const satisfies readonly NavigationItem[];
 
 export const billTabs = [
