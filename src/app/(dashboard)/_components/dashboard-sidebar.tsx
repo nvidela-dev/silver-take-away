@@ -53,8 +53,11 @@ export function DashboardSidebar({ clerkEnabled }: DashboardSidebarProps) {
         </div>
       </div>
 
-      <nav aria-label="Sidebar navigation" className="grid flex-1 gap-1 p-3">
-        <p className="px-2 pb-2 pt-1 text-xs font-semibold text-slate-500">
+      <nav
+        aria-label="Sidebar navigation"
+        className="flex flex-1 flex-col gap-0.5 p-3"
+      >
+        <p className="px-2 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
           Bill Pay
         </p>
         {dashboardNavigation.map((item) => {
@@ -67,7 +70,7 @@ export function DashboardSidebar({ clerkEnabled }: DashboardSidebarProps) {
             <Link
               className={cn(
                 [
-                  'flex items-center gap-2 rounded px-2 py-2 text-sm',
+                  'flex h-9 items-center gap-2 rounded px-2 text-sm',
                   'font-medium no-underline transition-colors',
                 ].join(' '),
                 isActive
