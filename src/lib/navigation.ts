@@ -8,7 +8,7 @@ export const dashboardNavigation = [
   {
     href: '/bills',
     label: 'Bills',
-    description: 'Primary queue for intake, approvals, payment readiness, and history.',
+    description: 'Primary queue for intake, approvals, and payment readiness.',
     icon: 'receipt',
   },
   {
@@ -30,7 +30,7 @@ export const billTabs = [
     value: 'overview',
     label: 'Overview',
     href: '/bills?tab=overview',
-    description: 'Bill counts and operational summary.',
+    description: 'Bills grouped by operational status.',
   },
   {
     value: 'drafts',
@@ -49,12 +49,6 @@ export const billTabs = [
     label: 'For payment',
     href: '/bills?tab=payment',
     description: 'Approved bills ready to schedule or release for payment.',
-  },
-  {
-    value: 'history',
-    label: 'History',
-    href: '/bills?tab=history',
-    description: 'Paid, rejected, and archived bills.',
   },
 ] as const satisfies readonly SurfaceTab[];
 
@@ -84,116 +78,6 @@ export const paymentTabs = [
     description: 'Completed, failed, and cancelled payments.',
   },
 ] as const satisfies readonly SurfaceTab[];
-
-export const billPlaceholderTable = {
-  title: 'Bills table shell',
-  description: [
-    'Queue structure is standardized here;',
-    'real bill data and behavior land in PR-5.',
-  ].join(' '),
-  emptyMessage: 'Bill data wiring starts in PR-5.',
-  columns: [
-    {
-      id: 'select',
-      label: '',
-      isConfigurable: false,
-    },
-    {
-      id: 'vendor',
-      label: 'Vendor / Owner',
-      isSortable: true,
-      isConfigurable: true,
-    },
-    {
-      id: 'status',
-      label: 'Status',
-      isSortable: true,
-      isConfigurable: true,
-    },
-    {
-      id: 'amount',
-      label: 'Amount',
-      align: 'right',
-      isSortable: true,
-      isConfigurable: true,
-    },
-    {
-      id: 'dueDate',
-      label: 'Due Date',
-      isSortable: true,
-      isConfigurable: true,
-    },
-    {
-      id: 'paymentDate',
-      label: 'Payment Date',
-      isSortable: true,
-      isConfigurable: true,
-    },
-    {
-      id: 'invoiceNumber',
-      label: 'Invoice #',
-      isSortable: true,
-      isConfigurable: true,
-    },
-    {
-      id: 'invoiceDate',
-      label: 'Invoice Date',
-      isSortable: true,
-      isConfigurable: true,
-    },
-  ],
-  actions: [
-    {
-      id: 'view',
-      label: 'View detail',
-    },
-    {
-      id: 'approve',
-      label: 'Approve',
-      tone: 'emerald',
-    },
-    {
-      id: 'reject',
-      label: 'Reject',
-      tone: 'rose',
-      isDestructive: true,
-    },
-    {
-      id: 'schedule',
-      label: 'Schedule payment',
-      tone: 'sky',
-    },
-    {
-      id: 'release',
-      label: 'Release for payment',
-      tone: 'blue',
-    },
-    {
-      id: 'retry',
-      label: 'Retry payment',
-      tone: 'amber',
-    },
-    {
-      id: 'archive',
-      label: 'Archive',
-      tone: 'amber',
-    },
-  ],
-  bulkActions: [
-    {
-      id: 'approve',
-      label: 'Approve selected',
-      tone: 'emerald',
-      requiresSelection: true,
-    },
-    {
-      id: 'archive',
-      label: 'Archive selected',
-      tone: 'amber',
-      requiresSelection: true,
-    },
-  ],
-} as const satisfies PlaceholderTableState;
 
 export const paymentPlaceholderTable = {
   title: 'Payments table shell',

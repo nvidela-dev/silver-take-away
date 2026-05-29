@@ -1,17 +1,19 @@
 import {
-  MetricCard,
   PageHeader,
-  PlaceholderTable,
   SurfaceTabs,
 } from '@/app/_components/shared';
 import {
   UnauthorizedError,
   ForbiddenError,
 } from '@/lib/auth';
-import { billPlaceholderTable, billTabs } from '@/lib/navigation';
+import { billTabs } from '@/lib/navigation';
 import { getBillFormOptions, listDraftBills } from '@/lib/queries';
 
-import { DraftBillsView } from './_components';
+import {
+  BillsFilteredView,
+  BillsStatusOverview,
+  DraftBillsView,
+} from './_components';
 
 interface BillsPageProps {
   searchParams: Promise<{
@@ -56,7 +58,8 @@ async function loadDraftBillData() {
 export default async function BillsPage({ searchParams }: BillsPageProps) {
   const params = await searchParams;
   const activeTab = resolveActiveTab(params.tab);
-  const draftData = activeTab === 'drafts'
+  const shouldLoadDraftData = activeTab === 'overview' || activeTab === 'drafts';
+  const draftData = shouldLoadDraftData
     ? await loadDraftBillData()
     : {
       draftBills: [],
@@ -71,22 +74,28 @@ export default async function BillsPage({ searchParams }: BillsPageProps) {
         title="Bills"
       />
       <SurfaceTabs activeValue={activeTab} tabs={billTabs} />
+      {activeTab === 'overview' ? (
+        <BillsStatusOverview draftBills={draftData.draftBills} />
+      ) : null}
       {activeTab === 'drafts' ? (
         <DraftBillsView
           bills={draftData.draftBills}
           loadError={draftData.loadError}
           options={draftData.billFormOptions}
         />
-      ) : (
-        <>
-          <PlaceholderTable state={billPlaceholderTable} />
-          <div className="grid gap-3 md:grid-cols-3">
-            <MetricCard label="Drafts" value="-" />
-            <MetricCard label="For approval" value="-" />
-            <MetricCard label="For payment" value="-" />
-          </div>
-        </>
-      )}
+      ) : null}
+      {activeTab === 'approvals' ? (
+        <BillsFilteredView
+          description="Bills awaiting an approval decision."
+          title="For approval"
+        />
+      ) : null}
+      {activeTab === 'payment' ? (
+        <BillsFilteredView
+          description="Approved bills ready to schedule or release for payment."
+          title="For payment"
+        />
+      ) : null}
     </main>
   );
 }

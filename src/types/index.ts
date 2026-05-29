@@ -147,8 +147,7 @@ export interface VendorWithRelations extends Vendor {
 export type BillTab = | 'overview'
   | 'drafts'
   | 'approvals'
-  | 'payment'
-  | 'history';
+  | 'payment';
 
 export type PaymentTab = 'overview' | 'needs_review' | 'pending' | 'history';
 

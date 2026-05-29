@@ -1,5 +1,4 @@
 import {
-  billPlaceholderTable,
   billTabs,
   dashboardNavigation,
   paymentPlaceholderTable,
@@ -21,7 +20,6 @@ describe('dashboard navigation contracts', () => {
       'drafts',
       'approvals',
       'payment',
-      'history',
     ]);
     expect(paymentTabs.map((tab) => tab.value)).toEqual([
       'overview',
@@ -31,14 +29,9 @@ describe('dashboard navigation contracts', () => {
     ]);
   });
 
-  it('standardizes placeholder table state without shipping rows', () => {
-    for (const table of [
-      billPlaceholderTable,
-      paymentPlaceholderTable,
-    ]) {
-      expect(table.columns.length).toBeGreaterThan(0);
-      expect(table.emptyMessage).toEqual(expect.any(String));
-      expect(table.title).toEqual(expect.any(String));
-    }
+  it('keeps payment placeholder table state until payment data lands', () => {
+    expect(paymentPlaceholderTable.columns.length).toBeGreaterThan(0);
+    expect(paymentPlaceholderTable.emptyMessage).toEqual(expect.any(String));
+    expect(paymentPlaceholderTable.title).toEqual(expect.any(String));
   });
 });
