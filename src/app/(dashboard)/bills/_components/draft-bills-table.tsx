@@ -23,8 +23,8 @@ import type { DraftBillListItem } from '@/types';
 interface DraftBillsTableProps {
   bills: DraftBillListItem[];
   deleteCandidateId: string | null;
+  isLoading: boolean;
   onCancelDelete: () => void;
-  onCreate: () => void;
   onDelete: (id: string) => void;
   onEdit: (bill: DraftBillListItem) => void;
   onRequestDelete: (id: string) => void;
@@ -126,8 +126,8 @@ function DraftBillRow({
 export function DraftBillsTable({
   bills,
   deleteCandidateId,
+  isLoading,
   onCancelDelete,
-  onCreate,
   onDelete,
   onEdit,
   onRequestDelete,
@@ -142,56 +142,51 @@ export function DraftBillsTable({
               Bills currently being prepared before approval.
             </CardDescription>
           </div>
-          <div className="flex gap-2">
-            <Button disabled type="button" variant="outline">
-              Recurring bills
-            </Button>
-            <Button onClick={onCreate} type="button" variant="accent">
-              New bill
-            </Button>
-          </div>
         </div>
       </CardHeader>
       <CardContent>
-        {bills.length === 0 ? (
-          <div
-            className={[
-              'rounded-md border border-dashed border-slate-300 p-6',
-              'text-center text-sm text-slate-600',
-            ].join(' ')}
-          >
-            No draft bills yet.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+        <div className="overflow-x-auto" aria-busy={isLoading}>
+          <table className="w-full min-w-[760px] text-left text-sm">
+            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+              <tr>
+                <th className="py-3 pr-4">Vendor</th>
+                <th className="py-3 pr-4">Status</th>
+                <th className="py-3 pr-4 text-right">Amount</th>
+                <th className="py-3 pr-4">Due date</th>
+                <th className="py-3 pr-4">Invoice #</th>
+                <th className="py-3 pr-4">Lines</th>
+                <th className="py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {isLoading ? (
                 <tr>
-                  <th className="py-3 pr-4">Vendor</th>
-                  <th className="py-3 pr-4">Status</th>
-                  <th className="py-3 pr-4 text-right">Amount</th>
-                  <th className="py-3 pr-4">Due date</th>
-                  <th className="py-3 pr-4">Invoice #</th>
-                  <th className="py-3 pr-4">Lines</th>
-                  <th className="py-3 text-right">Actions</th>
+                  <td className="py-8 text-center text-slate-600" colSpan={7}>
+                    Loading draft bills...
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {bills.map((bill) => (
-                  <DraftBillRow
-                    bill={bill}
-                    isDeleteCandidate={deleteCandidateId === bill.id}
-                    key={bill.id}
-                    onCancelDelete={onCancelDelete}
-                    onDelete={onDelete}
-                    onEdit={onEdit}
-                    onRequestDelete={onRequestDelete}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ) : null}
+              {!isLoading && bills.length === 0 ? (
+                <tr>
+                  <td className="py-8 text-center text-slate-600" colSpan={7}>
+                    No draft bills yet.
+                  </td>
+                </tr>
+              ) : null}
+              {!isLoading ? bills.map((bill) => (
+                <DraftBillRow
+                  bill={bill}
+                  isDeleteCandidate={deleteCandidateId === bill.id}
+                  key={bill.id}
+                  onCancelDelete={onCancelDelete}
+                  onDelete={onDelete}
+                  onEdit={onEdit}
+                  onRequestDelete={onRequestDelete}
+                />
+              )) : null}
+            </tbody>
+          </table>
+        </div>
       </CardContent>
     </Card>
   );

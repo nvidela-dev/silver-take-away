@@ -1,19 +1,11 @@
 import {
-  PageHeader,
-  SurfaceTabs,
-} from '@/app/_components/shared';
-import {
   UnauthorizedError,
   ForbiddenError,
 } from '@/lib/auth';
 import { billTabs } from '@/lib/navigation';
 import { getBillFormOptions, listDraftBills } from '@/lib/queries';
 
-import {
-  BillsFilteredView,
-  BillsStatusOverview,
-  DraftBillsView,
-} from './_components';
+import { BillsWorkspace } from './_components';
 
 interface BillsPageProps {
   searchParams: Promise<{
@@ -31,7 +23,7 @@ function resolveActiveTab(tab?: string | string[]) {
   return 'drafts';
 }
 
-async function loadDraftBillData() {
+async function loadBillWorkspaceData() {
   try {
     const [draftBills, billFormOptions] = await Promise.all([
       listDraftBills(),
@@ -58,44 +50,14 @@ async function loadDraftBillData() {
 export default async function BillsPage({ searchParams }: BillsPageProps) {
   const params = await searchParams;
   const activeTab = resolveActiveTab(params.tab);
-  const shouldLoadDraftData = activeTab === 'overview' || activeTab === 'drafts';
-  const draftData = shouldLoadDraftData
-    ? await loadDraftBillData()
-    : {
-      draftBills: [],
-      billFormOptions: { vendors: [], categories: [] },
-      loadError: null,
-    };
+  const workspaceData = await loadBillWorkspaceData();
 
   return (
-    <main className="grid gap-6">
-      <PageHeader
-        eyebrow="Bill Pay"
-        title="Bills"
-      />
-      <SurfaceTabs activeValue={activeTab} tabs={billTabs} />
-      {activeTab === 'overview' ? (
-        <BillsStatusOverview draftBills={draftData.draftBills} />
-      ) : null}
-      {activeTab === 'drafts' ? (
-        <DraftBillsView
-          bills={draftData.draftBills}
-          loadError={draftData.loadError}
-          options={draftData.billFormOptions}
-        />
-      ) : null}
-      {activeTab === 'approvals' ? (
-        <BillsFilteredView
-          description="Bills awaiting an approval decision."
-          title="For approval"
-        />
-      ) : null}
-      {activeTab === 'payment' ? (
-        <BillsFilteredView
-          description="Approved bills ready to schedule or release for payment."
-          title="For payment"
-        />
-      ) : null}
-    </main>
+    <BillsWorkspace
+      activeTab={activeTab}
+      bills={workspaceData.draftBills}
+      loadError={workspaceData.loadError}
+      options={workspaceData.billFormOptions}
+    />
   );
 }
