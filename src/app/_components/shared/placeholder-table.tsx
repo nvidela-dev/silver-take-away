@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/app/_components/ui/card';
-import type { PlaceholderTableState } from '@/types';
+import type { PlaceholderTableState } from '@/app/_types/table';
 
 interface PlaceholderTableProps {
   state: PlaceholderTableState;

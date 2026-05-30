@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { PaymentMethodType, PaymentStatus } from '@/types';
+import type { PaymentMethodType, PaymentStatus } from '@/lib/types/enums';
 
 export const uuidSchema = z.uuid();
 

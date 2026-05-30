@@ -1,8 +1,13 @@
+// Navigation configuration: sidebar entries plus per-workspace tab bars
+// and the placeholder-table contract for the payments surface. Lives here
+// (not under @/lib) because it is pure UI config and is only consumed by
+// app/ routes and components.
+
 import type {
   NavigationItem,
-  PlaceholderTableState,
   SurfaceTab,
-} from '@/types';
+} from '@/app/_types/navigation';
+import type { PlaceholderTableState } from '@/app/_types/table';
 
 export const dashboardNavigation = [
   {

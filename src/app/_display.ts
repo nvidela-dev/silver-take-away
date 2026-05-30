@@ -1,10 +1,15 @@
+// Display mappings (label + tone) for each domain enum value. Consumed by
+// status badges and any other surface that renders an enum as text. Lives
+// here (not under @/lib) because it pairs UI tones with domain values and
+// is only consumed by app/ code.
+
+import type { StatusDisplayMeta } from '@/app/_types/style';
 import type {
   BillStatus,
   PaymentMethodType,
   PaymentStatus,
-  StatusDisplayMeta,
   UserRole,
-} from '@/types';
+} from '@/lib/types/enums';
 
 export const billStatusDisplay = {
   draft: { label: 'Draft', tone: 'slate' },

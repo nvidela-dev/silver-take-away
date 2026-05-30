@@ -7,7 +7,7 @@ import {
   BillNotFoundError,
 } from '@/lib/repositories/bills';
 import { DraftBillGuardError } from '@/lib/services/bill-transitions';
-import type { ActionResult } from '@/types';
+import type { ActionResult } from '@/lib/types/common';
 
 export function toBillActionError(error: unknown): ActionResult<never> {
   if (

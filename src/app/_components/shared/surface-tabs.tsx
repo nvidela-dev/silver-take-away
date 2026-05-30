@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
-import type { SurfaceTab } from '@/types';
+import type { SurfaceTab } from '@/app/_types/navigation';
 
 interface SurfaceTabsProps {
   tabs: readonly SurfaceTab[];

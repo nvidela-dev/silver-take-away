@@ -4,11 +4,9 @@ import {
   updateDraftBill,
 } from '@/lib/repositories/bills';
 import { assertDraftBillEditable } from '@/lib/services/bill-transitions';
-import type {
-  Bill,
-  UpdateBillInput,
-  User,
-} from '@/types';
+import type { Bill } from '@/lib/types/bill/bill';
+import type { UpdateBillInput } from '@/lib/types/bill/inputs';
+import type { User } from '@/lib/types/user';
 
 export async function updateBillUseCase(
   input: UpdateBillInput,

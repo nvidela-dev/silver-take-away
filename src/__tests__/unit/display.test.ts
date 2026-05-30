@@ -3,14 +3,14 @@ import {
   paymentMethodDisplay,
   paymentStatusDisplay,
   userRoleDisplay,
-} from '@/lib/display';
+} from '@/app/_display';
+import type { SurfaceTone } from '@/app/_types/style';
 import type {
   BillStatus,
   PaymentMethodType,
   PaymentStatus,
-  SurfaceTone,
   UserRole,
-} from '@/types';
+} from '@/lib/types/enums';
 
 const billStatuses: BillStatus[] = [
   'draft',

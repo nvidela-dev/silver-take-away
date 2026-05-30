@@ -10,12 +10,9 @@ import {
   bills,
 } from '@/db/schema';
 import { createUuid } from '@/lib/id';
-import type {
-  Bill,
-  CreateBillInput,
-  UpdateBillInput,
-  User,
-} from '@/types';
+import type { Bill } from '@/lib/types/bill/bill';
+import type { CreateBillInput, UpdateBillInput } from '@/lib/types/bill/inputs';
+import type { User } from '@/lib/types/user';
 
 import { toBillActivityLogInsert } from '../activity-log.repo';
 import { toBillLineItemInsertRecords } from '../line-item.repo';

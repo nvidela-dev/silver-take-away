@@ -7,11 +7,9 @@ import { requireAuth } from '@/lib/auth/require-auth';
 import { requireRole } from '@/lib/auth/require-role';
 import { createBillUseCase } from '@/lib/use-cases/bills';
 import { createBillSchema } from '@/lib/validators/bill.schemas';
-import type {
-  ActionResult,
-  Bill,
-  CreateBillInput,
-} from '@/types';
+import type { Bill } from '@/lib/types/bill/bill';
+import type { CreateBillInput } from '@/lib/types/bill/inputs';
+import type { ActionResult } from '@/lib/types/common';
 
 import { toBillActionError } from './errors';
 import { BILL_EDITOR_ROLES } from './permissions';

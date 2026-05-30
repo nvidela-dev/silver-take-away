@@ -3,7 +3,7 @@ import {
   dashboardNavigation,
   paymentPlaceholderTable,
   paymentTabs,
-} from '@/lib/navigation';
+} from '@/app/_navigation';
 
 describe('dashboard navigation contracts', () => {
   it('keeps stable primary surfaces for PR-5+ feature work', () => {

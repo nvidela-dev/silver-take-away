@@ -1,4 +1,5 @@
-import type { BillActionType, BillStatus } from '@/types';
+import type { BillActionType } from '@/lib/types/bill/actions';
+import type { BillStatus } from '@/lib/types/enums';
 
 /**
  * Status transitions driven by user actions.

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/app/_components/ui/button';
-import { dashboardNavigation } from '@/lib/navigation';
+import { dashboardNavigation } from '@/app/_navigation';
 
 import { DashboardSidebar } from './_components/dashboard-sidebar';
 

@@ -1,4 +1,5 @@
-import type { Bill, BillStatus } from '@/types';
+import type { Bill } from '@/lib/types/bill/bill';
+import type { BillStatus } from '@/lib/types/enums';
 
 export class DraftBillGuardError extends Error {
   readonly code = 'BILL_NOT_DRAFT';

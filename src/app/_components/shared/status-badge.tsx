@@ -1,5 +1,5 @@
 import { Badge } from '@/app/_components/ui/badge';
-import type { StatusDisplayMeta, SurfaceTone } from '@/types';
+import type { StatusDisplayMeta, SurfaceTone } from '@/app/_types/style';
 
 const dotToneClass: Record<SurfaceTone, string> = {
   slate: 'bg-slate-500',

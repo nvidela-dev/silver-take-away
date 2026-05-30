@@ -9,7 +9,7 @@ import type {
 
 import { Button } from '@/app/_components/ui/button';
 import type { DraftBillFormInput } from '@/lib/validators/bill.schemas';
-import type { BillFormOptions } from '@/types';
+import type { BillFormOptions } from '@/lib/types/bill/views';
 
 import { DraftBillLineItemRow } from './draft-bill-line-item-row';
 

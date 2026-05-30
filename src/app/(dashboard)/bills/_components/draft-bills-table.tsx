@@ -10,9 +10,9 @@ import { useCallback } from 'react';
 import { StatusBadge } from '@/app/_components/shared';
 import { Button } from '@/app/_components/ui/button';
 import { Card } from '@/app/_components/ui/card';
-import { billStatusDisplay } from '@/lib/display';
+import { billStatusDisplay } from '@/app/_display';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
-import type { DraftBillListItem } from '@/types';
+import type { DraftBillListItem } from '@/lib/types/bill/views';
 
 interface DraftBillsTableProps {
   bills: DraftBillListItem[];
