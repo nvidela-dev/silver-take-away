@@ -214,9 +214,6 @@ export const bulkEditBillsSchema = z
 
 export const billIdSchema = uuidSchema;
 
-// Transitions don't carry expectedUpdatedAt — the WHERE status=$current clause
-// in the UPDATE provides the concurrency guarantee (a stale transition won't
-// match because someone else has already moved the bill to a new status).
 const noteField = z.string().max(1000);
 
 export const submitForApprovalSchema = z.object({

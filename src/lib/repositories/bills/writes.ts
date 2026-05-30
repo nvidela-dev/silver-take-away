@@ -159,11 +159,6 @@ export async function applyBillStatusTransition(
   const now = new Date();
   const metadata = input.note ? { note: input.note } : null;
 
-  // The WHERE status=$currentStatus clause is the concurrency token: if
-  // someone else has already transitioned the bill, the status no longer
-  // matches and the UPDATE returns 0 rows. The caller has already verified
-  // the bill exists via getBillById, so a 0-row result here means a stale
-  // read, not a missing row.
   const [updatedBills] = await db.batch([
     db
       .update(bills)

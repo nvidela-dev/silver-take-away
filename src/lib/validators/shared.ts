@@ -2,10 +2,6 @@ import { z } from 'zod';
 
 import type { PaymentMethodType, PaymentStatus } from '@/lib/types/enums';
 
-// `z.guid()` validates the 8-4-4-4-12 hex shape without enforcing RFC version
-// digits, so it accepts both real v4 UUIDs from crypto.randomUUID() and the
-// seeded fixture UUIDs that use 0 in the version position (e.g.
-// `22000000-0000-0000-0000-000000000001`).
 export const uuidSchema = z.guid();
 
 /**

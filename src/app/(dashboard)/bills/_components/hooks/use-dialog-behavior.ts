@@ -17,17 +17,6 @@ interface UseDialogBehaviorOptions {
   enabled?: boolean;
 }
 
-/**
- * Wires the standard modal dialog behaviours onto a container element:
- *   - locks body scroll while open
- *   - focuses the first focusable inside the container on open
- *   - closes on Escape (event.stopPropagation so nested handlers don't fire)
- *   - traps Tab / Shift-Tab inside the container
- *   - restores focus to the previously-focused element on close
- *
- * Pass `enabled: false` when the dialog markup stays mounted but is logically
- * closed; the hook is a no-op until it flips true.
- */
 export function useDialogBehavior({
   containerRef,
   onClose,
