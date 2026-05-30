@@ -24,11 +24,17 @@ import { deleteBill } from '@/lib/actions/bills/delete-bill';
 import { updateBill } from '@/lib/actions/bills/update-bill';
 import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
+import type {
+  BillFilterOptions,
+  BillListResult,
+} from '@/lib/types/bill/filters';
+import type { BillStatus } from '@/lib/types/enums';
 import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
 
 import { BillTransitionDialog } from './bill-transition-dialog';
 import { BillsStatusOverview } from './bills-status-overview';
 import { BillsTable } from './bills-table';
+import { BillsTablePagination } from './bills-table-pagination';
 import {
   approvalActionsColumn,
   billReadColumns,
@@ -36,23 +42,33 @@ import {
 } from './bills-table-columns';
 import { ColumnPicker } from './column-picker';
 import { DraftBillForm } from './draft-bill-form';
+import {
+  BillFilterBar,
+  type BillFilterOptionsBag,
+} from './filters/bill-filter-bar';
+import type { BillFilterTab } from './filters/bill-filter-registry';
+import { useBillFilters } from './hooks/use-bill-filters';
 import { useBillTransitions } from './hooks/use-bill-transitions';
 import { useColumnVisibility } from './hooks/use-column-visibility';
 import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
+const PAYMENT_TAB_STATUSES: BillStatus[] = ['approved', 'scheduled', 'initiated'];
+
 interface BillsWorkspaceProps {
   activeTab: string;
-  approvalBills: BillListItem[];
-  draftBills: BillListItem[];
+  approvalBills: BillListResult<BillListItem>;
+  draftBills: BillListResult<BillListItem>;
+  filterOptions: BillFilterOptions;
   loadError: string | null;
   options: BillFormOptions;
-  paymentBills: BillListItem[];
+  paymentBills: BillListResult<BillListItem>;
 }
 
 export function BillsWorkspace({
   activeTab,
   approvalBills,
   draftBills,
+  filterOptions,
   loadError,
   options,
   paymentBills,
@@ -72,11 +88,13 @@ export function BillsWorkspace({
     onDirectError: setFormError,
   });
 
-  // Re-derive editingBill from the refreshed draft list so optimistic-concurrency
-  // tokens (updatedAt) stay current after router.refresh().
+  const filtersController = useBillFilters();
+
   const editingBill = useMemo(
-    () => (editingBillId ? draftBills.find((bill) => bill.id === editingBillId) ?? null : null),
-    [draftBills, editingBillId],
+    () => (editingBillId
+      ? draftBills.items.find((bill) => bill.id === editingBillId) ?? null
+      : null),
+    [draftBills.items, editingBillId],
   );
 
   const closeForm = useCallback(() => {
@@ -174,6 +192,46 @@ export function BillsWorkspace({
   const approvalVisibility = useColumnVisibility(approvalColumns);
   const paymentVisibility = useColumnVisibility(paymentColumns);
 
+  const filterOptionsBag: BillFilterOptionsBag = useMemo(() => ({
+    vendors: filterOptions.vendors,
+    owners: filterOptions.owners,
+    categories: filterOptions.categories,
+    statuses: PAYMENT_TAB_STATUSES,
+  }), [filterOptions]);
+
+  const renderTabToolbar = (
+    tab: BillFilterTab,
+    columnControl: ReturnType<typeof useColumnVisibility>,
+  ) => (
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <BillFilterBar
+        controller={filtersController}
+        options={filterOptionsBag}
+        tab={tab}
+      />
+      <ColumnPicker
+        columns={columnControl.configurableColumns}
+        hiddenIds={columnControl.hiddenIds}
+        onToggle={columnControl.toggle}
+      />
+    </div>
+  );
+
+  const renderPagination = (total: number) => (
+    <BillsTablePagination
+      onPageChange={(page) => {
+        void filtersController.setPage(page);
+      }}
+      onPageSizeChange={(pageSize) => {
+        void filtersController.setPageSize(pageSize);
+      }}
+      page={filtersController.pagination.page}
+      pageSize={filtersController.pagination.pageSize}
+      pageSizeOptions={filtersController.pageSizeOptions}
+      total={total}
+    />
+  );
+
   return (
     <main className="grid gap-6">
       <PageHeader
@@ -244,59 +302,44 @@ export function BillsWorkspace({
 
       {activeTab === 'overview' ? (
         <BillsStatusOverview
-          approvalBills={approvalBills}
-          draftBills={draftBills}
-          paymentBills={paymentBills}
+          approvalBills={approvalBills.items}
+          draftBills={draftBills.items}
+          paymentBills={paymentBills.items}
         />
       ) : null}
       {activeTab === 'drafts' ? (
         <div className="grid gap-3">
-          <div className="flex justify-end">
-            <ColumnPicker
-              columns={draftVisibility.configurableColumns}
-              hiddenIds={draftVisibility.hiddenIds}
-              onToggle={draftVisibility.toggle}
-            />
-          </div>
+          {renderTabToolbar('drafts', draftVisibility)}
           <BillsTable
-            bills={draftBills}
+            bills={draftBills.items}
             columns={draftVisibility.visibleColumns}
-            emptyMessage="No draft bills yet."
+            emptyMessage="No draft bills match this view."
             isLoading={isPending}
             loadingMessage="Loading draft bills…"
           />
+          {renderPagination(draftBills.total)}
         </div>
       ) : null}
       {activeTab === 'approvals' ? (
         <div className="grid gap-3">
-          <div className="flex justify-end">
-            <ColumnPicker
-              columns={approvalVisibility.configurableColumns}
-              hiddenIds={approvalVisibility.hiddenIds}
-              onToggle={approvalVisibility.toggle}
-            />
-          </div>
+          {renderTabToolbar('approvals', approvalVisibility)}
           <BillsTable
-            bills={approvalBills}
+            bills={approvalBills.items}
             columns={approvalVisibility.visibleColumns}
-            emptyMessage="No bills awaiting approval."
+            emptyMessage="No bills awaiting approval match this view."
           />
+          {renderPagination(approvalBills.total)}
         </div>
       ) : null}
       {activeTab === 'payment' ? (
         <div className="grid gap-3">
-          <div className="flex justify-end">
-            <ColumnPicker
-              columns={paymentVisibility.configurableColumns}
-              hiddenIds={paymentVisibility.hiddenIds}
-              onToggle={paymentVisibility.toggle}
-            />
-          </div>
+          {renderTabToolbar('payment', paymentVisibility)}
           <BillsTable
-            bills={paymentBills}
+            bills={paymentBills.items}
             columns={paymentVisibility.visibleColumns}
-            emptyMessage="No bills ready for payment."
+            emptyMessage="No bills ready for payment match this view."
           />
+          {renderPagination(paymentBills.total)}
         </div>
       ) : null}
 

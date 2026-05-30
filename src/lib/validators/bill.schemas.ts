@@ -232,11 +232,63 @@ export const rejectBillSchema = z.object({
 
 export const billIdListSchema = z.array(uuidSchema).min(1).max(100);
 
+const billStatusSchema = z.enum([
+  'draft',
+  'awaiting_approval',
+  'approved',
+  'scheduled',
+  'initiated',
+  'paid',
+  'archived',
+  'rejected',
+  'payment_failed',
+]);
+
+const csvList = z
+  .string()
+  .transform((value) => value.split(',').map((part) => part.trim()).filter(Boolean));
+
+const stringParam = z
+  .string()
+  .transform((value) => value.trim())
+  .pipe(z.string().min(1));
+
+const positiveNumberParam = z.coerce.number().refine((n) => Number.isFinite(n) && n >= 0, {
+  message: 'Amount must be a non-negative number.',
+});
+
+export const billFiltersSchema = z.object({
+  search: stringParam.optional(),
+  status: csvList.pipe(z.array(billStatusSchema).min(1)).optional(),
+  vendorId: uuidSchema.optional(),
+  vendorOwnerId: uuidSchema.optional(),
+  categoryId: uuidSchema.optional(),
+  amountMin: positiveNumberParam.optional(),
+  amountMax: positiveNumberParam.optional(),
+  invoiceDateFrom: isoDateSchema.optional(),
+  invoiceDateTo: isoDateSchema.optional(),
+  dueDateFrom: isoDateSchema.optional(),
+  dueDateTo: isoDateSchema.optional(),
+});
+
+export const DEFAULT_BILL_PAGE_SIZE = 25;
+export const BILL_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+
+export const billPaginationSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().refine(
+    (size) => (BILL_PAGE_SIZE_OPTIONS as readonly number[]).includes(size),
+    { message: 'pageSize must be one of the allowed options.' },
+  ).default(DEFAULT_BILL_PAGE_SIZE),
+});
+
 export type CreateBillSchema = z.infer<typeof createBillSchema>;
 export type DraftBillFormInput = z.input<typeof draftBillFormSchema>;
 export type DraftBillFormValues = z.output<typeof draftBillFormSchema>;
 export type UpdateBillSchema = z.infer<typeof updateBillSchema>;
 export type BulkEditBillsSchema = z.infer<typeof bulkEditBillsSchema>;
+export type BillFiltersSchema = z.infer<typeof billFiltersSchema>;
+export type BillPaginationSchema = z.infer<typeof billPaginationSchema>;
 export type SubmitForApprovalSchema = z.infer<typeof submitForApprovalSchema>;
 export type ApproveBillSchema = z.infer<typeof approveBillSchema>;
 export type RejectBillSchema = z.infer<typeof rejectBillSchema>;

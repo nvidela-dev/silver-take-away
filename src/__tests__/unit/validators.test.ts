@@ -1,5 +1,7 @@
 import {
   approveBillSchema,
+  billFiltersSchema,
+  billPaginationSchema,
   bulkEditBillsSchema,
   createBillSchema,
   rejectBillSchema,
@@ -206,6 +208,67 @@ describe('rejectBillSchema', () => {
       rejectBillSchema.safeParse({ billId: UUID, note: 'a'.repeat(1001) })
         .success,
     ).toBe(false);
+  });
+});
+
+describe('billFiltersSchema', () => {
+  it('accepts an empty object', () => {
+    expect(billFiltersSchema.safeParse({}).success).toBe(true);
+  });
+
+  it('trims and accepts a search term', () => {
+    const result = billFiltersSchema.safeParse({ search: '  foo  ' });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.search).toBe('foo');
+  });
+
+  it('parses status as a CSV into a typed array', () => {
+    const result = billFiltersSchema.safeParse({ status: 'draft,approved' });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.status).toEqual(['draft', 'approved']);
+  });
+
+  it('rejects unknown status values', () => {
+    const result = billFiltersSchema.safeParse({ status: 'draft,banana' });
+    expect(result.success).toBe(false);
+  });
+
+  it('coerces amount params to numbers', () => {
+    const result = billFiltersSchema.safeParse({ amountMin: '10', amountMax: '500.25' });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.amountMin).toBe(10);
+      expect(result.data.amountMax).toBe(500.25);
+    }
+  });
+
+  it('rejects bad uuids', () => {
+    expect(billFiltersSchema.safeParse({ vendorId: 'not-a-uuid' }).success).toBe(false);
+  });
+
+  it('rejects bad ISO dates', () => {
+    expect(
+      billFiltersSchema.safeParse({ dueDateFrom: '04/01/2026' }).success,
+    ).toBe(false);
+  });
+});
+
+describe('billPaginationSchema', () => {
+  it('falls back to defaults on empty input', () => {
+    const result = billPaginationSchema.parse({});
+    expect(result.page).toBe(1);
+    expect(result.pageSize).toBe(25);
+  });
+
+  it('coerces numeric strings', () => {
+    const result = billPaginationSchema.parse({ page: '3', pageSize: '50' });
+    expect(result.page).toBe(3);
+    expect(result.pageSize).toBe(50);
+  });
+
+  it('rejects disallowed page sizes', () => {
+    const result = billPaginationSchema.safeParse({ pageSize: '7' });
+    expect(result.success).toBe(false);
   });
 });
 

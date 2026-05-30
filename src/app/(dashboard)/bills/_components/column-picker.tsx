@@ -2,7 +2,7 @@
 
 import { Columns3 } from 'lucide-react';
 import {
-  useEffect,
+  useCallback,
   useId,
   useRef,
   useState,
@@ -11,6 +11,7 @@ import {
 import { Button } from '@/app/_components/ui/button';
 
 import type { BillsTableColumn } from './bills-table';
+import { usePopoverDismiss } from './hooks/use-popover-dismiss';
 
 interface ColumnPickerProps {
   columns: BillsTableColumn[];
@@ -23,30 +24,8 @@ export function ColumnPicker({ columns, hiddenIds, onToggle }: ColumnPickerProps
   const containerRef = useRef<HTMLDivElement>(null);
   const labelId = useId();
 
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
-    }
-
-    const onPointerDown = (event: MouseEvent) => {
-      const node = containerRef.current;
-      if (node && !node.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [isOpen]);
+  const close = useCallback(() => setIsOpen(false), []);
+  usePopoverDismiss({ containerRef, onDismiss: close, enabled: isOpen });
 
   if (columns.length === 0) {
     return null;
