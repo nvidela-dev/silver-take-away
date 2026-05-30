@@ -11,14 +11,14 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
-interface UseDialogChromeOptions {
+interface UseDialogBehaviorOptions {
   containerRef: RefObject<HTMLElement | null>;
   onClose: () => void;
   enabled?: boolean;
 }
 
 /**
- * Wires the standard dialog behaviours onto a container element:
+ * Wires the standard modal dialog behaviours onto a container element:
  *   - locks body scroll while open
  *   - focuses the first focusable inside the container on open
  *   - closes on Escape (event.stopPropagation so nested handlers don't fire)
@@ -28,11 +28,11 @@ interface UseDialogChromeOptions {
  * Pass `enabled: false` when the dialog markup stays mounted but is logically
  * closed; the hook is a no-op until it flips true.
  */
-export function useDialogChrome({
+export function useDialogBehavior({
   containerRef,
   onClose,
   enabled = true,
-}: UseDialogChromeOptions) {
+}: UseDialogBehaviorOptions) {
   useEffect(() => {
     if (!enabled) {
       return undefined;

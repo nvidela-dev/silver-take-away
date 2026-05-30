@@ -38,7 +38,7 @@ import {
   draftActionsColumn,
 } from './bills-table-columns';
 import { DraftBillForm } from './draft-bill-form';
-import { useDialogChrome } from './hooks/use-dialog-chrome';
+import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
 interface PendingTransition {
   kind: 'approve' | 'reject';
@@ -200,7 +200,7 @@ export function BillsWorkspace({
     });
   }, [pendingTransition, router, startTransition]);
 
-  useDialogChrome({
+  useDialogBehavior({
     containerRef: dialogRef,
     onClose: closeForm,
     enabled: isFormOpen,

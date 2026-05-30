@@ -10,7 +10,7 @@ import { X } from 'lucide-react';
 
 import { Button } from '@/app/_components/ui/button';
 
-import { useDialogChrome } from './hooks/use-dialog-chrome';
+import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
 interface BillNoteDialogProps {
   title: string;
@@ -43,7 +43,7 @@ export function BillNoteDialog({
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  useDialogChrome({ containerRef: dialogRef, onClose: onCancel });
+  useDialogBehavior({ containerRef: dialogRef, onClose: onCancel });
 
   const handleConfirm = useCallback(() => {
     setSubmitted(true);
