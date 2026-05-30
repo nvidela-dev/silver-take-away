@@ -15,6 +15,13 @@
       "when": 1779813624721,
       "tag": "0001_outstanding_omega_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780214400000,
+      "tag": "0002_seed_demo_bills",
+      "breakpoints": true
     }
   ]
 }

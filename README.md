@@ -66,9 +66,8 @@ yarn db:push
 | `yarn test:integration` | Integration test project (placeholder until PR-2). |
 | `yarn test:components` | Component test project (placeholder until PR-3+). |
 | `yarn db:generate` | Generate a Drizzle migration from the schema. |
-| `yarn db:migrate` | Apply pending migrations. |
-| `yarn db:push` | Push the schema directly (dev convenience). |
-| `yarn db:seed` | Seed placeholder (real seed in PR-2). |
+| `yarn db:migrate` | Apply pending migrations (includes demo seed data). |
+| `yarn db:push` | Push the schema directly (dev convenience — does not run seed migrations). |
 
 ## Architecture
 
