@@ -17,8 +17,7 @@
     "test:components": "jest --selectProjects components",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
-    "db:seed": "node scripts/seed.mjs"
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.4.1",
