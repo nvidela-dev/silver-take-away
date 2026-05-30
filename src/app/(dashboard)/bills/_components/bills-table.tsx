@@ -12,6 +12,7 @@ export interface BillsTableColumn {
   headerClassName?: string;
   cellClassName?: string;
   srOnlyHeader?: boolean;
+  isConfigurable?: boolean;
   render: (bill: BillListItem) => ReactNode;
 }
 

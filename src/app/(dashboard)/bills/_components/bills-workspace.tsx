@@ -34,8 +34,10 @@ import {
   billReadColumns,
   draftActionsColumn,
 } from './bills-table-columns';
+import { ColumnPicker } from './column-picker';
 import { DraftBillForm } from './draft-bill-form';
 import { useBillTransitions } from './hooks/use-bill-transitions';
+import { useColumnVisibility } from './hooks/use-column-visibility';
 import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
 interface BillsWorkspaceProps {
@@ -148,6 +150,30 @@ export function BillsWorkspace({
     enabled: isFormOpen,
   });
 
+  const draftColumns = [
+    ...billReadColumns,
+    draftActionsColumn({
+      deleteCandidateId,
+      onCancelDelete: cancelDelete,
+      onDelete,
+      onEdit: selectBillForEdit,
+      onRequestDelete: requestDelete,
+      onSubmit: transitions.submitForApproval,
+    }),
+  ];
+  const approvalColumns = [
+    ...billReadColumns,
+    approvalActionsColumn({
+      onApprove: transitions.requestApprove,
+      onReject: transitions.requestReject,
+    }),
+  ];
+  const paymentColumns = billReadColumns;
+
+  const draftVisibility = useColumnVisibility(draftColumns);
+  const approvalVisibility = useColumnVisibility(approvalColumns);
+  const paymentVisibility = useColumnVisibility(paymentColumns);
+
   return (
     <main className="grid gap-6">
       <PageHeader
@@ -224,43 +250,54 @@ export function BillsWorkspace({
         />
       ) : null}
       {activeTab === 'drafts' ? (
-        <BillsTable
-          bills={draftBills}
-          columns={[
-            ...billReadColumns,
-            draftActionsColumn({
-              deleteCandidateId,
-              onCancelDelete: cancelDelete,
-              onDelete,
-              onEdit: selectBillForEdit,
-              onRequestDelete: requestDelete,
-              onSubmit: transitions.submitForApproval,
-            }),
-          ]}
-          emptyMessage="No draft bills yet."
-          isLoading={isPending}
-          loadingMessage="Loading draft bills…"
-        />
+        <div className="grid gap-3">
+          <div className="flex justify-end">
+            <ColumnPicker
+              columns={draftVisibility.configurableColumns}
+              hiddenIds={draftVisibility.hiddenIds}
+              onToggle={draftVisibility.toggle}
+            />
+          </div>
+          <BillsTable
+            bills={draftBills}
+            columns={draftVisibility.visibleColumns}
+            emptyMessage="No draft bills yet."
+            isLoading={isPending}
+            loadingMessage="Loading draft bills…"
+          />
+        </div>
       ) : null}
       {activeTab === 'approvals' ? (
-        <BillsTable
-          bills={approvalBills}
-          columns={[
-            ...billReadColumns,
-            approvalActionsColumn({
-              onApprove: transitions.requestApprove,
-              onReject: transitions.requestReject,
-            }),
-          ]}
-          emptyMessage="No bills awaiting approval."
-        />
+        <div className="grid gap-3">
+          <div className="flex justify-end">
+            <ColumnPicker
+              columns={approvalVisibility.configurableColumns}
+              hiddenIds={approvalVisibility.hiddenIds}
+              onToggle={approvalVisibility.toggle}
+            />
+          </div>
+          <BillsTable
+            bills={approvalBills}
+            columns={approvalVisibility.visibleColumns}
+            emptyMessage="No bills awaiting approval."
+          />
+        </div>
       ) : null}
       {activeTab === 'payment' ? (
-        <BillsTable
-          bills={paymentBills}
-          columns={billReadColumns}
-          emptyMessage="No bills ready for payment."
-        />
+        <div className="grid gap-3">
+          <div className="flex justify-end">
+            <ColumnPicker
+              columns={paymentVisibility.configurableColumns}
+              hiddenIds={paymentVisibility.hiddenIds}
+              onToggle={paymentVisibility.toggle}
+            />
+          </div>
+          <BillsTable
+            bills={paymentBills}
+            columns={paymentVisibility.visibleColumns}
+            emptyMessage="No bills ready for payment."
+          />
+        </div>
       ) : null}
 
       <BillTransitionDialog isPending={isPending} transitions={transitions} />

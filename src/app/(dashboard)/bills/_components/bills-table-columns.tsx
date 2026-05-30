@@ -45,6 +45,7 @@ export const vendorOwnerColumn: BillsTableColumn = {
   header: 'Vendor / owner',
   headerClassName: 'py-3 pl-4 pr-4 font-medium',
   cellClassName: 'py-3 pl-4 pr-4',
+  isConfigurable: false,
   render: (bill) => (
     <div className="flex items-center gap-3">
       <span
@@ -138,6 +139,7 @@ export function draftActionsColumn(handlers: DraftActionsHandlers): BillsTableCo
     id: 'actions',
     header: 'Actions',
     srOnlyHeader: true,
+    isConfigurable: false,
     render: (bill) => {
       const isDeleteCandidate = deleteCandidateId === bill.id;
 
@@ -213,6 +215,7 @@ export function approvalActionsColumn(
     id: 'approval-actions',
     header: 'Actions',
     srOnlyHeader: true,
+    isConfigurable: false,
     render: (bill) => (
       <div className="flex justify-end gap-2">
         <Button
