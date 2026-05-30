@@ -2,7 +2,6 @@
 
 import {
   useCallback,
-  useEffect,
   useId,
   useRef,
   useState,
@@ -11,14 +10,7 @@ import { X } from 'lucide-react';
 
 import { Button } from '@/app/_components/ui/button';
 
-const FOCUSABLE_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
+import { useDialogChrome } from './hooks/use-dialog-chrome';
 
 interface BillNoteDialogProps {
   title: string;
@@ -51,60 +43,7 @@ export function BillNoteDialog({
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    const { activeElement } = document;
-    const previouslyFocused = activeElement instanceof HTMLElement ? activeElement : null;
-    const previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const dialogNode = dialogRef.current;
-    const focusFirst = () => {
-      if (!dialogNode) {
-        return;
-      }
-      const focusables = dialogNode.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      const target = focusables[0] ?? dialogNode;
-      target.focus();
-    };
-    focusFirst();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
-        onCancel();
-        return;
-      }
-      if (event.key !== 'Tab' || !dialogNode) {
-        return;
-      }
-      const focusables = Array.from(
-        dialogNode.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ).filter((element) => !element.hasAttribute('disabled'));
-      if (focusables.length === 0) {
-        event.preventDefault();
-        dialogNode.focus();
-        return;
-      }
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const current = document.activeElement;
-      if (event.shiftKey && current === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && current === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', onKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = previousBodyOverflow;
-      previouslyFocused?.focus?.();
-    };
-  }, [onCancel]);
+  useDialogChrome({ containerRef: dialogRef, onClose: onCancel });
 
   const handleConfirm = useCallback(() => {
     setSubmitted(true);

@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import {
   useCallback,
-  useEffect,
   useId,
   useMemo,
   useRef,
@@ -39,6 +38,7 @@ import {
   draftActionsColumn,
 } from './bills-table-columns';
 import { DraftBillForm } from './draft-bill-form';
+import { useDialogChrome } from './hooks/use-dialog-chrome';
 
 interface PendingTransition {
   kind: 'approve' | 'reject';
@@ -53,15 +53,6 @@ interface BillsWorkspaceProps {
   options: BillFormOptions;
   paymentBills: BillListItem[];
 }
-
-const FOCUSABLE_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
 
 export function BillsWorkspace({
   activeTab,
@@ -209,64 +200,11 @@ export function BillsWorkspace({
     });
   }, [pendingTransition, router, startTransition]);
 
-  useEffect(() => {
-    if (!isFormOpen) {
-      return undefined;
-    }
-
-    const { activeElement } = document;
-    const previouslyFocused = activeElement instanceof HTMLElement ? activeElement : null;
-    const previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const dialogNode = dialogRef.current;
-    const focusFirst = () => {
-      if (!dialogNode) {
-        return;
-      }
-      const focusables = dialogNode.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      const target = focusables[0] ?? dialogNode;
-      target.focus();
-    };
-    focusFirst();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
-        closeForm();
-        return;
-      }
-      if (event.key !== 'Tab' || !dialogNode) {
-        return;
-      }
-      const focusables = Array.from(
-        dialogNode.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ).filter((element) => !element.hasAttribute('disabled'));
-      if (focusables.length === 0) {
-        event.preventDefault();
-        dialogNode.focus();
-        return;
-      }
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const current = document.activeElement;
-      if (event.shiftKey && current === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && current === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', onKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = previousBodyOverflow;
-      previouslyFocused?.focus?.();
-    };
-  }, [closeForm, isFormOpen]);
+  useDialogChrome({
+    containerRef: dialogRef,
+    onClose: closeForm,
+    enabled: isFormOpen,
+  });
 
   return (
     <main className="grid gap-6">
