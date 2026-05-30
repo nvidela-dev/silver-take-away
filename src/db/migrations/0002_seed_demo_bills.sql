@@ -117,7 +117,7 @@ ON CONFLICT (id) DO NOTHING;--> statement-breakpoint
 -- Line items: keyed by bill id + sort_order so re-runs do not duplicate.
 -- category_id is resolved by name so it works regardless of category UUIDs.
 INSERT INTO bill_line_items (id, bill_id, description, amount, category_id, sort_order)
-SELECT v.id, v.bill_id, v.description, v.amount, c.id, v.sort_order
+SELECT v.id::uuid, v.bill_id, v.description, v.amount, c.id, v.sort_order
 FROM (VALUES
   ('55000000-0000-0000-0000-000000000101', '44000000-0000-0000-0000-000000000101'::uuid, 'Printer paper and desk supplies',              '480.00'::numeric,  'Office supplies',       0),
   ('55000000-0000-0000-0000-000000000102', '44000000-0000-0000-0000-000000000102'::uuid, 'Platform subscription — May',                  '1250.00'::numeric, 'Software',              0),
@@ -197,7 +197,7 @@ ON CONFLICT (id) DO NOTHING;--> statement-breakpoint
 
 -- Activity log: one canonical entry per bill so the audit view is populated.
 INSERT INTO bill_activity_log (id, bill_id, actor_id, action, metadata)
-SELECT v.id, v.bill_id, v.actor_id, v.action, v.metadata::jsonb
+SELECT v.id::uuid, v.bill_id, v.actor_id, v.action, v.metadata::jsonb
 FROM (VALUES
   ('77000000-0000-0000-0000-000000000101', '44000000-0000-0000-0000-000000000101'::uuid, '00000000-0000-0000-0000-000000000001'::uuid, 'draft_created',     '{"source":"seed"}'),
   ('77000000-0000-0000-0000-000000000102', '44000000-0000-0000-0000-000000000102'::uuid, '00000000-0000-0000-0000-000000000001'::uuid, 'draft_created',     '{"source":"seed"}'),
