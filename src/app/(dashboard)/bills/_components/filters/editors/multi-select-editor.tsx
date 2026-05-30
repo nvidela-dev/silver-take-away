@@ -1,0 +1,82 @@
+'use client';
+
+import { useId, useState } from 'react';
+
+import { Button } from '@/app/_components/ui/button';
+
+export interface MultiSelectOption {
+  id: string;
+  label: string;
+}
+
+interface MultiSelectEditorProps {
+  value: readonly string[] | null;
+  options: readonly MultiSelectOption[];
+  onApply: (value: string[] | null) => void;
+  onCancel: () => void;
+}
+
+export function MultiSelectEditor({
+  value,
+  options,
+  onApply,
+  onCancel,
+}: MultiSelectEditorProps) {
+  const groupId = useId();
+  const [selected, setSelected] = useState<Set<string>>(new Set(value ?? []));
+
+  const toggle = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleApply = () => {
+    onApply(selected.size > 0 ? Array.from(selected) : null);
+  };
+
+  return (
+    <div className="grid gap-2 p-3">
+      <ul className="max-h-56 overflow-y-auto">
+        {options.map((option) => {
+          const isChecked = selected.has(option.id);
+          const checkboxId = `${groupId}-${option.id}`;
+          return (
+            <li key={option.id}>
+              <label
+                className={[
+                  'flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5',
+                  'text-sm text-slate-800 hover:bg-slate-100',
+                ].join(' ')}
+                htmlFor={checkboxId}
+              >
+                <input
+                  checked={isChecked}
+                  className="size-4 rounded border-slate-300"
+                  id={checkboxId}
+                  onChange={() => toggle(option.id)}
+                  type="checkbox"
+                />
+                <span>{option.label}</span>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="flex justify-end gap-2">
+        <Button onClick={onCancel} size="sm" type="button" variant="ghost">
+          Cancel
+        </Button>
+        <Button onClick={handleApply} size="sm" type="button" variant="accent">
+          Apply
+        </Button>
+      </div>
+    </div>
+  );
+}
