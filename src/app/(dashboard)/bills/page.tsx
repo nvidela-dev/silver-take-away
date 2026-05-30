@@ -3,7 +3,12 @@ import {
   ForbiddenError,
 } from '@/lib/auth';
 import { billTabs } from '@/app/_navigation';
-import { getBillFormOptions, listDraftBills } from '@/lib/queries';
+import {
+  getBillFormOptions,
+  listApprovalBills,
+  listDraftBills,
+  listPaymentBills,
+} from '@/lib/queries';
 
 import { BillsWorkspace } from './_components';
 
@@ -25,13 +30,21 @@ function resolveActiveTab(tab?: string | string[]) {
 
 async function loadBillWorkspaceData() {
   try {
-    const [draftBills, billFormOptions] = await Promise.all([
+    const [draftBills, approvalBills, paymentBills, billFormOptions] = await Promise.all([
       listDraftBills(),
+      listApprovalBills(),
+      listPaymentBills(),
       getBillFormOptions(),
     ]);
-    return { draftBills, billFormOptions, loadError: null };
+    return {
+      draftBills,
+      approvalBills,
+      paymentBills,
+      billFormOptions,
+      loadError: null,
+    };
   } catch (error) {
-    let loadError = 'Draft bills could not be loaded. Check the database connection.';
+    let loadError = 'Bills could not be loaded. Check the database connection.';
     if (error instanceof UnauthorizedError) {
       loadError = 'Sign in before creating or viewing bills.';
     }
@@ -41,6 +54,8 @@ async function loadBillWorkspaceData() {
 
     return {
       draftBills: [],
+      approvalBills: [],
+      paymentBills: [],
       billFormOptions: { vendors: [], categories: [] },
       loadError,
     };
@@ -55,9 +70,11 @@ export default async function BillsPage({ searchParams }: BillsPageProps) {
   return (
     <BillsWorkspace
       activeTab={activeTab}
-      bills={workspaceData.draftBills}
+      approvalBills={workspaceData.approvalBills}
+      draftBills={workspaceData.draftBills}
       loadError={workspaceData.loadError}
       options={workspaceData.billFormOptions}
+      paymentBills={workspaceData.paymentBills}
     />
   );
 }

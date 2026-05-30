@@ -1,6 +1,7 @@
 import {
   desc,
   eq,
+  inArray,
 } from 'drizzle-orm';
 
 import { db } from '@/db';
@@ -12,14 +13,21 @@ import {
   vendors,
 } from '@/db/schema';
 import type { Bill } from '@/lib/types/bill/bill';
-import type { BillFormOptions, DraftBillListItem } from '@/lib/types/bill/views';
+import type { BillStatus } from '@/lib/types/enums';
+import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
 
 export async function getBillById(id: string): Promise<Bill | null> {
   const [bill] = await db.select().from(bills).where(eq(bills.id, id)).limit(1);
   return bill ?? null;
 }
 
-export async function listDraftBills(): Promise<DraftBillListItem[]> {
+export async function listBillsByStatuses(
+  statuses: BillStatus[],
+): Promise<BillListItem[]> {
+  if (statuses.length === 0) {
+    return [];
+  }
+
   const rows = await db
     .select({
       bill: bills,
@@ -43,10 +51,10 @@ export async function listDraftBills(): Promise<DraftBillListItem[]> {
     .innerJoin(users, eq(bills.createdBy, users.id))
     .leftJoin(billLineItems, eq(billLineItems.billId, bills.id))
     .leftJoin(categories, eq(categories.id, billLineItems.categoryId))
-    .where(eq(bills.status, 'draft'))
+    .where(inArray(bills.status, statuses))
     .orderBy(desc(bills.createdAt), desc(bills.updatedAt));
 
-  const draftBills = rows.reduce((acc, row) => {
+  const grouped = rows.reduce((acc, row) => {
     if (!acc.has(row.bill.id)) {
       acc.set(row.bill.id, {
         ...row.bill,
@@ -65,13 +73,17 @@ export async function listDraftBills(): Promise<DraftBillListItem[]> {
     }
 
     return acc;
-  }, new Map<string, DraftBillListItem>());
+  }, new Map<string, BillListItem>());
 
-  return Array.from(draftBills.values()).map((bill) => ({
+  return Array.from(grouped.values()).map((bill) => ({
     ...bill,
     lineItems: bill.lineItems.sort((a, b) => a.sortOrder - b.sortOrder),
     lineItemCount: bill.lineItems.length,
   }));
+}
+
+export async function listDraftBills(): Promise<BillListItem[]> {
+  return listBillsByStatuses(['draft']);
 }
 
 export async function getBillFormOptions(): Promise<BillFormOptions> {

@@ -22,10 +22,10 @@ import {
   sumMoneyStrings,
 } from '@/lib/validators/shared';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
-import type { DraftBillListItem } from '@/lib/types/bill/views';
+import type { BillListItem } from '@/lib/types/bill/views';
 
 interface UseDraftBillFormOptions {
-  editingBill: DraftBillListItem | null;
+  editingBill: BillListItem | null;
   onSubmit: (input: CreateBillInput) => void;
 }
 
@@ -49,7 +49,7 @@ function createDefaultDraftBillFormValues(): DraftBillFormInput {
   };
 }
 
-function draftBillToFormValues(bill: DraftBillListItem): DraftBillFormInput {
+function draftBillToFormValues(bill: BillListItem): DraftBillFormInput {
   const lineItems = bill.lineItems.length > 0
     ? bill.lineItems.map((lineItem) => ({
       description: lineItem.description ?? '',

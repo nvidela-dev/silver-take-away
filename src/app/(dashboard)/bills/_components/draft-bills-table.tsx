@@ -12,24 +12,24 @@ import { Button } from '@/app/_components/ui/button';
 import { Card } from '@/app/_components/ui/card';
 import { billStatusDisplay } from '@/app/_display';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
-import type { DraftBillListItem } from '@/lib/types/bill/views';
+import type { BillListItem } from '@/lib/types/bill/views';
 
 interface DraftBillsTableProps {
-  bills: DraftBillListItem[];
+  bills: BillListItem[];
   deleteCandidateId: string | null;
   isLoading: boolean;
   onCancelDelete: () => void;
   onDelete: (id: string) => void;
-  onEdit: (bill: DraftBillListItem) => void;
+  onEdit: (bill: BillListItem) => void;
   onRequestDelete: (id: string) => void;
 }
 
 interface DraftBillRowProps {
-  bill: DraftBillListItem;
+  bill: BillListItem;
   isDeleteCandidate: boolean;
   onCancelDelete: () => void;
   onDelete: (id: string) => void;
-  onEdit: (bill: DraftBillListItem) => void;
+  onEdit: (bill: BillListItem) => void;
   onRequestDelete: (id: string) => void;
 }
 

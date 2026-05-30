@@ -6,13 +6,13 @@ import {
 import { Button } from '@/app/_components/ui/button';
 import { formatMoney } from '@/lib/utils';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
-import type { BillFormOptions, DraftBillListItem } from '@/lib/types/bill/views';
+import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
 
 import { DraftBillLineItems } from './draft-bill-line-items';
 import { useDraftBillForm } from './hooks/use-draft-bill-form';
 
 interface DraftBillFormProps {
-  editingBill: DraftBillListItem | null;
+  editingBill: BillListItem | null;
   formError: string | null;
   isPending: boolean;
   loadError: string | null;

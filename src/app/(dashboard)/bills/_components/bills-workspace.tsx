@@ -25,18 +25,20 @@ import { deleteBill } from '@/lib/actions/bills/delete-bill';
 import { updateBill } from '@/lib/actions/bills/update-bill';
 import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
-import type { BillFormOptions, DraftBillListItem } from '@/lib/types/bill/views';
+import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
 
-import { BillsFilteredView } from './bills-filtered-view';
+import { BillsListTable } from './bills-list-table';
 import { BillsStatusOverview } from './bills-status-overview';
 import { DraftBillForm } from './draft-bill-form';
 import { DraftBillsTable } from './draft-bills-table';
 
 interface BillsWorkspaceProps {
   activeTab: string;
-  bills: DraftBillListItem[];
+  approvalBills: BillListItem[];
+  draftBills: BillListItem[];
   loadError: string | null;
   options: BillFormOptions;
+  paymentBills: BillListItem[];
 }
 
 const FOCUSABLE_SELECTOR = [
@@ -50,9 +52,11 @@ const FOCUSABLE_SELECTOR = [
 
 export function BillsWorkspace({
   activeTab,
-  bills,
+  approvalBills,
+  draftBills,
   loadError,
   options,
+  paymentBills,
 }: BillsWorkspaceProps) {
   const router = useRouter();
   const dialogTitleId = useId();
@@ -63,11 +67,11 @@ export function BillsWorkspace({
   const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // Re-derive editingBill from the refreshed list so optimistic-concurrency
+  // Re-derive editingBill from the refreshed draft list so optimistic-concurrency
   // tokens (updatedAt) stay current after router.refresh().
   const editingBill = useMemo(
-    () => (editingBillId ? bills.find((bill) => bill.id === editingBillId) ?? null : null),
-    [bills, editingBillId],
+    () => (editingBillId ? draftBills.find((bill) => bill.id === editingBillId) ?? null : null),
+    [draftBills, editingBillId],
   );
 
   const closeForm = useCallback(() => {
@@ -82,7 +86,7 @@ export function BillsWorkspace({
     setIsFormOpen(true);
   }, []);
 
-  const selectBillForEdit = useCallback((bill: DraftBillListItem) => {
+  const selectBillForEdit = useCallback((bill: BillListItem) => {
     setEditingBillId(bill.id);
     setFormError(null);
     setIsFormOpen(true);
@@ -263,11 +267,15 @@ export function BillsWorkspace({
       ) : null}
 
       {activeTab === 'overview' ? (
-        <BillsStatusOverview draftBills={bills} />
+        <BillsStatusOverview
+          approvalBills={approvalBills}
+          draftBills={draftBills}
+          paymentBills={paymentBills}
+        />
       ) : null}
       {activeTab === 'drafts' ? (
         <DraftBillsTable
-          bills={bills}
+          bills={draftBills}
           deleteCandidateId={deleteCandidateId}
           isLoading={isPending}
           onCancelDelete={cancelDelete}
@@ -277,15 +285,15 @@ export function BillsWorkspace({
         />
       ) : null}
       {activeTab === 'approvals' ? (
-        <BillsFilteredView
-          description="Bills awaiting an approval decision."
-          title="For approval"
+        <BillsListTable
+          bills={approvalBills}
+          emptyMessage="No bills awaiting approval."
         />
       ) : null}
       {activeTab === 'payment' ? (
-        <BillsFilteredView
-          description="Approved bills ready to schedule or release for payment."
-          title="For payment"
+        <BillsListTable
+          bills={paymentBills}
+          emptyMessage="No bills ready for payment."
         />
       ) : null}
     </main>

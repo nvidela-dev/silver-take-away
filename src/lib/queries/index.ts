@@ -3,21 +3,33 @@ import { requireAuth } from '@/lib/auth/require-auth';
 import { requireRole } from '@/lib/auth/require-role';
 import {
   getBillFormOptions as getBillFormOptionsFromRepo,
-  listDraftBills as listDraftBillsFromRepo,
+  listBillsByStatuses as listBillsByStatusesFromRepo,
 } from '@/lib/repositories/bills';
 
-const BILL_DRAFT_VIEWER_ROLES = ['admin', 'owner', 'ap_clerk'] as const;
+const BILL_VIEWER_ROLES = ['admin', 'owner', 'ap_clerk', 'approver'] as const;
 
-export async function listDraftBills() {
+async function gateBillRead() {
   assertDatabaseConfigured();
   const actor = await requireAuth();
-  requireRole(actor, BILL_DRAFT_VIEWER_ROLES);
-  return listDraftBillsFromRepo();
+  requireRole(actor, BILL_VIEWER_ROLES);
+}
+
+export async function listDraftBills() {
+  await gateBillRead();
+  return listBillsByStatusesFromRepo(['draft']);
+}
+
+export async function listApprovalBills() {
+  await gateBillRead();
+  return listBillsByStatusesFromRepo(['awaiting_approval']);
+}
+
+export async function listPaymentBills() {
+  await gateBillRead();
+  return listBillsByStatusesFromRepo(['approved', 'scheduled', 'initiated']);
 }
 
 export async function getBillFormOptions() {
-  assertDatabaseConfigured();
-  const actor = await requireAuth();
-  requireRole(actor, BILL_DRAFT_VIEWER_ROLES);
+  await gateBillRead();
   return getBillFormOptionsFromRepo();
 }

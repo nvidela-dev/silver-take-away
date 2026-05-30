@@ -17,7 +17,7 @@ export interface BillWithRelations extends Bill {
   payments: Payment[];
 }
 
-export interface DraftBillListItem extends Bill {
+export interface BillListItem extends Bill {
   vendor: Pick<Vendor, 'id' | 'name' | 'email' | 'ownerId'>;
   creator: Pick<User, 'id' | 'email' | 'fullName' | 'role'>;
   lineItems: (BillLineItem & { category: Category | null })[];
