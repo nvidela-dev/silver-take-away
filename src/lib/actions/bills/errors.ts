@@ -7,6 +7,7 @@ import {
   BillNotFoundError,
 } from '@/lib/repositories/bills';
 import { DraftBillGuardError } from '@/lib/services/bill-transitions';
+import { InvalidTransitionError } from '@/lib/services/state-machine';
 import type { ActionResult } from '@/lib/types/common';
 
 export function toBillActionError(error: unknown): ActionResult<never> {
@@ -16,6 +17,7 @@ export function toBillActionError(error: unknown): ActionResult<never> {
     || error instanceof BillNotFoundError
     || error instanceof BillConflictError
     || error instanceof DraftBillGuardError
+    || error instanceof InvalidTransitionError
   ) {
     return {
       ok: false,

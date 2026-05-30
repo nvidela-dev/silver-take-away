@@ -20,17 +20,30 @@ import {
   SurfaceTabs,
 } from '@/app/_components/shared';
 import { Button } from '@/app/_components/ui/button';
+import { approveBill } from '@/lib/actions/bills/approve-bill';
 import { createBill } from '@/lib/actions/bills/create-bill';
 import { deleteBill } from '@/lib/actions/bills/delete-bill';
+import { rejectBill } from '@/lib/actions/bills/reject-bill';
+import { submitForApproval } from '@/lib/actions/bills/submit-for-approval';
 import { updateBill } from '@/lib/actions/bills/update-bill';
 import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
 import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
 
+import { BillNoteDialog } from './bill-note-dialog';
 import { BillsStatusOverview } from './bills-status-overview';
 import { BillsTable } from './bills-table';
-import { billReadColumns, draftActionsColumn } from './bills-table-columns';
+import {
+  approvalActionsColumn,
+  billReadColumns,
+  draftActionsColumn,
+} from './bills-table-columns';
 import { DraftBillForm } from './draft-bill-form';
+
+interface PendingTransition {
+  kind: 'approve' | 'reject';
+  bill: BillListItem;
+}
 
 interface BillsWorkspaceProps {
   activeTab: string;
@@ -65,6 +78,8 @@ export function BillsWorkspace({
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
+  const [pendingTransition, setPendingTransition] = useState<PendingTransition | null>(null);
+  const [transitionError, setTransitionError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Re-derive editingBill from the refreshed draft list so optimistic-concurrency
@@ -138,6 +153,66 @@ export function BillsWorkspace({
       router.refresh();
     });
   }, [closeForm, editingBillId, router, startTransition]);
+
+  const onSubmitForApproval = useCallback((bill: BillListItem) => {
+    setFormError(null);
+    startTransition(async () => {
+      const result = await submitForApproval({
+        billId: bill.id,
+        expectedUpdatedAt: bill.updatedAt.toISOString(),
+      });
+      if (!result.ok) {
+        setFormError(result.error.message);
+        return;
+      }
+      router.refresh();
+    });
+  }, [router, startTransition]);
+
+  const onRequestApprove = useCallback((bill: BillListItem) => {
+    setTransitionError(null);
+    setPendingTransition({ kind: 'approve', bill });
+  }, []);
+
+  const onRequestReject = useCallback((bill: BillListItem) => {
+    setTransitionError(null);
+    setPendingTransition({ kind: 'reject', bill });
+  }, []);
+
+  const cancelPendingTransition = useCallback(() => {
+    setPendingTransition(null);
+    setTransitionError(null);
+  }, []);
+
+  const confirmPendingTransition = useCallback((note: string) => {
+    if (!pendingTransition) {
+      return;
+    }
+    const { bill, kind } = pendingTransition;
+    setTransitionError(null);
+
+    startTransition(async () => {
+      const result = kind === 'approve'
+        ? await approveBill({
+          billId: bill.id,
+          expectedUpdatedAt: bill.updatedAt.toISOString(),
+          ...(note ? { note } : {}),
+        })
+        : await rejectBill({
+          billId: bill.id,
+          expectedUpdatedAt: bill.updatedAt.toISOString(),
+          note,
+        });
+
+      if (!result.ok) {
+        setTransitionError(result.error.message);
+        return;
+      }
+
+      setPendingTransition(null);
+      router.refresh();
+    });
+  }, [pendingTransition, router, startTransition]);
 
   useEffect(() => {
     if (!isFormOpen) {
@@ -284,6 +359,7 @@ export function BillsWorkspace({
               onDelete,
               onEdit: selectBillForEdit,
               onRequestDelete: requestDelete,
+              onSubmit: onSubmitForApproval,
             }),
           ]}
           emptyMessage="No draft bills yet."
@@ -294,7 +370,13 @@ export function BillsWorkspace({
       {activeTab === 'approvals' ? (
         <BillsTable
           bills={approvalBills}
-          columns={billReadColumns}
+          columns={[
+            ...billReadColumns,
+            approvalActionsColumn({
+              onApprove: onRequestApprove,
+              onReject: onRequestReject,
+            }),
+          ]}
           emptyMessage="No bills awaiting approval."
         />
       ) : null}
@@ -303,6 +385,25 @@ export function BillsWorkspace({
           bills={paymentBills}
           columns={billReadColumns}
           emptyMessage="No bills ready for payment."
+        />
+      ) : null}
+
+      {pendingTransition ? (
+        <BillNoteDialog
+          confirmLabel={pendingTransition.kind === 'reject' ? 'Reject bill' : 'Approve bill'}
+          confirmVariant={pendingTransition.kind === 'reject' ? 'destructive' : 'accent'}
+          description={`Vendor: ${pendingTransition.bill.vendor.name}`}
+          error={transitionError}
+          isPending={isPending}
+          noteRequired={pendingTransition.kind === 'reject'}
+          notePlaceholder={
+            pendingTransition.kind === 'reject'
+              ? 'Why is this bill being rejected?'
+              : 'Optional context for the approval log.'
+          }
+          onCancel={cancelPendingTransition}
+          onConfirm={confirmPendingTransition}
+          title={pendingTransition.kind === 'reject' ? 'Reject bill' : 'Approve bill'}
         />
       ) : null}
     </main>

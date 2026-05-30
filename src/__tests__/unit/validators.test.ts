@@ -1,7 +1,9 @@
 import {
-  approveRejectSchema,
+  approveBillSchema,
   bulkEditBillsSchema,
   createBillSchema,
+  rejectBillSchema,
+  submitForApprovalSchema,
   updateBillSchema,
 } from '@/lib/validators/bill.schemas';
 import {
@@ -156,22 +158,63 @@ describe('bulkEditBillsSchema', () => {
   });
 });
 
-describe('approveRejectSchema', () => {
+describe('submitForApprovalSchema', () => {
   it('accepts billId only', () => {
-    expect(approveRejectSchema.safeParse({ billId: UUID }).success).toBe(true);
+    expect(submitForApprovalSchema.safeParse({ billId: UUID }).success).toBe(true);
   });
 
-  it('accepts billId with a note', () => {
+  it('accepts billId with expectedUpdatedAt', () => {
     expect(
-      approveRejectSchema.safeParse({ billId: UUID, note: 'rejecting because' })
-        .success,
+      submitForApprovalSchema.safeParse({
+        billId: UUID,
+        expectedUpdatedAt: '2026-05-30T15:00:00.000Z',
+      }).success,
     ).toBe(true);
   });
 
   it('rejects bad uuids', () => {
-    expect(approveRejectSchema.safeParse({ billId: 'not-a-uuid' }).success).toBe(
-      false,
-    );
+    expect(
+      submitForApprovalSchema.safeParse({ billId: 'not-a-uuid' }).success,
+    ).toBe(false);
+  });
+});
+
+describe('approveBillSchema', () => {
+  it('accepts billId only (note optional)', () => {
+    expect(approveBillSchema.safeParse({ billId: UUID }).success).toBe(true);
+  });
+
+  it('accepts billId with a note', () => {
+    expect(
+      approveBillSchema.safeParse({ billId: UUID, note: 'looks good' }).success,
+    ).toBe(true);
+  });
+
+  it('rejects notes longer than 1000 chars', () => {
+    expect(
+      approveBillSchema.safeParse({ billId: UUID, note: 'a'.repeat(1001) })
+        .success,
+    ).toBe(false);
+  });
+});
+
+describe('rejectBillSchema', () => {
+  it('requires a non-empty note', () => {
+    expect(rejectBillSchema.safeParse({ billId: UUID }).success).toBe(false);
+    expect(
+      rejectBillSchema.safeParse({ billId: UUID, note: '' }).success,
+    ).toBe(false);
+    expect(
+      rejectBillSchema.safeParse({ billId: UUID, note: 'missing receipts' })
+        .success,
+    ).toBe(true);
+  });
+
+  it('rejects notes longer than 1000 chars', () => {
+    expect(
+      rejectBillSchema.safeParse({ billId: UUID, note: 'a'.repeat(1001) })
+        .success,
+    ).toBe(false);
   });
 });
 

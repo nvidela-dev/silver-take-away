@@ -121,6 +121,7 @@ interface DraftActionsHandlers {
   onDelete: (id: string) => void;
   onEdit: (bill: BillListItem) => void;
   onRequestDelete: (id: string) => void;
+  onSubmit?: (bill: BillListItem) => void;
 }
 
 export function draftActionsColumn(handlers: DraftActionsHandlers): BillsTableColumn {
@@ -130,6 +131,7 @@ export function draftActionsColumn(handlers: DraftActionsHandlers): BillsTableCo
     onDelete,
     onEdit,
     onRequestDelete,
+    onSubmit,
   } = handlers;
 
   return {
@@ -141,6 +143,16 @@ export function draftActionsColumn(handlers: DraftActionsHandlers): BillsTableCo
 
       return (
         <div className="flex justify-end gap-2">
+          {onSubmit ? (
+            <Button
+              onClick={() => onSubmit(bill)}
+              size="sm"
+              type="button"
+              variant="accent"
+            >
+              Submit for approval
+            </Button>
+          ) : null}
           <Button
             aria-label={`Edit ${bill.vendor.name} draft`}
             onClick={() => onEdit(bill)}
@@ -184,5 +196,42 @@ export function draftActionsColumn(handlers: DraftActionsHandlers): BillsTableCo
         </div>
       );
     },
+  };
+}
+
+interface ApprovalActionsHandlers {
+  onApprove: (bill: BillListItem) => void;
+  onReject: (bill: BillListItem) => void;
+}
+
+export function approvalActionsColumn(
+  handlers: ApprovalActionsHandlers,
+): BillsTableColumn {
+  const { onApprove, onReject } = handlers;
+
+  return {
+    id: 'approval-actions',
+    header: 'Actions',
+    srOnlyHeader: true,
+    render: (bill) => (
+      <div className="flex justify-end gap-2">
+        <Button
+          onClick={() => onApprove(bill)}
+          size="sm"
+          type="button"
+          variant="accent"
+        >
+          Approve
+        </Button>
+        <Button
+          onClick={() => onReject(bill)}
+          size="sm"
+          type="button"
+          variant="destructive"
+        >
+          Reject
+        </Button>
+      </div>
+    ),
   };
 }
