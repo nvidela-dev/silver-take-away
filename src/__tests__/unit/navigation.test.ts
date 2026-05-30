@@ -10,7 +10,6 @@ describe('dashboard navigation contracts', () => {
     expect(dashboardNavigation.map((item) => item.href)).toEqual([
       '/bills',
       '/payments',
-      '/vendors',
     ]);
   });
 
