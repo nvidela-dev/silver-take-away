@@ -4,7 +4,7 @@ import {
   PlaceholderTable,
   SurfaceTabs,
 } from '@/app/_components/shared';
-import { paymentPlaceholderTable, paymentTabs } from '@/lib/navigation';
+import { paymentPlaceholderTable, paymentTabs } from '@/app/_navigation';
 
 interface PaymentsPageProps {
   searchParams: Promise<{

@@ -1,4 +1,4 @@
-import type { User } from '@/types';
+import type { User } from '@/lib/types/user';
 import { auth } from '@clerk/nextjs/server';
 import { eq } from 'drizzle-orm';
 

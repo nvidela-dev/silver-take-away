@@ -2,7 +2,7 @@ import {
   UnauthorizedError,
   ForbiddenError,
 } from '@/lib/auth';
-import { billTabs } from '@/lib/navigation';
+import { billTabs } from '@/app/_navigation';
 import { getBillFormOptions, listDraftBills } from '@/lib/queries';
 
 import { BillsWorkspace } from './_components';

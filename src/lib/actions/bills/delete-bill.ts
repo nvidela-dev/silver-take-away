@@ -7,7 +7,7 @@ import { requireAuth } from '@/lib/auth/require-auth';
 import { requireRole } from '@/lib/auth/require-role';
 import { deleteBillUseCase } from '@/lib/use-cases/bills';
 import { billIdSchema } from '@/lib/validators/bill.schemas';
-import type { ActionResult } from '@/types';
+import type { ActionResult } from '@/lib/types/common';
 
 import { toBillActionError } from './errors';
 import { BILL_DELETE_ROLES } from './permissions';

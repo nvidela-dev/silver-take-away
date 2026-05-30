@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 
 import { assertDatabaseConfigured, db } from '@/db';
 import { users } from '@/db/schema';
-import type { User } from '@/types';
+import type { User } from '@/lib/types/user';
 
 import {
   type ClerkLocalUserProfile,

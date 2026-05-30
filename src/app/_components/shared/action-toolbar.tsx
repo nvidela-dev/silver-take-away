@@ -1,5 +1,5 @@
 import { Button } from '@/app/_components/ui/button';
-import type { BulkActionDescriptor, RowActionDescriptor } from '@/types';
+import type { BulkActionDescriptor, RowActionDescriptor } from '@/app/_types/table';
 
 interface ActionToolbarProps {
   actions?: readonly RowActionDescriptor[];

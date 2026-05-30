@@ -23,12 +23,9 @@ import { Button } from '@/app/_components/ui/button';
 import { createBill } from '@/lib/actions/bills/create-bill';
 import { deleteBill } from '@/lib/actions/bills/delete-bill';
 import { updateBill } from '@/lib/actions/bills/update-bill';
-import { billTabs } from '@/lib/navigation';
-import type {
-  BillFormOptions,
-  CreateBillInput,
-  DraftBillListItem,
-} from '@/types';
+import { billTabs } from '@/app/_navigation';
+import type { CreateBillInput } from '@/lib/types/bill/inputs';
+import type { BillFormOptions, DraftBillListItem } from '@/lib/types/bill/views';
 
 import { BillsFilteredView } from './bills-filtered-view';
 import { BillsStatusOverview } from './bills-status-overview';

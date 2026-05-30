@@ -11,11 +11,8 @@ import {
   users,
   vendors,
 } from '@/db/schema';
-import type {
-  Bill,
-  BillFormOptions,
-  DraftBillListItem,
-} from '@/types';
+import type { Bill } from '@/lib/types/bill/bill';
+import type { BillFormOptions, DraftBillListItem } from '@/lib/types/bill/views';
 
 export async function getBillById(id: string): Promise<Bill | null> {
   const [bill] = await db.select().from(bills).where(eq(bills.id, id)).limit(1);

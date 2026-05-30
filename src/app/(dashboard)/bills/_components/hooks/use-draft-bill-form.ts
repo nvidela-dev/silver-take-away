@@ -21,10 +21,8 @@ import {
   positiveMoneyStringSchema,
   sumMoneyStrings,
 } from '@/lib/validators/shared';
-import type {
-  CreateBillInput,
-  DraftBillListItem,
-} from '@/types';
+import type { CreateBillInput } from '@/lib/types/bill/inputs';
+import type { DraftBillListItem } from '@/lib/types/bill/views';
 
 interface UseDraftBillFormOptions {
   editingBill: DraftBillListItem | null;

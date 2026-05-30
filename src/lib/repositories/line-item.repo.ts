@@ -1,4 +1,4 @@
-import type { CreateBillInput, UpdateBillInput } from '@/types';
+import type { CreateBillInput, UpdateBillInput } from '@/lib/types/bill/inputs';
 
 import { createUuid } from '@/lib/id';
 

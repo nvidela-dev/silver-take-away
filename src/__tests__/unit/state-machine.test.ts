@@ -9,7 +9,8 @@ import {
   DraftBillGuardError,
   assertDraftBillEditable,
 } from '@/lib/services/bill-transitions';
-import type { BillActionType, BillStatus } from '@/types';
+import type { BillActionType } from '@/lib/types/bill/actions';
+import type { BillStatus } from '@/lib/types/enums';
 
 const ALL_STATUSES: BillStatus[] = [
   'draft',

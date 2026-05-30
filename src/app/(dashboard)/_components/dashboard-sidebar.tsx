@@ -9,7 +9,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { dashboardNavigation } from '@/lib/navigation';
+import { dashboardNavigation } from '@/app/_navigation';
 import { cn } from '@/lib/utils';
 
 const navIconMap = {
