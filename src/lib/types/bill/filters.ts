@@ -3,24 +3,12 @@ import type { BillStatus } from '../enums';
 import type { User } from '../user';
 import type { Vendor } from '../vendor';
 
-export interface BillFilterOptions {
+export type { BillFilters } from '@/lib/validators/bill-filter-spec';
+
+export interface BillReferenceData {
   vendors: Pick<Vendor, 'id' | 'name' | 'email' | 'ownerId'>[];
   owners: Pick<User, 'id' | 'email' | 'fullName'>[];
   categories: Pick<Category, 'id' | 'name'>[];
-}
-
-export interface BillFilters {
-  search?: string;
-  status?: BillStatus[];
-  vendorId?: string;
-  vendorOwnerId?: string;
-  categoryId?: string;
-  amountMin?: number;
-  amountMax?: number;
-  invoiceDateFrom?: string;
-  invoiceDateTo?: string;
-  dueDateFrom?: string;
-  dueDateTo?: string;
 }
 
 export interface BillPagination {
@@ -29,12 +17,18 @@ export interface BillPagination {
 }
 
 export interface BillListQuery {
-  statuses: BillStatus[];
-  filters?: BillFilters;
+  statuses: readonly BillStatus[];
+  filters?: import('@/lib/validators/bill-filter-spec').BillFilters;
   pagination?: BillPagination;
 }
 
 export interface BillListResult<T> {
   items: T[];
   total: number;
+}
+
+export interface BillStatusAggregate {
+  status: BillStatus;
+  count: number;
+  totalAmount: string;
 }

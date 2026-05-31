@@ -2,10 +2,11 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
+import type { BillFilterTab } from '@/lib/types/bill/tabs';
+
 import {
   BILL_FILTER_DIMENSIONS,
   type BillFilterDimension,
-  type BillFilterTab,
 } from '../filters/bill-filter-dimensions';
 import type { BillFiltersController } from './use-bill-filters';
 

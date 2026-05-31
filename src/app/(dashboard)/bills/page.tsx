@@ -4,18 +4,20 @@ import {
 } from '@/lib/auth';
 import { billTabs } from '@/app/_navigation';
 import {
-  getBillFilterOptions,
-  getBillFormOptions,
-  listApprovalBills,
-  listDraftBills,
-  listPaymentBills,
+  getBillOverviewAggregates,
+  getBillReferenceData,
+  listBillsForTab,
 } from '@/lib/queries';
 import {
   billFiltersSchema,
   billPaginationSchema,
   DEFAULT_BILL_PAGE_SIZE,
-} from '@/lib/validators/bill.schemas';
-import type { BillFilters, BillPagination } from '@/lib/types/bill/filters';
+  scopedFiltersForTab,
+  type BillFilters,
+} from '@/lib/validators/bill-filter-spec';
+import type { BillFilterTab } from '@/lib/types/bill/tabs';
+import type { BillListResult, BillPagination } from '@/lib/types/bill/filters';
+import type { BillListItem } from '@/lib/types/bill/views';
 
 import { BillsWorkspace } from './_components';
 
@@ -23,7 +25,7 @@ interface BillsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-type BillTabValue = 'overview' | 'drafts' | 'approvals' | 'payment';
+type BillTabValue = 'overview' | BillFilterTab;
 
 function resolveActiveTab(tab: string | string[] | undefined): BillTabValue {
   const value = Array.isArray(tab) ? tab[0] : tab;
@@ -57,55 +59,55 @@ function parsePagination(params: Record<string, string>): BillPagination {
     : { page: 1, pageSize: DEFAULT_BILL_PAGE_SIZE };
 }
 
-const emptyListResult = { items: [], total: 0 };
+const emptyListResult: BillListResult<BillListItem> = { items: [], total: 0 };
+
+const errorMessages = {
+  unauthorized: 'Sign in before creating or viewing bills.',
+  forbidden: 'Your account needs Bill Pay access before creating or viewing bills.',
+  generic: 'Bills could not be loaded. Check the database connection.',
+} as const;
+
+function resolveLoadError(error: unknown): string {
+  if (error instanceof UnauthorizedError) return errorMessages.unauthorized;
+  if (error instanceof ForbiddenError) return errorMessages.forbidden;
+  return errorMessages.generic;
+}
+
+async function loadActiveTabBills(
+  activeTab: BillTabValue,
+  filters: BillFilters,
+  pagination: BillPagination,
+) {
+  if (activeTab === 'overview') return emptyListResult;
+  return listBillsForTab(activeTab, {
+    filters: scopedFiltersForTab(activeTab, filters),
+    pagination,
+  });
+}
 
 async function loadBillWorkspaceData(
   activeTab: BillTabValue,
   filters: BillFilters,
   pagination: BillPagination,
 ) {
-  const isDraftsActive = activeTab === 'drafts';
-  const isApprovalsActive = activeTab === 'approvals';
-  const isPaymentActive = activeTab === 'payment';
-
   try {
-    const [
-      draftBills,
-      approvalBills,
-      paymentBills,
-      billFormOptions,
-      billFilterOptions,
-    ] = await Promise.all([
-      listDraftBills(isDraftsActive ? { filters, pagination } : {}),
-      listApprovalBills(isApprovalsActive ? { filters, pagination } : {}),
-      listPaymentBills(isPaymentActive ? { filters, pagination } : {}),
-      getBillFormOptions(),
-      getBillFilterOptions(),
+    const [activeBills, aggregates, referenceData] = await Promise.all([
+      loadActiveTabBills(activeTab, filters, pagination),
+      getBillOverviewAggregates(),
+      getBillReferenceData(),
     ]);
     return {
-      draftBills,
-      approvalBills,
-      paymentBills,
-      billFormOptions,
-      billFilterOptions,
+      activeBills,
+      aggregates,
+      referenceData,
       loadError: null,
     };
   } catch (error) {
-    let loadError = 'Bills could not be loaded. Check the database connection.';
-    if (error instanceof UnauthorizedError) {
-      loadError = 'Sign in before creating or viewing bills.';
-    }
-    if (error instanceof ForbiddenError) {
-      loadError = 'Your account needs Bill Pay access before creating or viewing bills.';
-    }
-
     return {
-      draftBills: emptyListResult,
-      approvalBills: emptyListResult,
-      paymentBills: emptyListResult,
-      billFormOptions: { vendors: [], categories: [] },
-      billFilterOptions: { vendors: [], owners: [], categories: [] },
-      loadError,
+      activeBills: emptyListResult,
+      aggregates: [],
+      referenceData: { vendors: [], owners: [], categories: [] },
+      loadError: resolveLoadError(error),
     };
   }
 }
@@ -120,13 +122,11 @@ export default async function BillsPage({ searchParams }: BillsPageProps) {
 
   return (
     <BillsWorkspace
+      activeBills={workspaceData.activeBills}
       activeTab={activeTab}
-      approvalBills={workspaceData.approvalBills}
-      draftBills={workspaceData.draftBills}
-      filterOptions={workspaceData.billFilterOptions}
+      aggregates={workspaceData.aggregates}
       loadError={workspaceData.loadError}
-      options={workspaceData.billFormOptions}
-      paymentBills={workspaceData.paymentBills}
+      referenceData={workspaceData.referenceData}
     />
   );
 }

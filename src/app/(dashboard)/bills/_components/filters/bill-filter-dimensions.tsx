@@ -4,7 +4,9 @@ import type { ComponentType } from 'react';
 
 import { billStatusDisplay } from '@/app/_display';
 import { formatDate, formatMoney } from '@/lib/utils';
-import type { BillStatus } from '@/lib/types/enums';
+import type { BillReferenceData } from '@/lib/types/bill/filters';
+import { PAYMENT_TAB_STATUSES, type BillFilterTab } from '@/lib/types/bill/tabs';
+import { BILL_FILTER_FIELD_SPECS } from '@/lib/validators/bill-filter-spec';
 
 import type { BillFiltersController } from '../hooks/use-bill-filters';
 import { DateRangeEditor } from './editors/date-range-editor';
@@ -13,19 +15,12 @@ import { NumberRangeEditor } from './editors/number-range-editor';
 import { SelectEditor, type SelectEditorOption } from './editors/select-editor';
 import { TextEditor } from './editors/text-editor';
 
-export type BillFilterTab = 'drafts' | 'approvals' | 'payment';
-
-export interface BillFilterOptionsBag {
-  vendors: { id: string; name: string }[];
-  owners: { id: string; fullName: string | null; email: string }[];
-  categories: { id: string; name: string }[];
-  statuses: BillStatus[];
-}
+export type { BillFilterTab };
 
 export interface BillFilterDimensionEditorProps {
   controller: BillFiltersController;
   // eslint-disable-next-line react/no-unused-prop-types
-  options: BillFilterOptionsBag;
+  options: BillReferenceData;
   onClose: () => void;
 }
 
@@ -35,17 +30,15 @@ export interface BillFilterDimension {
   applicableTabs: readonly BillFilterTab[];
   isActive: (controller: BillFiltersController) => boolean;
   clear: (controller: BillFiltersController) => void;
-  summarise: (controller: BillFiltersController, options: BillFilterOptionsBag) => string;
+  summarise: (controller: BillFiltersController, options: BillReferenceData) => string;
   Editor: ComponentType<BillFilterDimensionEditorProps>;
 }
 
-const ALL_LIST_TABS: readonly BillFilterTab[] = ['drafts', 'approvals', 'payment'];
-
-function vendorOptions(options: BillFilterOptionsBag): SelectEditorOption[] {
+function vendorOptions(options: BillReferenceData): SelectEditorOption[] {
   return options.vendors.map((v) => ({ id: v.id, label: v.name }));
 }
 
-function ownerOptions(options: BillFilterOptionsBag): SelectEditorOption[] {
+function ownerOptions(options: BillReferenceData): SelectEditorOption[] {
   return options.owners.map((o) => ({
     id: o.id,
     label: o.fullName ?? o.email,
@@ -53,7 +46,7 @@ function ownerOptions(options: BillFilterOptionsBag): SelectEditorOption[] {
   }));
 }
 
-function categoryOptions(options: BillFilterOptionsBag): SelectEditorOption[] {
+function categoryOptions(options: BillReferenceData): SelectEditorOption[] {
   return options.categories.map((c) => ({ id: c.id, label: c.name }));
 }
 
@@ -81,7 +74,7 @@ function summariseDateRange(from: string | null, to: string | null): string {
 const searchDimension: BillFilterDimension = {
   id: 'search',
   label: 'Search',
-  applicableTabs: ALL_LIST_TABS,
+  applicableTabs: BILL_FILTER_FIELD_SPECS.search.applicableTabs,
   isActive: (c) => Boolean(c.values.search),
   clear: (c) => {
     void c.setValues({ search: null });
@@ -103,7 +96,7 @@ const searchDimension: BillFilterDimension = {
 const statusDimension: BillFilterDimension = {
   id: 'status',
   label: 'Status',
-  applicableTabs: ['payment'],
+  applicableTabs: BILL_FILTER_FIELD_SPECS.status.applicableTabs,
   isActive: (c) => Array.isArray(c.values.status) && c.values.status.length > 0,
   clear: (c) => {
     void c.setValues({ status: null });
@@ -113,14 +106,17 @@ const statusDimension: BillFilterDimension = {
     if (c.status.length === 1) return billStatusDisplay[c.status[0]].label;
     return `${c.status.length} selected`;
   },
-  Editor: ({ controller, options, onClose }: BillFilterDimensionEditorProps) => (
+  Editor: ({ controller, onClose }: BillFilterDimensionEditorProps) => (
     <MultiSelectEditor
       onApply={(v) => {
         void controller.setValues({ status: v });
         onClose();
       }}
       onCancel={onClose}
-      options={options.statuses.map((s) => ({ id: s, label: billStatusDisplay[s].label }))}
+      options={PAYMENT_TAB_STATUSES.map((s) => ({
+        id: s,
+        label: billStatusDisplay[s].label,
+      }))}
       value={controller.status}
     />
   ),
@@ -129,7 +125,7 @@ const statusDimension: BillFilterDimension = {
 const vendorDimension: BillFilterDimension = {
   id: 'vendor',
   label: 'Vendor',
-  applicableTabs: ALL_LIST_TABS,
+  applicableTabs: BILL_FILTER_FIELD_SPECS.vendorId.applicableTabs,
   isActive: (c) => Boolean(c.values.vendorId),
   clear: (c) => {
     void c.setValues({ vendorId: null });
@@ -152,7 +148,7 @@ const vendorDimension: BillFilterDimension = {
 const vendorOwnerDimension: BillFilterDimension = {
   id: 'vendorOwner',
   label: 'Vendor owner',
-  applicableTabs: ALL_LIST_TABS,
+  applicableTabs: BILL_FILTER_FIELD_SPECS.vendorOwnerId.applicableTabs,
   isActive: (c) => Boolean(c.values.vendorOwnerId),
   clear: (c) => {
     void c.setValues({ vendorOwnerId: null });
@@ -175,7 +171,7 @@ const vendorOwnerDimension: BillFilterDimension = {
 const categoryDimension: BillFilterDimension = {
   id: 'category',
   label: 'Category',
-  applicableTabs: ALL_LIST_TABS,
+  applicableTabs: BILL_FILTER_FIELD_SPECS.categoryId.applicableTabs,
   isActive: (c) => Boolean(c.values.categoryId),
   clear: (c) => {
     void c.setValues({ categoryId: null });
@@ -198,7 +194,7 @@ const categoryDimension: BillFilterDimension = {
 const amountDimension: BillFilterDimension = {
   id: 'amount',
   label: 'Amount',
-  applicableTabs: ALL_LIST_TABS,
+  applicableTabs: BILL_FILTER_FIELD_SPECS.amountMin.applicableTabs,
   isActive: (c) => c.values.amountMin !== null || c.values.amountMax !== null,
   clear: (c) => {
     void c.setValues({ amountMin: null, amountMax: null });
@@ -220,7 +216,7 @@ const amountDimension: BillFilterDimension = {
 const invoiceDateDimension: BillFilterDimension = {
   id: 'invoiceDate',
   label: 'Invoice date',
-  applicableTabs: ALL_LIST_TABS,
+  applicableTabs: BILL_FILTER_FIELD_SPECS.invoiceDateFrom.applicableTabs,
   isActive: (c) => Boolean(c.values.invoiceDateFrom) || Boolean(c.values.invoiceDateTo),
   clear: (c) => {
     void c.setValues({ invoiceDateFrom: null, invoiceDateTo: null });
@@ -245,7 +241,7 @@ const invoiceDateDimension: BillFilterDimension = {
 const dueDateDimension: BillFilterDimension = {
   id: 'dueDate',
   label: 'Due date',
-  applicableTabs: ALL_LIST_TABS,
+  applicableTabs: BILL_FILTER_FIELD_SPECS.dueDateFrom.applicableTabs,
   isActive: (c) => Boolean(c.values.dueDateFrom) || Boolean(c.values.dueDateTo),
   clear: (c) => {
     void c.setValues({ dueDateFrom: null, dueDateTo: null });

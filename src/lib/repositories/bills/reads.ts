@@ -2,12 +2,7 @@ import {
   and,
   desc,
   eq,
-  exists,
-  gte,
-  ilike,
   inArray,
-  lte,
-  or,
   sql,
   type SQL,
 } from 'drizzle-orm';
@@ -22,70 +17,37 @@ import {
 } from '@/db/schema';
 import type { Bill } from '@/lib/types/bill/bill';
 import type {
-  BillFilterOptions,
-  BillFilters,
   BillListQuery,
   BillListResult,
   BillPagination,
+  BillReferenceData,
+  BillStatusAggregate,
 } from '@/lib/types/bill/filters';
-import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
+import type { BillStatus } from '@/lib/types/enums';
+import type { BillListItem } from '@/lib/types/bill/views';
 import type { Category } from '@/lib/types/category';
 import type { User } from '@/lib/types/user';
 import type { Vendor } from '@/lib/types/vendor';
+
+import { buildBillFilterClauses } from './filter-clauses';
 
 export async function getBillById(id: string): Promise<Bill | null> {
   const [bill] = await db.select().from(bills).where(eq(bills.id, id)).limit(1);
   return bill ?? null;
 }
 
-function buildSearchClause(term: string): SQL | undefined {
-  const wildcard = `%${term}%`;
-  return or(
-    ilike(vendors.name, wildcard),
-    ilike(bills.invoiceNumber, wildcard),
-    ilike(bills.description, wildcard),
-  );
-}
-
-function buildCategoryClause(categoryId: string): SQL {
-  return exists(
-    db
-      .select({ one: sql`1` })
-      .from(billLineItems)
-      .where(and(
-        eq(billLineItems.billId, bills.id),
-        eq(billLineItems.categoryId, categoryId),
-      )),
-  );
-}
-
-function buildBillFilterClauses(filters: BillFilters): (SQL | undefined)[] {
-  return [
-    filters.search ? buildSearchClause(filters.search) : undefined,
-    filters.status?.length ? inArray(bills.status, filters.status) : undefined,
-    filters.vendorId ? eq(bills.vendorId, filters.vendorId) : undefined,
-    filters.vendorOwnerId ? eq(vendors.ownerId, filters.vendorOwnerId) : undefined,
-    filters.amountMin !== undefined
-      ? gte(bills.amount, filters.amountMin.toFixed(2)) : undefined,
-    filters.amountMax !== undefined
-      ? lte(bills.amount, filters.amountMax.toFixed(2)) : undefined,
-    filters.invoiceDateFrom ? gte(bills.invoiceDate, filters.invoiceDateFrom) : undefined,
-    filters.invoiceDateTo ? lte(bills.invoiceDate, filters.invoiceDateTo) : undefined,
-    filters.dueDateFrom ? gte(bills.dueDate, filters.dueDateFrom) : undefined,
-    filters.dueDateTo ? lte(bills.dueDate, filters.dueDateTo) : undefined,
-    filters.categoryId ? buildCategoryClause(filters.categoryId) : undefined,
-  ];
-}
-
 function buildBillWhereClauses(
   statuses: BillListQuery['statuses'],
-  filters: BillFilters | undefined,
+  filters: BillListQuery['filters'],
 ): SQL[] {
-  const candidates: (SQL | undefined)[] = [
-    statuses.length > 0 ? inArray(bills.status, statuses) : undefined,
-    ...(filters ? buildBillFilterClauses(filters) : []),
-  ];
-  return candidates.filter((clause): clause is SQL => clause !== undefined);
+  const clauses: SQL[] = [];
+  if (statuses.length > 0) {
+    clauses.push(inArray(bills.status, [...statuses]));
+  }
+  if (filters) {
+    clauses.push(...buildBillFilterClauses(filters));
+  }
+  return clauses;
 }
 
 interface BillRowSlice {
@@ -202,33 +164,7 @@ export async function listBills(
   return { items: groupBillRows(rows), total };
 }
 
-export async function getBillFormOptions(): Promise<BillFormOptions> {
-  const [vendorRows, categoryRows] = await Promise.all([
-    db
-      .select({
-        id: vendors.id,
-        name: vendors.name,
-        email: vendors.email,
-        ownerId: vendors.ownerId,
-      })
-      .from(vendors)
-      .orderBy(vendors.name),
-    db
-      .select({
-        id: categories.id,
-        name: categories.name,
-      })
-      .from(categories)
-      .orderBy(categories.name),
-  ]);
-
-  return {
-    vendors: vendorRows,
-    categories: categoryRows,
-  };
-}
-
-export async function getBillFilterOptions(): Promise<BillFilterOptions> {
+export async function getBillReferenceData(): Promise<BillReferenceData> {
   const [vendorRows, ownerRows, categoryRows] = await Promise.all([
     db
       .select({
@@ -262,4 +198,23 @@ export async function getBillFilterOptions(): Promise<BillFilterOptions> {
     owners: ownerRows,
     categories: categoryRows,
   };
+}
+
+export async function getBillStatusAggregates(
+  statuses: readonly BillStatus[],
+): Promise<BillStatusAggregate[]> {
+  if (statuses.length === 0) {
+    return [];
+  }
+  const rows = await db
+    .select({
+      status: bills.status,
+      count: sql<number>`count(*)::int`,
+      totalAmount: sql<string>`coalesce(sum(${bills.amount}), 0)::text`,
+    })
+    .from(bills)
+    .where(inArray(bills.status, [...statuses]))
+    .groupBy(bills.status);
+
+  return rows;
 }

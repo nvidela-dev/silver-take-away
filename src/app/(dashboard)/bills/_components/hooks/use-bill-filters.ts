@@ -1,37 +1,19 @@
 'use client';
 
+import { useQueryStates } from 'nuqs';
 import {
-  parseAsArrayOf,
-  parseAsFloat,
-  parseAsInteger,
-  parseAsString,
-  useQueryStates,
-} from 'nuqs';
-import { useCallback, useMemo } from 'react';
+  useCallback,
+  useMemo,
+  useTransition,
+} from 'react';
 
-import { BILL_PAGE_SIZE_OPTIONS, DEFAULT_BILL_PAGE_SIZE } from '@/lib/validators/bill.schemas';
+import {
+  BILL_FILTER_FIELD_KEYS,
+  BILL_PAGE_SIZE_OPTIONS,
+  filterParsers,
+  paginationParsers,
+} from '@/lib/validators/bill-filter-spec';
 import type { BillStatus } from '@/lib/types/enums';
-
-const filterParsers = {
-  search: parseAsString,
-  status: parseAsArrayOf(parseAsString),
-  vendorId: parseAsString,
-  vendorOwnerId: parseAsString,
-  categoryId: parseAsString,
-  amountMin: parseAsFloat,
-  amountMax: parseAsFloat,
-  invoiceDateFrom: parseAsString,
-  invoiceDateTo: parseAsString,
-  dueDateFrom: parseAsString,
-  dueDateTo: parseAsString,
-};
-
-const paginationParsers = {
-  page: parseAsInteger.withDefault(1),
-  pageSize: parseAsInteger.withDefault(DEFAULT_BILL_PAGE_SIZE),
-};
-
-const queryOptions = { shallow: false, history: 'push' } as const;
 
 export type BillFilterValues = {
   [K in keyof typeof filterParsers]: ReturnType<typeof filterParsers[K]['parseServerSide']>;
@@ -42,27 +24,25 @@ export interface BillFiltersController {
   status: BillStatus[] | null;
   pagination: { page: number; pageSize: number };
   pageSizeOptions: readonly number[];
+  isPending: boolean;
   setValues: (updates: Partial<BillFilterValues>) => Promise<URLSearchParams>;
   clearAll: () => Promise<URLSearchParams>;
   setPage: (page: number) => Promise<URLSearchParams>;
   setPageSize: (pageSize: number) => Promise<URLSearchParams>;
 }
 
-const clearedFilters: Partial<BillFilterValues> = {
-  search: null,
-  status: null,
-  vendorId: null,
-  vendorOwnerId: null,
-  categoryId: null,
-  amountMin: null,
-  amountMax: null,
-  invoiceDateFrom: null,
-  invoiceDateTo: null,
-  dueDateFrom: null,
-  dueDateTo: null,
-};
+const clearedFilters = Object.fromEntries(
+  BILL_FILTER_FIELD_KEYS.map((key) => [key, null]),
+) as Partial<BillFilterValues>;
 
 export function useBillFilters(): BillFiltersController {
+  const [isPending, startTransition] = useTransition();
+
+  const queryOptions = useMemo(
+    () => ({ shallow: false, history: 'push' as const, startTransition }),
+    [startTransition],
+  );
+
   const [values, setValuesRaw] = useQueryStates(filterParsers, queryOptions);
   const [pagination, setPaginationRaw] = useQueryStates(paginationParsers, queryOptions);
 
@@ -99,6 +79,7 @@ export function useBillFilters(): BillFiltersController {
     status,
     pagination,
     pageSizeOptions: BILL_PAGE_SIZE_OPTIONS,
+    isPending,
     setValues,
     clearAll,
     setPage,

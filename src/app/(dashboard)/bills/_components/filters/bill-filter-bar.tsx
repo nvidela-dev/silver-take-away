@@ -1,19 +1,17 @@
 'use client';
 
 import { Button } from '@/app/_components/ui/button';
+import type { BillReferenceData } from '@/lib/types/bill/filters';
+import type { BillFilterTab } from '@/lib/types/bill/tabs';
 
 import type { BillFiltersController } from '../hooks/use-bill-filters';
 import { useBillFilterBar } from '../hooks/use-bill-filter-bar';
 import { AddFilterPopover } from './add-filter-popover';
 import { BillFilterChip } from './bill-filter-chip';
-import type {
-  BillFilterOptionsBag,
-  BillFilterTab,
-} from './bill-filter-dimensions';
 
 interface BillFilterBarProps {
   controller: BillFiltersController;
-  options: BillFilterOptionsBag;
+  options: BillReferenceData;
   tab: BillFilterTab;
 }
 
@@ -49,5 +47,3 @@ export function BillFilterBar({ controller, options, tab }: BillFilterBarProps) 
     </div>
   );
 }
-
-export type { BillFilterOptionsBag };
