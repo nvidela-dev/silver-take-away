@@ -6,11 +6,11 @@ import { useCallback, useRef, useState } from 'react';
 import { Button } from '@/app/_components/ui/button';
 
 import { usePopoverDismiss } from '../hooks/use-popover-dismiss';
-import type { BillFilterDimension, BillFilterDimensionId } from './bill-filter-registry';
+import type { BillFilterDimension } from './bill-filter-dimensions';
 
 interface AddFilterPopoverProps {
   dimensions: readonly BillFilterDimension[];
-  onPick: (id: BillFilterDimensionId) => void;
+  onPick: (id: string) => void;
 }
 
 export function AddFilterPopover({ dimensions, onPick }: AddFilterPopoverProps) {

@@ -38,83 +38,54 @@ export async function getBillById(id: string): Promise<Bill | null> {
   return bill ?? null;
 }
 
+function buildSearchClause(term: string): SQL | undefined {
+  const wildcard = `%${term}%`;
+  return or(
+    ilike(vendors.name, wildcard),
+    ilike(bills.invoiceNumber, wildcard),
+    ilike(bills.description, wildcard),
+  );
+}
+
+function buildCategoryClause(categoryId: string): SQL {
+  return exists(
+    db
+      .select({ one: sql`1` })
+      .from(billLineItems)
+      .where(and(
+        eq(billLineItems.billId, bills.id),
+        eq(billLineItems.categoryId, categoryId),
+      )),
+  );
+}
+
+function buildBillFilterClauses(filters: BillFilters): (SQL | undefined)[] {
+  return [
+    filters.search ? buildSearchClause(filters.search) : undefined,
+    filters.status?.length ? inArray(bills.status, filters.status) : undefined,
+    filters.vendorId ? eq(bills.vendorId, filters.vendorId) : undefined,
+    filters.vendorOwnerId ? eq(vendors.ownerId, filters.vendorOwnerId) : undefined,
+    filters.amountMin !== undefined
+      ? gte(bills.amount, filters.amountMin.toFixed(2)) : undefined,
+    filters.amountMax !== undefined
+      ? lte(bills.amount, filters.amountMax.toFixed(2)) : undefined,
+    filters.invoiceDateFrom ? gte(bills.invoiceDate, filters.invoiceDateFrom) : undefined,
+    filters.invoiceDateTo ? lte(bills.invoiceDate, filters.invoiceDateTo) : undefined,
+    filters.dueDateFrom ? gte(bills.dueDate, filters.dueDateFrom) : undefined,
+    filters.dueDateTo ? lte(bills.dueDate, filters.dueDateTo) : undefined,
+    filters.categoryId ? buildCategoryClause(filters.categoryId) : undefined,
+  ];
+}
+
 function buildBillWhereClauses(
   statuses: BillListQuery['statuses'],
   filters: BillFilters | undefined,
 ): SQL[] {
-  const clauses: SQL[] = [];
-
-  if (statuses.length > 0) {
-    clauses.push(inArray(bills.status, statuses));
-  }
-
-  if (!filters) {
-    return clauses;
-  }
-
-  if (filters.search) {
-    const term = `%${filters.search}%`;
-    const searchClause = or(
-      ilike(vendors.name, term),
-      ilike(bills.invoiceNumber, term),
-      ilike(bills.description, term),
-    );
-    if (searchClause) {
-      clauses.push(searchClause);
-    }
-  }
-
-  if (filters.status && filters.status.length > 0) {
-    clauses.push(inArray(bills.status, filters.status));
-  }
-
-  if (filters.vendorId) {
-    clauses.push(eq(bills.vendorId, filters.vendorId));
-  }
-
-  if (filters.vendorOwnerId) {
-    clauses.push(eq(vendors.ownerId, filters.vendorOwnerId));
-  }
-
-  if (filters.amountMin !== undefined) {
-    clauses.push(gte(bills.amount, filters.amountMin.toFixed(2)));
-  }
-
-  if (filters.amountMax !== undefined) {
-    clauses.push(lte(bills.amount, filters.amountMax.toFixed(2)));
-  }
-
-  if (filters.invoiceDateFrom) {
-    clauses.push(gte(bills.invoiceDate, filters.invoiceDateFrom));
-  }
-
-  if (filters.invoiceDateTo) {
-    clauses.push(lte(bills.invoiceDate, filters.invoiceDateTo));
-  }
-
-  if (filters.dueDateFrom) {
-    clauses.push(gte(bills.dueDate, filters.dueDateFrom));
-  }
-
-  if (filters.dueDateTo) {
-    clauses.push(lte(bills.dueDate, filters.dueDateTo));
-  }
-
-  if (filters.categoryId) {
-    clauses.push(
-      exists(
-        db
-          .select({ one: sql`1` })
-          .from(billLineItems)
-          .where(and(
-            eq(billLineItems.billId, bills.id),
-            eq(billLineItems.categoryId, filters.categoryId),
-          )),
-      ),
-    );
-  }
-
-  return clauses;
+  const candidates: (SQL | undefined)[] = [
+    statuses.length > 0 ? inArray(bills.status, statuses) : undefined,
+    ...(filters ? buildBillFilterClauses(filters) : []),
+  ];
+  return candidates.filter((clause): clause is SQL => clause !== undefined);
 }
 
 interface BillRowSlice {

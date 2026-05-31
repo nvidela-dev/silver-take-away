@@ -46,7 +46,7 @@ import {
   BillFilterBar,
   type BillFilterOptionsBag,
 } from './filters/bill-filter-bar';
-import type { BillFilterTab } from './filters/bill-filter-registry';
+import type { BillFilterTab } from './filters/bill-filter-dimensions';
 import { useBillFilters } from './hooks/use-bill-filters';
 import { useBillTransitions } from './hooks/use-bill-transitions';
 import { useColumnVisibility } from './hooks/use-column-visibility';
