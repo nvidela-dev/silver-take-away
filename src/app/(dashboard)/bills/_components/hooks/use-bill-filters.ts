@@ -31,6 +31,8 @@ const paginationParsers = {
   pageSize: parseAsInteger.withDefault(DEFAULT_BILL_PAGE_SIZE),
 };
 
+const queryOptions = { shallow: false, history: 'push' } as const;
+
 export type BillFilterValues = {
   [K in keyof typeof filterParsers]: ReturnType<typeof filterParsers[K]['parseServerSide']>;
 };
@@ -61,8 +63,8 @@ const clearedFilters: Partial<BillFilterValues> = {
 };
 
 export function useBillFilters(): BillFiltersController {
-  const [values, setValuesRaw] = useQueryStates(filterParsers);
-  const [pagination, setPaginationRaw] = useQueryStates(paginationParsers);
+  const [values, setValuesRaw] = useQueryStates(filterParsers, queryOptions);
+  const [pagination, setPaginationRaw] = useQueryStates(paginationParsers, queryOptions);
 
   const setValues = useCallback(
     (updates: Partial<BillFilterValues>) => {
