@@ -4,7 +4,7 @@ import { Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
 import type { FieldError, UseFormRegister } from 'react-hook-form';
 
-import { Button } from '@/app/_components/ui/button';
+import { Button } from '@/app/_components/atoms/button';
 import type { DraftBillFormInput } from '@/lib/validators/bill.schemas';
 import type { BillFormOptions } from '@/lib/types/bill/views';
 

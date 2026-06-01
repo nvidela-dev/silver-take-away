@@ -1,4 +1,4 @@
-import { Badge } from '@/app/_components/ui/badge';
+import { Badge } from '@/app/_components/atoms/badge';
 import type { StatusDisplayMeta, SurfaceTone } from '@/app/_types/style';
 
 const dotToneClass: Record<SurfaceTone, string> = {

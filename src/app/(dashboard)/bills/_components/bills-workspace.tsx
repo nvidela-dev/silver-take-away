@@ -14,11 +14,9 @@ import {
   useTransition,
 } from 'react';
 
-import {
-  PageHeader,
-  SurfaceTabs,
-} from '@/app/_components/shared';
-import { Button } from '@/app/_components/ui/button';
+import { Button } from '@/app/_components/atoms/button';
+import { PageHeader } from '@/app/_components/molecules/page-header';
+import { SurfaceTabs } from '@/app/_components/molecules/surface-tabs';
 import { createBill } from '@/lib/actions/bills/create-bill';
 import { deleteBill } from '@/lib/actions/bills/delete-bill';
 import { updateBill } from '@/lib/actions/bills/update-bill';

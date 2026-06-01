@@ -2,8 +2,8 @@
 
 import { Edit2, Trash2, X } from 'lucide-react';
 
-import { StatusBadge } from '@/app/_components/shared';
-import { Button } from '@/app/_components/ui/button';
+import { Button } from '@/app/_components/atoms/button';
+import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import { billStatusDisplay } from '@/app/_display';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';

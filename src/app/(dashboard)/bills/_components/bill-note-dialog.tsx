@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { X } from 'lucide-react';
 
-import { Button } from '@/app/_components/ui/button';
+import { Button } from '@/app/_components/atoms/button';
 
 import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
