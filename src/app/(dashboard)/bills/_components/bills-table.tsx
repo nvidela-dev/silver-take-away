@@ -1,5 +1,6 @@
 'use client';
 
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   useTransition,
@@ -10,6 +11,7 @@ import { Button } from '@/app/_components/atoms/button';
 import { Card } from '@/app/_components/atoms/card';
 import { formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';
+import type { BillSort, BillSortKey } from '@/lib/validators/bill-sort-spec';
 
 function BillsTableSkeletonRows({
   columns,
@@ -56,6 +58,7 @@ export interface BillsTableColumn {
   cellClassName?: string;
   srOnlyHeader?: boolean;
   isConfigurable?: boolean;
+  sortKey?: BillSortKey;
   renderHeader?: () => ReactNode;
   render: (bill: BillListItem) => ReactNode;
 }
@@ -69,9 +72,107 @@ interface BillsTableProps {
   isLoading?: boolean;
   loadingMessage?: string;
   onPageSizeChange?: (pageSize: number) => void;
+  onSortChange?: (key: BillSortKey) => void;
   pageSize?: number;
   pageSizeOptions?: readonly number[];
+  sort?: BillSort;
   totalBills?: number;
+}
+
+function SortIndicator({
+  active,
+  direction,
+}: {
+  active: boolean;
+  direction: 'asc' | 'desc';
+}) {
+  if (!active) {
+    return <ArrowUpDown aria-hidden className="size-3.5 opacity-40" />;
+  }
+  return direction === 'asc'
+    ? <ArrowUp aria-hidden className="size-3.5" />
+    : <ArrowDown aria-hidden className="size-3.5" />;
+}
+
+function SortableHeader({
+  column,
+  isActive,
+  direction,
+  onSort,
+}: {
+  column: BillsTableColumn;
+  isActive: boolean;
+  direction: 'asc' | 'desc';
+  onSort: (key: BillSortKey) => void;
+}) {
+  if (!column.sortKey) return column.header;
+  const { sortKey } = column;
+  const nextDir = isActive && direction === 'desc' ? 'asc' : 'desc';
+  const isRightAligned = (column.headerClassName ?? '').includes('text-right');
+
+  return (
+    <button
+      aria-label={`Sort by ${column.header} ${nextDir}ending`}
+      className={[
+        'inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700',
+        isRightAligned ? 'w-full justify-end' : '',
+      ].join(' ').trim()}
+      onClick={() => onSort(sortKey)}
+      type="button"
+    >
+      <span>{column.header}</span>
+      <SortIndicator active={isActive} direction={direction} />
+    </button>
+  );
+}
+
+function resolveAriaSort(
+  active: boolean,
+  direction: 'asc' | 'desc' | undefined,
+): 'ascending' | 'descending' | undefined {
+  if (!active) return undefined;
+  return direction === 'asc' ? 'ascending' : 'descending';
+}
+
+function BillsTableHeaderCell({
+  column,
+  onSortChange = undefined,
+  sort = undefined,
+}: {
+  column: BillsTableColumn;
+  onSortChange?: (key: BillSortKey) => void;
+  sort?: BillSort;
+}) {
+  const isSortable = Boolean(column.sortKey && onSortChange);
+  const isActive = isSortable && sort?.by === column.sortKey;
+  const ariaSort = resolveAriaSort(isActive, sort?.dir);
+
+  let content: ReactNode;
+  if (column.renderHeader) {
+    content = column.renderHeader();
+  } else if (column.srOnlyHeader) {
+    content = <span className="sr-only">{column.header}</span>;
+  } else if (isSortable && onSortChange) {
+    content = (
+      <SortableHeader
+        column={column}
+        direction={sort?.dir ?? 'desc'}
+        isActive={isActive}
+        onSort={onSortChange}
+      />
+    );
+  } else {
+    content = column.header;
+  }
+
+  return (
+    <th
+      aria-sort={ariaSort}
+      className={column.headerClassName ?? 'py-3 pr-4 font-medium'}
+    >
+      {content}
+    </th>
+  );
 }
 
 export function BillsTable({
@@ -83,8 +184,10 @@ export function BillsTable({
   isLoading = false,
   loadingMessage = 'Loading bills…',
   onPageSizeChange = undefined,
+  onSortChange = undefined,
   pageSize = 10,
   pageSizeOptions = [],
+  sort = undefined,
   totalBills = bills.length,
 }: BillsTableProps) {
   const router = useRouter();
@@ -111,17 +214,12 @@ export function BillsTable({
           <thead className="border-b border-slate-200 text-xs font-medium text-slate-500">
             <tr>
               {columns.map((column) => (
-                <th
-                  className={column.headerClassName ?? 'py-3 pr-4 font-medium'}
+                <BillsTableHeaderCell
+                  column={column}
                   key={column.id}
-                >
-                  {column.renderHeader ? column.renderHeader() : null}
-                  {column.srOnlyHeader ? (
-                    <span className="sr-only">{column.header}</span>
-                  ) : (
-                    !column.renderHeader && column.header
-                  )}
-                </th>
+                  onSortChange={onSortChange}
+                  sort={sort}
+                />
               ))}
             </tr>
           </thead>

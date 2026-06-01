@@ -15,8 +15,13 @@ import {
   scopedFiltersForTab,
   type BillFilters,
 } from '@/lib/validators/bill-filter-spec';
+import { billSortSpec } from '@/lib/validators/bill-sort-spec';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
-import type { BillListResult, BillPagination } from '@/lib/types/bill/filters';
+import type {
+  BillListResult,
+  BillPagination,
+  BillSort,
+} from '@/lib/types/bill/filters';
 import type { BillListItem } from '@/lib/types/bill/views';
 
 import { BillsWorkspace } from './_components';
@@ -59,6 +64,10 @@ function parsePagination(params: Record<string, string>): BillPagination {
     : { page: 1, pageSize: DEFAULT_BILL_PAGE_SIZE };
 }
 
+function parseSort(params: Record<string, string>): BillSort {
+  return billSortSpec.parseSearchParams(params);
+}
+
 const emptyListResult: BillListResult<BillListItem> = { amountTotal: '0', items: [], total: 0 };
 
 const errorMessages = {
@@ -77,11 +86,13 @@ async function loadActiveTabBills(
   activeTab: BillTabValue,
   filters: BillFilters,
   pagination: BillPagination,
+  sort: BillSort,
 ) {
   if (activeTab === 'overview') return emptyListResult;
   return listBillsForTab(activeTab, {
     filters: scopedFiltersForTab(activeTab, filters),
     pagination,
+    sort,
   });
 }
 
@@ -89,10 +100,11 @@ async function loadBillWorkspaceData(
   activeTab: BillTabValue,
   filters: BillFilters,
   pagination: BillPagination,
+  sort: BillSort,
 ) {
   try {
     const [activeBills, aggregates, referenceData] = await Promise.all([
-      loadActiveTabBills(activeTab, filters, pagination),
+      loadActiveTabBills(activeTab, filters, pagination, sort),
       getBillOverviewAggregates(),
       getBillReferenceData(),
     ]);
@@ -118,7 +130,8 @@ export default async function BillsPage({ searchParams }: BillsPageProps) {
   const flatParams = flattenSearchParams(params);
   const filters = parseFilters(flatParams);
   const pagination = parsePagination(flatParams);
-  const workspaceData = await loadBillWorkspaceData(activeTab, filters, pagination);
+  const sort = parseSort(flatParams);
+  const workspaceData = await loadBillWorkspaceData(activeTab, filters, pagination, sort);
 
   return (
     <BillsWorkspace

@@ -1,6 +1,5 @@
 import {
   and,
-  desc,
   eq,
   inArray,
   sql,
@@ -28,8 +27,16 @@ import type { BillListItem } from '@/lib/types/bill/views';
 import type { Category } from '@/lib/types/category';
 import type { User } from '@/lib/types/user';
 import type { Vendor } from '@/lib/types/vendor';
+import type { BillSort } from '@/lib/validators/bill-sort-spec';
+import { billSortSpec } from '@/lib/validators/bill-sort-spec';
 
 import { buildBillFilterClauses } from './filter-clauses';
+import { buildBillOrderBy } from './sort-clauses';
+
+const DEFAULT_BILL_SORT: BillSort = {
+  by: billSortSpec.defaultKey,
+  dir: billSortSpec.defaultDir,
+};
 
 export async function getBillById(id: string): Promise<Bill | null> {
   const [bill] = await db.select().from(bills).where(eq(bills.id, id)).limit(1);
@@ -90,20 +97,22 @@ function groupBillRows(rows: BillRowSlice[]): BillListItem[] {
 async function fetchBillIds(
   whereClauses: SQL[],
   pagination: BillPagination | undefined,
+  sort: BillSort,
 ): Promise<{ amountTotal: string; ids: string[]; total: number }> {
   const conditions = whereClauses.length > 0 ? and(...whereClauses) : undefined;
+  const orderBy = buildBillOrderBy(sort);
 
+  // The inner joins to vendors/users are 1:1, so distinct is unnecessary
+  // and would require all ORDER BY expressions to appear in the select
+  // list under Postgres semantics. A plain select keeps the sort
+  // expressions opaque to the planner.
   const idQuery = db
-    .selectDistinct({
-      id: bills.id,
-      createdAt: bills.createdAt,
-      updatedAt: bills.updatedAt,
-    })
+    .select({ id: bills.id })
     .from(bills)
     .innerJoin(vendors, eq(bills.vendorId, vendors.id))
     .innerJoin(users, eq(bills.createdBy, users.id))
     .where(conditions)
-    .orderBy(desc(bills.createdAt), desc(bills.updatedAt));
+    .orderBy(...orderBy);
 
   const countQuery = db
     .select({
@@ -133,7 +142,8 @@ export async function listBills(
   query: BillListQuery,
 ): Promise<BillListResult<BillListItem>> {
   const whereClauses = buildBillWhereClauses(query.statuses, query.filters);
-  const { amountTotal, ids, total } = await fetchBillIds(whereClauses, query.pagination);
+  const sort = query.sort ?? DEFAULT_BILL_SORT;
+  const { amountTotal, ids, total } = await fetchBillIds(whereClauses, query.pagination, sort);
 
   if (ids.length === 0) {
     return { amountTotal, items: [], total };
@@ -162,10 +172,14 @@ export async function listBills(
     .innerJoin(users, eq(bills.createdBy, users.id))
     .leftJoin(billLineItems, eq(billLineItems.billId, bills.id))
     .leftJoin(categories, eq(categories.id, billLineItems.categoryId))
-    .where(inArray(bills.id, ids))
-    .orderBy(desc(bills.createdAt), desc(bills.updatedAt));
+    .where(inArray(bills.id, ids));
 
-  return { amountTotal, items: groupBillRows(rows), total };
+  const orderIndex = new Map(ids.map((id, index) => [id, index]));
+  const items = groupBillRows(rows).sort(
+    (a, b) => (orderIndex.get(a.id) ?? 0) - (orderIndex.get(b.id) ?? 0),
+  );
+
+  return { amountTotal, items, total };
 }
 
 export async function getBillReferenceData(): Promise<BillReferenceData> {

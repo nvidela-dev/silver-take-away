@@ -12,6 +12,7 @@ import type {
   BillListResult,
   BillPagination,
   BillReferenceData,
+  BillSort,
   BillStatusAggregate,
 } from '@/lib/types/bill/filters';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
@@ -23,6 +24,7 @@ const BILL_VIEWER_ROLES = ['admin', 'owner', 'ap_clerk', 'approver'] as const;
 interface BillListArgs {
   filters?: BillFilters;
   pagination?: BillPagination;
+  sort?: BillSort;
 }
 
 async function gateBillRead() {
@@ -36,7 +38,12 @@ export async function listBillsForTab(
   args: BillListArgs = {},
 ): Promise<BillListResult<BillListItem>> {
   await gateBillRead();
-  return listBillsFromRepo({ statuses: STATUSES_BY_TAB[tab], ...args });
+  return listBillsFromRepo({
+    statuses: STATUSES_BY_TAB[tab],
+    filters: args.filters,
+    pagination: args.pagination,
+    sort: args.sort,
+  });
 }
 
 export async function getBillReferenceData(): Promise<BillReferenceData> {

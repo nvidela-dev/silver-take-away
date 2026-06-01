@@ -4,6 +4,7 @@ import type { User } from '../user';
 import type { Vendor } from '../vendor';
 
 export type { BillFilters } from '@/lib/validators/bill-filter-spec';
+export type { BillSort } from '@/lib/validators/bill-sort-spec';
 
 export interface BillReferenceData {
   vendors: Pick<Vendor, 'id' | 'name' | 'email' | 'ownerId'>[];
@@ -20,6 +21,7 @@ export interface BillListQuery {
   statuses: readonly BillStatus[];
   filters?: import('@/lib/validators/bill-filter-spec').BillFilters;
   pagination?: BillPagination;
+  sort?: import('@/lib/validators/bill-sort-spec').BillSort;
 }
 
 export interface BillListResult<T> {
