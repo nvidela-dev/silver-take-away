@@ -22,7 +22,13 @@ import { deleteBill } from '@/lib/actions/bills/delete-bill';
 import { updateBill } from '@/lib/actions/bills/update-bill';
 import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
-import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
+import type {
+  BillListResult,
+  BillReferenceData,
+  BillStatusAggregate,
+} from '@/lib/types/bill/filters';
+import type { BillFilterTab } from '@/lib/types/bill/tabs';
+import type { BillListItem } from '@/lib/types/bill/views';
 
 import { BillNoteDialog } from './bill-note-dialog';
 import { BillTransitionDialog } from './bill-transition-dialog';
@@ -39,42 +45,30 @@ import { BulkConfirmDialog } from './bulk-confirm-dialog';
 import { BulkEditDialog } from './bulk-edit-dialog';
 import { ColumnPicker } from './column-picker';
 import { DraftBillForm } from './draft-bill-form';
+import { BillFilterBar } from './filters/bill-filter-bar';
 import { useBillBulkActions } from './hooks/use-bill-bulk-actions';
+import { useBillFilters } from './hooks/use-bill-filters';
 import { useBillTransitions } from './hooks/use-bill-transitions';
 import { useBillsSelection } from './hooks/use-bills-selection';
 import { useColumnVisibility } from './hooks/use-column-visibility';
 import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
+type BillTabValue = 'overview' | BillFilterTab;
+
 interface BillsWorkspaceProps {
-  activeTab: string;
-  approvalAmountTotal: string;
-  approvalBills: BillListItem[];
-  approvalTotal: number;
-  currentPage: number;
-  draftAmountTotal: string;
-  draftBills: BillListItem[];
-  draftTotal: number;
+  activeBills: BillListResult<BillListItem>;
+  activeTab: BillTabValue;
+  aggregates: BillStatusAggregate[];
   loadError: string | null;
-  options: BillFormOptions;
-  paymentAmountTotal: string;
-  paymentBills: BillListItem[];
-  paymentTotal: number;
+  referenceData: BillReferenceData;
 }
 
 export function BillsWorkspace({
+  activeBills,
   activeTab,
-  approvalAmountTotal,
-  approvalBills,
-  approvalTotal,
-  currentPage,
-  draftAmountTotal,
-  draftBills,
-  draftTotal,
+  aggregates,
   loadError,
-  options,
-  paymentAmountTotal,
-  paymentBills,
-  paymentTotal,
+  referenceData,
 }: BillsWorkspaceProps) {
   const router = useRouter();
   const dialogTitleId = useId();
@@ -96,16 +90,18 @@ export function BillsWorkspace({
     router,
     onDirectError: setFormError,
   });
+  const filtersController = useBillFilters();
 
-  const draftIds = useMemo(() => draftBills.map((bill) => bill.id), [draftBills]);
-  const approvalIds = useMemo(() => approvalBills.map((bill) => bill.id), [approvalBills]);
+  const activeIds = useMemo(() => activeBills.items.map((bill) => bill.id), [activeBills.items]);
 
-  const draftSelection = useBillsSelection(draftIds);
-  const approvalSelection = useBillsSelection(approvalIds);
+  const draftSelection = useBillsSelection(activeTab === 'drafts' ? activeIds : []);
+  const approvalSelection = useBillsSelection(activeTab === 'approvals' ? activeIds : []);
 
   const editingBill = useMemo(
-    () => (editingBillId ? draftBills.find((bill) => bill.id === editingBillId) ?? null : null),
-    [draftBills, editingBillId],
+    () => (editingBillId && activeTab === 'drafts'
+      ? activeBills.items.find((bill) => bill.id === editingBillId) ?? null
+      : null),
+    [activeBills.items, activeTab, editingBillId],
   );
 
   const closeForm = useCallback(() => {
@@ -255,6 +251,7 @@ export function BillsWorkspace({
       }),
     },
   ];
+  const isTableLoading = isPending || filtersController.isPending;
 
   return (
     <main className="grid gap-6">
@@ -271,6 +268,13 @@ export function BillsWorkspace({
       <SurfaceTabs
         actions={(
           <>
+            {activeTab !== 'overview' ? (
+              <BillFilterBar
+                controller={filtersController}
+                options={referenceData}
+                tab={activeTab}
+              />
+            ) : null}
             {activeTab === 'drafts' ? (
               <BillsBulkActionsMenu
                 actions={draftBulkActions}
@@ -349,7 +353,10 @@ export function BillsWorkspace({
                 loadError={loadError}
                 onCancelEdit={closeForm}
                 onSubmit={onSubmit}
-                options={options}
+                options={{
+                  categories: referenceData.categories,
+                  vendors: referenceData.vendors,
+                }}
               />
             </div>
           </div>
@@ -369,54 +376,62 @@ export function BillsWorkspace({
       ) : null}
 
       {activeTab === 'overview' ? (
-        <BillsStatusOverview
-          approvalAmountTotal={approvalAmountTotal}
-          approvalTotal={approvalTotal}
-          draftAmountTotal={draftAmountTotal}
-          draftTotal={draftTotal}
-          paymentAmountTotal={paymentAmountTotal}
-          paymentTotal={paymentTotal}
-        />
+        <BillsStatusOverview aggregates={aggregates} />
       ) : null}
       {activeTab === 'drafts' ? (
         <div>
           <BillsTable
-            amountTotal={draftAmountTotal}
-            bills={draftBills}
+            amountTotal={activeBills.amountTotal}
+            bills={activeBills.items}
             columns={draftVisibility.visibleColumns}
-            currentPage={currentPage}
-            emptyMessage="No draft bills yet."
-            isLoading={isPending}
+            currentPage={filtersController.pagination.page}
+            emptyMessage="No draft bills match this view."
+            isLoading={isTableLoading}
             loadingMessage="Loading draft bills…"
-            totalBills={draftTotal}
+            onPageSizeChange={(pageSize) => {
+              void filtersController.setPageSize(pageSize);
+            }}
+            pageSize={filtersController.pagination.pageSize}
+            pageSizeOptions={filtersController.pageSizeOptions}
+            totalBills={activeBills.total}
           />
         </div>
       ) : null}
       {activeTab === 'approvals' ? (
         <div>
           <BillsTable
-            amountTotal={approvalAmountTotal}
-            bills={approvalBills}
+            amountTotal={activeBills.amountTotal}
+            bills={activeBills.items}
             columns={approvalVisibility.visibleColumns}
-            currentPage={currentPage}
-            emptyMessage="No bills awaiting approval."
-            isLoading={isPending}
+            currentPage={filtersController.pagination.page}
+            emptyMessage="No bills awaiting approval match this view."
+            isLoading={isTableLoading}
             loadingMessage="Loading bills awaiting approval…"
-            totalBills={approvalTotal}
+            onPageSizeChange={(pageSize) => {
+              void filtersController.setPageSize(pageSize);
+            }}
+            pageSize={filtersController.pagination.pageSize}
+            pageSizeOptions={filtersController.pageSizeOptions}
+            totalBills={activeBills.total}
           />
         </div>
       ) : null}
       {activeTab === 'payment' ? (
         <div>
           <BillsTable
-            amountTotal={paymentAmountTotal}
-            bills={paymentBills}
+            amountTotal={activeBills.amountTotal}
+            bills={activeBills.items}
             columns={paymentVisibility.visibleColumns}
-            currentPage={currentPage}
-            emptyMessage="No bills ready for payment."
-            isLoading={isPending}
+            currentPage={filtersController.pagination.page}
+            emptyMessage="No bills ready for payment match this view."
+            isLoading={isTableLoading}
             loadingMessage="Loading bills ready for payment…"
-            totalBills={paymentTotal}
+            onPageSizeChange={(pageSize) => {
+              void filtersController.setPageSize(pageSize);
+            }}
+            pageSize={filtersController.pagination.pageSize}
+            pageSizeOptions={filtersController.pageSizeOptions}
+            totalBills={activeBills.total}
           />
         </div>
       ) : null}
@@ -470,7 +485,7 @@ export function BillsWorkspace({
       {bulk.pending?.kind === 'edit' ? (
         <BulkEditDialog
           billIds={bulk.pending.billIds}
-          categoryOptions={options.categories}
+          categoryOptions={referenceData.categories}
           error={bulk.bulkError}
           isPending={isPending}
           onCancel={bulk.cancel}

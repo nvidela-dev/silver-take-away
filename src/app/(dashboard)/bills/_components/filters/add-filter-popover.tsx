@@ -3,7 +3,7 @@
 import { Plus } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
-import { Button } from '@/app/_components/ui/button';
+import { Button } from '@/app/_components/atoms/button';
 
 import { usePopoverDismiss } from '../hooks/use-popover-dismiss';
 import type { BillFilterDimension } from './bill-filter-dimensions';

@@ -1,11 +1,11 @@
-import { StatusBadge } from '@/app/_components/shared';
+import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/app/_components/ui/card';
+} from '@/app/_components/atoms/card';
 import { billStatusDisplay } from '@/app/_display';
 import { formatMoney } from '@/lib/utils';
 import type { BillStatusAggregate } from '@/lib/types/bill/filters';

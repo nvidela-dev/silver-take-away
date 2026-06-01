@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/app/_components/ui/button';
+import { Button } from '@/app/_components/atoms/button';
 import type { BillReferenceData } from '@/lib/types/bill/filters';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
 

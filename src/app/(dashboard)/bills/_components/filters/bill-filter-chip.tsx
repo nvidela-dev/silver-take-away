@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { Button } from '@/app/_components/ui/button';
+import { Button } from '@/app/_components/atoms/button';
 
 import { usePopoverDismiss } from '../hooks/use-popover-dismiss';
 

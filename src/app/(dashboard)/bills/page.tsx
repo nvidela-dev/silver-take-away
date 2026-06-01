@@ -59,7 +59,7 @@ function parsePagination(params: Record<string, string>): BillPagination {
     : { page: 1, pageSize: DEFAULT_BILL_PAGE_SIZE };
 }
 
-const emptyListResult: BillListResult<BillListItem> = { items: [], total: 0 };
+const emptyListResult: BillListResult<BillListItem> = { amountTotal: '0', items: [], total: 0 };
 
 const errorMessages = {
   unauthorized: 'Sign in before creating or viewing bills.',

@@ -131,7 +131,7 @@ export type BillStatusFilterValue = NonNullable<BillFilters['status']> extends r
   ? S extends BillStatus ? S : never
   : never;
 
-export const DEFAULT_BILL_PAGE_SIZE = 25;
+export const DEFAULT_BILL_PAGE_SIZE = 10;
 export const BILL_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 
 export const paginationParsers = {

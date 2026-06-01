@@ -2,7 +2,7 @@
 
 import { useId, useState } from 'react';
 
-import { Button } from '@/app/_components/ui/button';
+import { Button } from '@/app/_components/atoms/button';
 
 interface NumberRangeEditorProps {
   min: number | null;

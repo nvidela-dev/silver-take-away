@@ -90,7 +90,7 @@ function groupBillRows(rows: BillRowSlice[]): BillListItem[] {
 async function fetchBillIds(
   whereClauses: SQL[],
   pagination: BillPagination | undefined,
-): Promise<{ ids: string[]; total: number }> {
+): Promise<{ amountTotal: string; ids: string[]; total: number }> {
   const conditions = whereClauses.length > 0 ? and(...whereClauses) : undefined;
 
   const idQuery = db
@@ -106,7 +106,10 @@ async function fetchBillIds(
     .orderBy(desc(bills.createdAt), desc(bills.updatedAt));
 
   const countQuery = db
-    .select({ value: sql<number>`count(distinct ${bills.id})::int` })
+    .select({
+      amountTotal: sql<string>`coalesce(sum(${bills.amount}), 0)::text`,
+      value: sql<number>`count(distinct ${bills.id})::int`,
+    })
     .from(bills)
     .innerJoin(vendors, eq(bills.vendorId, vendors.id))
     .innerJoin(users, eq(bills.createdBy, users.id))
@@ -120,6 +123,7 @@ async function fetchBillIds(
   ]);
 
   return {
+    amountTotal: countRows[0]?.amountTotal ?? '0',
     ids: idRows.map((row) => row.id),
     total: countRows[0]?.value ?? 0,
   };
@@ -129,10 +133,10 @@ export async function listBills(
   query: BillListQuery,
 ): Promise<BillListResult<BillListItem>> {
   const whereClauses = buildBillWhereClauses(query.statuses, query.filters);
-  const { ids, total } = await fetchBillIds(whereClauses, query.pagination);
+  const { amountTotal, ids, total } = await fetchBillIds(whereClauses, query.pagination);
 
   if (ids.length === 0) {
-    return { items: [], total };
+    return { amountTotal, items: [], total };
   }
 
   const rows = await db
@@ -161,7 +165,7 @@ export async function listBills(
     .where(inArray(bills.id, ids))
     .orderBy(desc(bills.createdAt), desc(bills.updatedAt));
 
-  return { items: groupBillRows(rows), total };
+  return { amountTotal, items: groupBillRows(rows), total };
 }
 
 export async function getBillReferenceData(): Promise<BillReferenceData> {

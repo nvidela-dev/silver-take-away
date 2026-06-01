@@ -23,6 +23,7 @@ export interface BillListQuery {
 }
 
 export interface BillListResult<T> {
+  amountTotal: string;
   items: T[];
   total: number;
 }
