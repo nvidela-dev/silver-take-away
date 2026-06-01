@@ -1,14 +1,16 @@
 'use client';
 
 import { Edit2, Trash2, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
-import { StatusBadge } from '@/app/_components/shared';
-import { Button } from '@/app/_components/ui/button';
+import { Button } from '@/app/_components/atoms/button';
+import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import { billStatusDisplay } from '@/app/_display';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';
 
 import type { BillsTableColumn } from './bills-table';
+import type { BillsSelection } from './hooks/use-bills-selection';
 
 const avatarTones = [
   'bg-rose-100 text-rose-700',
@@ -115,6 +117,63 @@ export const billReadColumns: BillsTableColumn[] = [
   invoiceNumberColumn,
   linesColumn,
 ];
+
+interface SelectionCheckboxProps {
+  checked: boolean;
+  indeterminate?: boolean;
+  ariaLabel: string;
+  onChange: () => void;
+}
+
+function SelectionCheckbox({
+  checked,
+  indeterminate = false,
+  ariaLabel,
+  onChange,
+}: SelectionCheckboxProps) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.indeterminate = indeterminate && !checked;
+    }
+  }, [checked, indeterminate]);
+
+  return (
+    <input
+      aria-label={ariaLabel}
+      checked={checked}
+      className="size-4 cursor-pointer rounded border-slate-300"
+      onChange={onChange}
+      ref={ref}
+      type="checkbox"
+    />
+  );
+}
+
+export function selectionColumn(selection: BillsSelection): BillsTableColumn {
+  return {
+    id: 'selection',
+    header: 'Select',
+    isConfigurable: false,
+    headerClassName: 'py-3 pl-4 pr-2',
+    cellClassName: 'py-3 pl-4 pr-2',
+    renderHeader: () => (
+      <SelectionCheckbox
+        ariaLabel="Select all visible bills"
+        checked={selection.isAllSelected}
+        indeterminate={selection.isSomeSelected}
+        onChange={selection.toggleAll}
+      />
+    ),
+    render: (bill) => (
+      <SelectionCheckbox
+        ariaLabel={`Select ${bill.vendor.name} bill`}
+        checked={selection.isSelected(bill.id)}
+        onChange={() => selection.toggle(bill.id)}
+      />
+    ),
+  };
+}
 
 interface DraftActionsHandlers {
   deleteCandidateId: string | null;

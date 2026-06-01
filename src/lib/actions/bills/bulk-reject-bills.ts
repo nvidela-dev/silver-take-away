@@ -1,0 +1,36 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+
+import { assertDatabaseConfigured } from '@/db';
+import { requireAuth } from '@/lib/auth/require-auth';
+import { requireRole } from '@/lib/auth/require-role';
+import { bulkTransitionBillsUseCase } from '@/lib/use-cases/bills';
+import { bulkRejectBillsSchema } from '@/lib/validators/bill.schemas';
+import type { Bill } from '@/lib/types/bill/bill';
+import type { BulkRejectBillsInput } from '@/lib/types/bill/inputs';
+import type { ActionResult } from '@/lib/types/common';
+
+import { toBillActionError } from './errors';
+import { BILL_APPROVAL_ROLES } from './permissions';
+
+export async function bulkRejectBills(
+  input: BulkRejectBillsInput,
+): Promise<ActionResult<Bill[]>> {
+  try {
+    assertDatabaseConfigured();
+    const parsed = bulkRejectBillsSchema.parse(input);
+    const actor = await requireAuth();
+    requireRole(actor, BILL_APPROVAL_ROLES);
+    const updated = await bulkTransitionBillsUseCase({
+      billIds: parsed.billIds,
+      action: 'reject',
+      actor,
+      note: parsed.note,
+    });
+    revalidatePath('/bills');
+    return { ok: true, data: updated };
+  } catch (error) {
+    return toBillActionError(error);
+  }
+}

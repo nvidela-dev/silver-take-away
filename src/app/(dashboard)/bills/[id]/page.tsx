@@ -1,20 +1,19 @@
-import { DetailPlaceholder } from '@/app/_components/shared';
-
 interface BillDetailPageProps {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function BillDetailPage({ params }: BillDetailPageProps) {
   const { id } = await params;
-
   return (
-    <DetailPlaceholder
-      description="Stable bill detail route reserved for PR-5+ feature work."
-      eyebrow="Bill detail"
-      id={id}
-      title="Bill detail"
-    />
+    <main className="grid gap-2">
+      <h1 className="text-2xl font-semibold text-slate-950">Bill detail</h1>
+      <p className="text-sm text-slate-600">
+        Detail view for bill
+        {' '}
+        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{id}</code>
+        {' '}
+        lands in a follow-up PR.
+      </p>
+    </main>
   );
 }

@@ -1,6 +1,10 @@
 import {
   approveBillSchema,
+  bulkApproveBillsSchema,
+  bulkDeleteDraftsSchema,
   bulkEditBillsSchema,
+  bulkRejectBillsSchema,
+  bulkSubmitForApprovalSchema,
   createBillSchema,
   rejectBillSchema,
   submitForApprovalSchema,
@@ -206,6 +210,59 @@ describe('rejectBillSchema', () => {
       rejectBillSchema.safeParse({ billId: UUID, note: 'a'.repeat(1001) })
         .success,
     ).toBe(false);
+  });
+});
+
+describe('bulk action schemas', () => {
+  const oneHundredAndOne = Array.from(
+    { length: 101 },
+    (_, i) => `aaaaaaaa-aaaa-4aaa-8aaa-${String(i).padStart(12, '0')}`,
+  );
+
+  describe('bulkSubmitForApprovalSchema', () => {
+    it('accepts a list of bill ids', () => {
+      expect(
+        bulkSubmitForApprovalSchema.safeParse({ billIds: [UUID, UUID_2] }).success,
+      ).toBe(true);
+    });
+
+    it('rejects an empty list', () => {
+      expect(bulkSubmitForApprovalSchema.safeParse({ billIds: [] }).success).toBe(false);
+    });
+
+    it('rejects more than 100 ids', () => {
+      expect(
+        bulkSubmitForApprovalSchema.safeParse({ billIds: oneHundredAndOne }).success,
+      ).toBe(false);
+    });
+  });
+
+  describe('bulkApproveBillsSchema', () => {
+    it('accepts ids with optional note', () => {
+      expect(
+        bulkApproveBillsSchema.safeParse({ billIds: [UUID], note: 'looks good' }).success,
+      ).toBe(true);
+      expect(bulkApproveBillsSchema.safeParse({ billIds: [UUID] }).success).toBe(true);
+    });
+  });
+
+  describe('bulkRejectBillsSchema', () => {
+    it('requires a non-empty note', () => {
+      expect(bulkRejectBillsSchema.safeParse({ billIds: [UUID] }).success).toBe(false);
+      expect(
+        bulkRejectBillsSchema.safeParse({ billIds: [UUID], note: '' }).success,
+      ).toBe(false);
+      expect(
+        bulkRejectBillsSchema.safeParse({ billIds: [UUID], note: 'missing receipts' }).success,
+      ).toBe(true);
+    });
+  });
+
+  describe('bulkDeleteDraftsSchema', () => {
+    it('accepts a list of ids; rejects empty', () => {
+      expect(bulkDeleteDraftsSchema.safeParse({ billIds: [UUID] }).success).toBe(true);
+      expect(bulkDeleteDraftsSchema.safeParse({ billIds: [] }).success).toBe(false);
+    });
   });
 });
 
