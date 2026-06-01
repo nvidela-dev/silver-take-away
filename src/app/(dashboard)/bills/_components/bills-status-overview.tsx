@@ -1,6 +1,12 @@
 'use client';
 
-import { Banknote, CircleCheck, CircleDot } from 'lucide-react';
+import {
+  Banknote,
+  ChevronLeft,
+  ChevronRight,
+  CircleCheck,
+  CircleDot,
+} from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useTransition, type ComponentType } from 'react';
 
@@ -12,8 +18,8 @@ import { cn, formatMoney } from '@/lib/utils';
 import type { BillOverviewGroup } from '@/lib/types/bill/filters';
 import {
   OVERVIEW_GROUP_PAGE_SIZE,
-  clampOverviewCount,
-  overviewCountParam,
+  clampOverviewPage,
+  overviewPageParam,
 } from '@/lib/types/bill/overview';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
 import type { BillListItem } from '@/lib/types/bill/views';
@@ -71,12 +77,9 @@ export function BillsStatusOverview({ groups }: BillsStatusOverviewProps) {
     router.push(`/bills/${id}`);
   };
 
-  const showMore = (tab: BillFilterTab, shown: number) => {
+  const goToGroupPage = (tab: BillFilterTab, page: number) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set(
-      overviewCountParam(tab),
-      String(clampOverviewCount(shown + OVERVIEW_GROUP_PAGE_SIZE)),
-    );
+    params.set(overviewPageParam(tab), String(page));
     startTransition(() => {
       router.push(`?${params.toString()}`, { scroll: false });
     });
@@ -97,7 +100,12 @@ export function BillsStatusOverview({ groups }: BillsStatusOverviewProps) {
             {groups.map((group) => {
               const meta = GROUP_META[group.tab];
               const { items, total } = group.result;
-              const hasMore = items.length < total;
+              const pageCount = Math.max(1, Math.ceil(total / OVERVIEW_GROUP_PAGE_SIZE));
+              const currentPage = Math.min(
+                clampOverviewPage(Number(searchParams.get(overviewPageParam(group.tab)) ?? 1)),
+                pageCount,
+              );
+              const fillerCount = pageCount > 1 ? OVERVIEW_GROUP_PAGE_SIZE - items.length : 0;
               return (
                 <Fragment key={group.tab}>
                   <tr className="border-b border-slate-100 bg-slate-50/70">
@@ -114,7 +122,7 @@ export function BillsStatusOverview({ groups }: BillsStatusOverviewProps) {
                     </td>
                   </tr>
                   {items.length === 0 ? (
-                    <tr className="border-b border-slate-100 last:border-0">
+                    <tr className="border-b border-slate-100">
                       <td className="py-4 pl-14 pr-4 text-sm text-slate-400" colSpan={3}>
                         No bills in this view.
                       </td>
@@ -123,7 +131,7 @@ export function BillsStatusOverview({ groups }: BillsStatusOverviewProps) {
                     items.map((bill) => (
                       <tr
                         className={cn(
-                          'h-14 cursor-pointer border-b border-slate-100 last:border-0',
+                          'h-14 cursor-pointer border-b border-slate-100',
                           'hover:bg-slate-50',
                         )}
                         key={bill.id}
@@ -154,22 +162,44 @@ export function BillsStatusOverview({ groups }: BillsStatusOverviewProps) {
                       </tr>
                     ))
                   )}
-                  {hasMore ? (
-                    <tr className="border-b border-slate-100 last:border-0">
-                      <td className="py-2 pl-12 pr-4" colSpan={3}>
-                        <div className="flex items-center gap-3">
+                  {fillerCount > 0
+                    ? Array.from({ length: fillerCount }, (_, index) => (
+                      <tr aria-hidden className="h-14 border-b border-slate-100" key={index}>
+                        <td aria-label="Reserved table row" colSpan={3} />
+                      </tr>
+                    ))
+                    : null}
+                  {pageCount > 1 ? (
+                    <tr className="border-b border-slate-100">
+                      <td className="py-2 pl-4 pr-4" colSpan={3}>
+                        <div className="flex items-center justify-end gap-3 text-xs text-slate-500">
+                          <span>
+                            Page
+                            {' '}
+                            {currentPage}
+                            {' of '}
+                            {pageCount}
+                          </span>
                           <Button
-                            disabled={isPending}
-                            onClick={() => showMore(group.tab, items.length)}
-                            size="sm"
+                            aria-label={`Previous ${meta.title} page`}
+                            disabled={isPending || currentPage <= 1}
+                            onClick={() => goToGroupPage(group.tab, currentPage - 1)}
+                            size="icon"
                             type="button"
                             variant="outline"
                           >
-                            Show more
+                            <ChevronLeft aria-hidden className="size-4" />
                           </Button>
-                          <span className="text-xs text-slate-400">
-                            {`Showing ${items.length} of ${total}`}
-                          </span>
+                          <Button
+                            aria-label={`Next ${meta.title} page`}
+                            disabled={isPending || currentPage >= pageCount}
+                            onClick={() => goToGroupPage(group.tab, currentPage + 1)}
+                            size="icon"
+                            type="button"
+                            variant="outline"
+                          >
+                            <ChevronRight aria-hidden className="size-4" />
+                          </Button>
                         </div>
                       </td>
                     </tr>

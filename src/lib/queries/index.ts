@@ -72,7 +72,7 @@ export async function listBillOverviewGroups(
   args: {
     filters?: BillFilters;
     sort?: BillSort;
-    limits?: Partial<Record<BillFilterTab, number>>;
+    pages?: Partial<Record<BillFilterTab, number>>;
   } = {},
 ): Promise<BillOverviewGroup[]> {
   await gateBillRead();
@@ -82,8 +82,8 @@ export async function listBillOverviewGroups(
       filters: args.filters ? scopedFiltersForTab(tab, args.filters) : undefined,
       sort: args.sort,
       pagination: {
-        page: 1,
-        pageSize: args.limits?.[tab] ?? OVERVIEW_GROUP_PAGE_SIZE,
+        page: args.pages?.[tab] ?? 1,
+        pageSize: OVERVIEW_GROUP_PAGE_SIZE,
       },
     })),
   );

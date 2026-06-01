@@ -17,8 +17,8 @@ import {
 } from '@/lib/validators/bill-filter-spec';
 import { billSortSpec } from '@/lib/validators/bill-sort-spec';
 import {
-  clampOverviewCount,
-  overviewCountParam,
+  clampOverviewPage,
+  overviewPageParam,
 } from '@/lib/types/bill/overview';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
 import type {
@@ -74,17 +74,17 @@ function parseSort(params: Record<string, string>): BillSort {
 
 const OVERVIEW_GROUP_TABS: readonly BillFilterTab[] = ['drafts', 'approvals', 'payment'];
 
-function parseOverviewLimits(
+function parseOverviewPages(
   params: Record<string, string>,
 ): Partial<Record<BillFilterTab, number>> {
-  const limits: Partial<Record<BillFilterTab, number>> = {};
+  const pages: Partial<Record<BillFilterTab, number>> = {};
   OVERVIEW_GROUP_TABS.forEach((tab) => {
-    const raw = params[overviewCountParam(tab)];
+    const raw = params[overviewPageParam(tab)];
     if (raw !== undefined) {
-      limits[tab] = clampOverviewCount(Number(raw));
+      pages[tab] = clampOverviewPage(Number(raw));
     }
   });
-  return limits;
+  return pages;
 }
 
 const emptyListResult: BillListResult<BillListItem> = { amountTotal: '0', items: [], total: 0 };
@@ -119,10 +119,10 @@ async function loadOverviewGroups(
   activeTab: BillTabValue,
   filters: BillFilters,
   sort: BillSort,
-  limits: Partial<Record<BillFilterTab, number>>,
+  pages: Partial<Record<BillFilterTab, number>>,
 ) {
   if (activeTab !== 'overview') return [];
-  return listBillOverviewGroups({ filters, sort, limits });
+  return listBillOverviewGroups({ filters, sort, pages });
 }
 
 async function loadBillWorkspaceData(
@@ -130,12 +130,12 @@ async function loadBillWorkspaceData(
   filters: BillFilters,
   pagination: BillPagination,
   sort: BillSort,
-  overviewLimits: Partial<Record<BillFilterTab, number>>,
+  overviewPages: Partial<Record<BillFilterTab, number>>,
 ) {
   try {
     const [activeBills, overviewGroups, referenceData] = await Promise.all([
       loadActiveTabBills(activeTab, filters, pagination, sort),
-      loadOverviewGroups(activeTab, filters, sort, overviewLimits),
+      loadOverviewGroups(activeTab, filters, sort, overviewPages),
       getBillReferenceData(),
     ]);
     return {
@@ -161,13 +161,13 @@ export default async function BillsPage({ searchParams }: BillsPageProps) {
   const filters = parseFilters(flatParams);
   const pagination = parsePagination(flatParams);
   const sort = parseSort(flatParams);
-  const overviewLimits = parseOverviewLimits(flatParams);
+  const overviewPages = parseOverviewPages(flatParams);
   const workspaceData = await loadBillWorkspaceData(
     activeTab,
     filters,
     pagination,
     sort,
-    overviewLimits,
+    overviewPages,
   );
 
   return (
