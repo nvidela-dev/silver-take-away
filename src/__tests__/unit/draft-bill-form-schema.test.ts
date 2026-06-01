@@ -1,4 +1,4 @@
-import { draftBillFormSchema } from '@/lib/validators/bill.schemas';
+import { createBillSchema, draftBillFormSchema } from '@/lib/validators/bill.schemas';
 
 const UUID = '11111111-1111-4111-8111-111111111111';
 const UUID_2 = '22222222-2222-4222-9222-222222222222';
@@ -100,7 +100,7 @@ describe('draftBillFormSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('drops empty categoryId from output when blank', () => {
+  it('lets a draft with blank categoryIds submit as a create-bill input', () => {
     const result = draftBillFormSchema.safeParse({
       ...baseInput(),
       lineItems: [
@@ -110,7 +110,7 @@ describe('draftBillFormSchema', () => {
     });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.lineItems[0]).not.toHaveProperty('categoryId');
+      expect(createBillSchema.safeParse(result.data).success).toBe(true);
     }
   });
 
