@@ -26,7 +26,7 @@ import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
 
 import { BillNoteDialog } from './bill-note-dialog';
 import { BillTransitionDialog } from './bill-transition-dialog';
-import { BillsBulkActionsBar, type BulkActionDescriptor } from './bills-bulk-actions-bar';
+import { BillsBulkActionsMenu, type BulkActionDescriptor } from './bills-bulk-actions-bar';
 import { BillsStatusOverview } from './bills-status-overview';
 import { BillsTable } from './bills-table';
 import {
@@ -319,8 +319,8 @@ export function BillsWorkspace({
       ) : null}
       {activeTab === 'drafts' ? (
         <div className="grid gap-3">
-          <div className="flex items-start justify-between gap-3">
-            <BillsBulkActionsBar
+          <div className="flex items-center justify-end gap-2">
+            <BillsBulkActionsMenu
               actions={draftBulkActions}
               count={draftSelection.selectedCount}
               isPending={isPending}
@@ -343,8 +343,8 @@ export function BillsWorkspace({
       ) : null}
       {activeTab === 'approvals' ? (
         <div className="grid gap-3">
-          <div className="flex items-start justify-between gap-3">
-            <BillsBulkActionsBar
+          <div className="flex items-center justify-end gap-2">
+            <BillsBulkActionsMenu
               actions={approvalBulkActions}
               count={approvalSelection.selectedCount}
               isPending={isPending}
