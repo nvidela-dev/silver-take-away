@@ -13,6 +13,7 @@ export interface BillsTableColumn {
   cellClassName?: string;
   srOnlyHeader?: boolean;
   isConfigurable?: boolean;
+  renderHeader?: () => ReactNode;
   render: (bill: BillListItem) => ReactNode;
 }
 
@@ -46,10 +47,11 @@ export function BillsTable({
                   className={column.headerClassName ?? 'py-3 pr-4 font-medium'}
                   key={column.id}
                 >
+                  {column.renderHeader ? column.renderHeader() : null}
                   {column.srOnlyHeader ? (
                     <span className="sr-only">{column.header}</span>
                   ) : (
-                    column.header
+                    !column.renderHeader && column.header
                   )}
                 </th>
               ))}

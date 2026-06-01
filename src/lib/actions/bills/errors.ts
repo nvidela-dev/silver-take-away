@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { UnauthorizedError } from '@/lib/auth/require-auth';
 import { ForbiddenError } from '@/lib/auth/require-role';
 import {
+  BillBulkConflictError,
   BillConflictError,
   BillNotFoundError,
 } from '@/lib/repositories/bills';
@@ -16,6 +17,7 @@ export function toBillActionError(error: unknown): ActionResult<never> {
     || error instanceof ForbiddenError
     || error instanceof BillNotFoundError
     || error instanceof BillConflictError
+    || error instanceof BillBulkConflictError
     || error instanceof DraftBillGuardError
     || error instanceof InvalidTransitionError
   ) {

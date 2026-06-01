@@ -1,6 +1,7 @@
 import {
   and,
   eq,
+  inArray,
 } from 'drizzle-orm';
 
 import { db } from '@/db';
@@ -12,12 +13,17 @@ import {
 import { createUuid } from '@/lib/id';
 import type { Bill } from '@/lib/types/bill/bill';
 import type { BillStatus } from '@/lib/types/enums';
-import type { CreateBillInput, UpdateBillInput } from '@/lib/types/bill/inputs';
+import type {
+  BulkEditBillsInput,
+  CreateBillInput,
+  UpdateBillInput,
+} from '@/lib/types/bill/inputs';
 import type { User } from '@/lib/types/user';
 
 import { toBillActivityLogInsert } from '../activity-log.repo';
 import { toBillLineItemInsertRecords } from '../line-item.repo';
 import {
+  BillBulkConflictError,
   BillConflictError,
   BillNotFoundError,
 } from './errors';
@@ -182,4 +188,119 @@ export async function applyBillStatusTransition(
   }
 
   return bill;
+}
+
+interface ApplyBulkBillStatusTransitionInput {
+  billIds: string[];
+  currentStatus: BillStatus;
+  nextStatus: BillStatus;
+  action: string;
+  actor: User;
+  note?: string;
+}
+
+export async function applyBulkBillStatusTransition(
+  input: ApplyBulkBillStatusTransitionInput,
+): Promise<Bill[]> {
+  if (input.billIds.length === 0) {
+    return [];
+  }
+
+  const now = new Date();
+  const metadata = input.note ? { note: input.note } : null;
+
+  const updateStatement = db
+    .update(bills)
+    .set({ status: input.nextStatus, updatedAt: now })
+    .where(and(
+      inArray(bills.id, input.billIds),
+      eq(bills.status, input.currentStatus),
+    ))
+    .returning();
+
+  const logInserts = input.billIds.map((billId) => db.insert(billActivityLog).values(
+    toBillActivityLogInsert({
+      id: createUuid(),
+      billId,
+      actorId: input.actor.id,
+      action: input.action,
+      metadata,
+    }),
+  ));
+
+  const [updatedBills] = await db.batch([updateStatement, ...logInserts]);
+
+  if (updatedBills.length !== input.billIds.length) {
+    throw new BillBulkConflictError(input.billIds.length, updatedBills.length);
+  }
+
+  return updatedBills;
+}
+
+export async function deleteDraftBills(billIds: string[]): Promise<void> {
+  if (billIds.length === 0) {
+    return;
+  }
+
+  const deleted = await db
+    .delete(bills)
+    .where(and(inArray(bills.id, billIds), eq(bills.status, 'draft')))
+    .returning({ id: bills.id });
+
+  if (deleted.length !== billIds.length) {
+    throw new BillBulkConflictError(billIds.length, deleted.length);
+  }
+}
+
+export async function updateDraftBills(
+  input: BulkEditBillsInput,
+  actor: User,
+): Promise<Bill[]> {
+  if (input.billIds.length === 0) {
+    return [];
+  }
+
+  const now = new Date();
+  const updateStatement = db
+    .update(bills)
+    .set({
+      invoiceDate: input.invoiceDate,
+      dueDate: input.dueDate,
+      amount: input.amount,
+      description: input.description,
+      updatedAt: now,
+    })
+    .where(and(
+      inArray(bills.id, input.billIds),
+      eq(bills.status, 'draft'),
+    ))
+    .returning();
+
+  const editedFields = Object.entries({
+    amount: input.amount,
+    dueDate: input.dueDate,
+    invoiceDate: input.invoiceDate,
+    description: input.description,
+    categoryId: input.categoryId,
+  })
+    .filter(([, value]) => value !== undefined)
+    .map(([key]) => key);
+
+  const logInserts = input.billIds.map((billId) => db.insert(billActivityLog).values(
+    toBillActivityLogInsert({
+      id: createUuid(),
+      billId,
+      actorId: actor.id,
+      action: 'bill_bulk_updated',
+      metadata: { editedFields },
+    }),
+  ));
+
+  const [updatedBills] = await db.batch([updateStatement, ...logInserts]);
+
+  if (updatedBills.length !== input.billIds.length) {
+    throw new BillBulkConflictError(input.billIds.length, updatedBills.length);
+  }
+
+  return updatedBills;
 }

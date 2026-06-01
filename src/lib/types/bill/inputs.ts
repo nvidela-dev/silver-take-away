@@ -58,3 +58,21 @@ export interface RejectBillInput {
   billId: string;
   note: string;
 }
+
+export interface BulkSubmitForApprovalInput {
+  billIds: string[];
+}
+
+export interface BulkApproveBillsInput {
+  billIds: string[];
+  note?: string;
+}
+
+export interface BulkRejectBillsInput {
+  billIds: string[];
+  note: string;
+}
+
+export interface BulkDeleteDraftsInput {
+  billIds: string[];
+}

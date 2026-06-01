@@ -24,17 +24,24 @@ import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
 import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
 
+import { BillNoteDialog } from './bill-note-dialog';
 import { BillTransitionDialog } from './bill-transition-dialog';
+import { BillsBulkActionsBar, type BulkActionDescriptor } from './bills-bulk-actions-bar';
 import { BillsStatusOverview } from './bills-status-overview';
 import { BillsTable } from './bills-table';
 import {
   approvalActionsColumn,
   billReadColumns,
   draftActionsColumn,
+  selectionColumn,
 } from './bills-table-columns';
+import { BulkConfirmDialog } from './bulk-confirm-dialog';
+import { BulkEditDialog } from './bulk-edit-dialog';
 import { ColumnPicker } from './column-picker';
 import { DraftBillForm } from './draft-bill-form';
+import { useBillBulkActions } from './hooks/use-bill-bulk-actions';
 import { useBillTransitions } from './hooks/use-bill-transitions';
+import { useBillsSelection } from './hooks/use-bills-selection';
 import { useColumnVisibility } from './hooks/use-column-visibility';
 import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
@@ -70,8 +77,18 @@ export function BillsWorkspace({
     onDirectError: setFormError,
   });
 
-  // Re-derive editingBill from the refreshed draft list so optimistic-concurrency
-  // tokens (updatedAt) stay current after router.refresh().
+  const bulk = useBillBulkActions({
+    startTransition,
+    router,
+    onDirectError: setFormError,
+  });
+
+  const draftIds = useMemo(() => draftBills.map((bill) => bill.id), [draftBills]);
+  const approvalIds = useMemo(() => approvalBills.map((bill) => bill.id), [approvalBills]);
+
+  const draftSelection = useBillsSelection(draftIds);
+  const approvalSelection = useBillsSelection(approvalIds);
+
   const editingBill = useMemo(
     () => (editingBillId ? draftBills.find((bill) => bill.id === editingBillId) ?? null : null),
     [draftBills, editingBillId],
@@ -149,6 +166,7 @@ export function BillsWorkspace({
   });
 
   const draftColumns = [
+    selectionColumn(draftSelection),
     ...billReadColumns,
     draftActionsColumn({
       deleteCandidateId,
@@ -160,6 +178,7 @@ export function BillsWorkspace({
     }),
   ];
   const approvalColumns = [
+    selectionColumn(approvalSelection),
     ...billReadColumns,
     approvalActionsColumn({
       onApprove: transitions.requestApprove,
@@ -171,6 +190,57 @@ export function BillsWorkspace({
   const draftVisibility = useColumnVisibility(draftColumns);
   const approvalVisibility = useColumnVisibility(approvalColumns);
   const paymentVisibility = useColumnVisibility(paymentColumns);
+
+  const draftBulkActions: BulkActionDescriptor[] = [
+    {
+      id: 'submit',
+      label: 'Submit for approval',
+      variant: 'accent',
+      onClick: () => bulk.submit({
+        billIds: [...draftSelection.selectedIds],
+        onSuccess: draftSelection.clear,
+      }),
+    },
+    {
+      id: 'edit',
+      label: 'Edit',
+      variant: 'secondary',
+      onClick: () => bulk.requestEdit({
+        billIds: [...draftSelection.selectedIds],
+        onSuccess: draftSelection.clear,
+      }),
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      variant: 'destructive',
+      onClick: () => bulk.requestDelete({
+        billIds: [...draftSelection.selectedIds],
+        onSuccess: draftSelection.clear,
+      }),
+    },
+  ];
+
+  const approvalBulkActions: BulkActionDescriptor[] = [
+    {
+      id: 'approve',
+      label: 'Approve',
+      variant: 'accent',
+      onClick: () => bulk.requestApprove({
+        billIds: [...approvalSelection.selectedIds],
+        onSuccess: approvalSelection.clear,
+      }),
+    },
+    {
+      id: 'reject',
+      label: 'Reject',
+      variant: 'destructive',
+      onClick: () => bulk.requestReject({
+        billIds: [...approvalSelection.selectedIds],
+        onSuccess: approvalSelection.clear,
+      }),
+    },
+  ];
 
   return (
     <main className="grid gap-6">
@@ -249,7 +319,13 @@ export function BillsWorkspace({
       ) : null}
       {activeTab === 'drafts' ? (
         <div className="grid gap-3">
-          <div className="flex justify-end">
+          <div className="flex items-start justify-between gap-3">
+            <BillsBulkActionsBar
+              actions={draftBulkActions}
+              count={draftSelection.selectedCount}
+              isPending={isPending}
+              onClear={draftSelection.clear}
+            />
             <ColumnPicker
               columns={draftVisibility.configurableColumns}
               hiddenIds={draftVisibility.hiddenIds}
@@ -267,7 +343,13 @@ export function BillsWorkspace({
       ) : null}
       {activeTab === 'approvals' ? (
         <div className="grid gap-3">
-          <div className="flex justify-end">
+          <div className="flex items-start justify-between gap-3">
+            <BillsBulkActionsBar
+              actions={approvalBulkActions}
+              count={approvalSelection.selectedCount}
+              isPending={isPending}
+              onClear={approvalSelection.clear}
+            />
             <ColumnPicker
               columns={approvalVisibility.configurableColumns}
               hiddenIds={approvalVisibility.hiddenIds}
@@ -299,6 +381,61 @@ export function BillsWorkspace({
       ) : null}
 
       <BillTransitionDialog isPending={isPending} transitions={transitions} />
+
+      {bulk.pending?.kind === 'approve' ? (
+        <BillNoteDialog
+          confirmLabel="Approve bills"
+          confirmVariant="accent"
+          description={`${bulk.pending.billIds.length} bills selected`}
+          error={bulk.bulkError}
+          isPending={isPending}
+          noteRequired={false}
+          notePlaceholder="Optional context for the approval log."
+          onCancel={bulk.cancel}
+          onConfirm={bulk.confirmApprove}
+          title="Bulk approve bills"
+        />
+      ) : null}
+
+      {bulk.pending?.kind === 'reject' ? (
+        <BillNoteDialog
+          confirmLabel="Reject bills"
+          confirmVariant="destructive"
+          description={`${bulk.pending.billIds.length} bills selected`}
+          error={bulk.bulkError}
+          isPending={isPending}
+          noteRequired
+          notePlaceholder="Why are these bills being rejected?"
+          onCancel={bulk.cancel}
+          onConfirm={bulk.confirmReject}
+          title="Bulk reject bills"
+        />
+      ) : null}
+
+      {bulk.pending?.kind === 'delete' ? (
+        <BulkConfirmDialog
+          confirmLabel="Delete drafts"
+          confirmVariant="destructive"
+          description={`Permanently delete ${bulk.pending.billIds.length} draft `
+            + `${bulk.pending.billIds.length === 1 ? 'bill' : 'bills'}? This cannot be undone.`}
+          error={bulk.bulkError}
+          isPending={isPending}
+          onCancel={bulk.cancel}
+          onConfirm={bulk.confirmDelete}
+          title="Delete selected drafts"
+        />
+      ) : null}
+
+      {bulk.pending?.kind === 'edit' ? (
+        <BulkEditDialog
+          billIds={bulk.pending.billIds}
+          categoryOptions={options.categories}
+          error={bulk.bulkError}
+          isPending={isPending}
+          onCancel={bulk.cancel}
+          onConfirm={bulk.confirmEdit}
+        />
+      ) : null}
     </main>
   );
 }
