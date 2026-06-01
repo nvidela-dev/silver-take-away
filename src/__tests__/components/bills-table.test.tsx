@@ -60,7 +60,7 @@ afterEach(() => {
 describe('BillsTable', () => {
   it('shows one server page and navigates with the page query parameter', async () => {
     const user = userEvent.setup();
-    render(
+    const { container } = render(
       <BillsTable
         bills={bills}
         columns={columns}
@@ -74,6 +74,8 @@ describe('BillsTable', () => {
     expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled();
     expect(screen.getByText('PAGE-1')).toBeInTheDocument();
     expect(screen.getByText('PAGE-10')).toBeInTheDocument();
+    expect(container.querySelector('tbody')).toHaveClass('h-[560px]');
+    expect(screen.getByText('PAGE-1').closest('tr')).toHaveClass('h-14');
 
     await user.click(screen.getByRole('button', { name: 'Next' }));
 
@@ -98,6 +100,7 @@ describe('BillsTable', () => {
     expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    expect(container.querySelector('tbody')).toHaveClass('h-[560px]');
     expect(screen.queryByText('PAGE-1')).not.toBeInTheDocument();
   });
 });

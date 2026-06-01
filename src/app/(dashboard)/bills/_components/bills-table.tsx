@@ -13,10 +13,11 @@ import type { BillListItem } from '@/lib/types/bill/views';
 
 const PAGE_SIZE = 10;
 const SKELETON_ROW_COUNT = 10;
+const TABLE_BODY_CLASS_NAME = 'h-[560px]';
 
 function BillsTableSkeletonRows({ columns }: { columns: BillsTableColumn[] }) {
   return Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
-    <tr className="border-b border-slate-100 last:border-0" key={index}>
+    <tr className="h-14 border-b border-slate-100 last:border-0" key={index}>
       {columns.map((column) => (
         <td
           aria-label="Loading bill"
@@ -105,7 +106,7 @@ export function BillsTable({
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className={TABLE_BODY_CLASS_NAME}>
             {showSkeleton ? (
               <>
                 <tr className="sr-only">
@@ -124,7 +125,10 @@ export function BillsTable({
             {!showSkeleton
               ? bills.map((bill) => (
                 <tr
-                  className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
+                  className={[
+                    'h-14 border-b border-slate-100 last:border-0 hover:bg-slate-50',
+                    'animate-[bills-row-fade-in_180ms_ease-out]',
+                  ].join(' ')}
                   key={bill.id}
                 >
                   {columns.map((column) => (
@@ -141,7 +145,7 @@ export function BillsTable({
           </tbody>
         </table>
       </div>
-      {bills.length > 0 ? (
+      {totalBills > 0 ? (
         <div
           className={[
             'flex items-center justify-between gap-4 border-t border-slate-200 px-4 py-3',
