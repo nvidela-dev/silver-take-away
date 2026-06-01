@@ -23,7 +23,10 @@ function BillsTableSkeletonRows({
       {columns.map((column) => (
         <td
           aria-label="Loading bill"
-          className={column.cellClassName ?? 'py-3 pr-4'}
+          className={[
+            'h-14',
+            column.cellClassName ?? 'py-3 pr-4',
+          ].join(' ')}
           key={column.id}
         >
           <div
