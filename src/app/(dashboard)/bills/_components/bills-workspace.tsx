@@ -391,8 +391,12 @@ export function BillsWorkspace({
             onPageSizeChange={(pageSize) => {
               void filtersController.setPageSize(pageSize);
             }}
+            onSortChange={(key) => {
+              void filtersController.toggleSort(key);
+            }}
             pageSize={filtersController.pagination.pageSize}
             pageSizeOptions={filtersController.pageSizeOptions}
+            sort={filtersController.sort}
             totalBills={activeBills.total}
           />
         </div>
@@ -410,8 +414,12 @@ export function BillsWorkspace({
             onPageSizeChange={(pageSize) => {
               void filtersController.setPageSize(pageSize);
             }}
+            onSortChange={(key) => {
+              void filtersController.toggleSort(key);
+            }}
             pageSize={filtersController.pagination.pageSize}
             pageSizeOptions={filtersController.pageSizeOptions}
+            sort={filtersController.sort}
             totalBills={activeBills.total}
           />
         </div>
@@ -429,8 +437,12 @@ export function BillsWorkspace({
             onPageSizeChange={(pageSize) => {
               void filtersController.setPageSize(pageSize);
             }}
+            onSortChange={(key) => {
+              void filtersController.toggleSort(key);
+            }}
             pageSize={filtersController.pagination.pageSize}
             pageSizeOptions={filtersController.pageSizeOptions}
+            sort={filtersController.sort}
             totalBills={activeBills.total}
           />
         </div>

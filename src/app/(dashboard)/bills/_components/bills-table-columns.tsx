@@ -48,6 +48,7 @@ export const vendorOwnerColumn: BillsTableColumn = {
   headerClassName: 'py-3 pl-4 pr-4 font-medium',
   cellClassName: 'py-3 pl-4 pr-4',
   isConfigurable: false,
+  sortKey: 'vendor',
   render: (bill) => (
     <div className="flex items-center gap-3">
       <span
@@ -77,6 +78,7 @@ export const vendorOwnerColumn: BillsTableColumn = {
 export const statusColumn: BillsTableColumn = {
   id: 'status',
   header: 'Status',
+  sortKey: 'status',
   render: (bill) => <StatusBadge status={billStatusDisplay[bill.status]} />,
 };
 
@@ -85,13 +87,23 @@ export const amountColumn: BillsTableColumn = {
   header: 'Amount',
   headerClassName: 'py-3 pr-4 text-right font-medium',
   cellClassName: 'py-3 pr-4 text-right font-medium tabular-nums text-slate-950',
+  sortKey: 'amount',
   render: (bill) => formatMoney(bill.amount, bill.currency),
+};
+
+export const invoiceDateColumn: BillsTableColumn = {
+  id: 'invoiceDate',
+  header: 'Invoice date',
+  cellClassName: 'py-3 pr-4 text-slate-600',
+  sortKey: 'invoiceDate',
+  render: (bill) => (bill.invoiceDate ? formatDate(bill.invoiceDate) : '—'),
 };
 
 export const dueDateColumn: BillsTableColumn = {
   id: 'dueDate',
   header: 'Due date',
   cellClassName: 'py-3 pr-4 text-slate-600',
+  sortKey: 'dueDate',
   render: (bill) => (bill.dueDate ? formatDate(bill.dueDate) : '—'),
 };
 
@@ -99,6 +111,7 @@ export const invoiceNumberColumn: BillsTableColumn = {
   id: 'invoiceNumber',
   header: 'Invoice #',
   cellClassName: 'py-3 pr-4 text-slate-600',
+  sortKey: 'invoiceNumber',
   render: (bill) => bill.invoiceNumber ?? '—',
 };
 
@@ -113,6 +126,7 @@ export const billReadColumns: BillsTableColumn[] = [
   vendorOwnerColumn,
   statusColumn,
   amountColumn,
+  invoiceDateColumn,
   dueDateColumn,
   invoiceNumberColumn,
   linesColumn,
