@@ -1,7 +1,9 @@
 import {
+  count,
   desc,
   eq,
   inArray,
+  sum,
 } from 'drizzle-orm';
 
 import { db } from '@/db';
@@ -23,9 +25,29 @@ export async function getBillById(id: string): Promise<Bill | null> {
 
 export async function listBillsByStatuses(
   statuses: BillStatus[],
-): Promise<BillListItem[]> {
+  page = 1,
+  pageSize = 10,
+): Promise<{ amountTotal: string; bills: BillListItem[]; total: number }> {
   if (statuses.length === 0) {
-    return [];
+    return { amountTotal: '0', bills: [], total: 0 };
+  }
+
+  const where = inArray(bills.status, statuses);
+  const [{ amountTotal, total }] = await db
+    .select({ amountTotal: sum(bills.amount), total: count() })
+    .from(bills)
+    .where(where);
+  const pageRows = await db
+    .select({ id: bills.id })
+    .from(bills)
+    .where(where)
+    .orderBy(desc(bills.createdAt), desc(bills.updatedAt))
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
+  const pageIds = pageRows.map((bill) => bill.id);
+
+  if (pageIds.length === 0) {
+    return { amountTotal: amountTotal ?? '0', bills: [], total };
   }
 
   const rows = await db
@@ -51,7 +73,7 @@ export async function listBillsByStatuses(
     .innerJoin(users, eq(bills.createdBy, users.id))
     .leftJoin(billLineItems, eq(billLineItems.billId, bills.id))
     .leftJoin(categories, eq(categories.id, billLineItems.categoryId))
-    .where(inArray(bills.status, statuses))
+    .where(inArray(bills.id, pageIds))
     .orderBy(desc(bills.createdAt), desc(bills.updatedAt));
 
   const grouped = rows.reduce((acc, row) => {
@@ -75,15 +97,20 @@ export async function listBillsByStatuses(
     return acc;
   }, new Map<string, BillListItem>());
 
-  return Array.from(grouped.values()).map((bill) => ({
-    ...bill,
-    lineItems: bill.lineItems.sort((a, b) => a.sortOrder - b.sortOrder),
-    lineItemCount: bill.lineItems.length,
-  }));
+  return {
+    amountTotal: amountTotal ?? '0',
+    bills: Array.from(grouped.values()).map((bill) => ({
+      ...bill,
+      lineItems: bill.lineItems.sort((a, b) => a.sortOrder - b.sortOrder),
+      lineItemCount: bill.lineItems.length,
+    })),
+    total,
+  };
 }
 
 export async function listDraftBills(): Promise<BillListItem[]> {
-  return listBillsByStatuses(['draft']);
+  const result = await listBillsByStatuses(['draft']);
+  return result.bills;
 }
 
 export async function getBillFormOptions(): Promise<BillFormOptions> {

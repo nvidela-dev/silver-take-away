@@ -14,19 +14,19 @@ async function gateBillRead() {
   requireRole(actor, BILL_VIEWER_ROLES);
 }
 
-export async function listDraftBills() {
+export async function listDraftBills(page?: number) {
   await gateBillRead();
-  return listBillsByStatusesFromRepo(['draft']);
+  return listBillsByStatusesFromRepo(['draft'], page);
 }
 
-export async function listApprovalBills() {
+export async function listApprovalBills(page?: number) {
   await gateBillRead();
-  return listBillsByStatusesFromRepo(['awaiting_approval']);
+  return listBillsByStatusesFromRepo(['awaiting_approval'], page);
 }
 
-export async function listPaymentBills() {
+export async function listPaymentBills(page?: number) {
   await gateBillRead();
-  return listBillsByStatusesFromRepo(['approved', 'scheduled', 'initiated']);
+  return listBillsByStatusesFromRepo(['approved', 'scheduled', 'initiated'], page);
 }
 
 export async function getBillFormOptions() {

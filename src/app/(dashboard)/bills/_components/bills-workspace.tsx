@@ -47,20 +47,34 @@ import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
 interface BillsWorkspaceProps {
   activeTab: string;
+  approvalAmountTotal: string;
   approvalBills: BillListItem[];
+  approvalTotal: number;
+  currentPage: number;
+  draftAmountTotal: string;
   draftBills: BillListItem[];
+  draftTotal: number;
   loadError: string | null;
   options: BillFormOptions;
+  paymentAmountTotal: string;
   paymentBills: BillListItem[];
+  paymentTotal: number;
 }
 
 export function BillsWorkspace({
   activeTab,
+  approvalAmountTotal,
   approvalBills,
+  approvalTotal,
+  currentPage,
+  draftAmountTotal,
   draftBills,
+  draftTotal,
   loadError,
   options,
+  paymentAmountTotal,
   paymentBills,
+  paymentTotal,
 }: BillsWorkspaceProps) {
   const router = useRouter();
   const dialogTitleId = useId();
@@ -312,9 +326,12 @@ export function BillsWorkspace({
 
       {activeTab === 'overview' ? (
         <BillsStatusOverview
-          approvalBills={approvalBills}
-          draftBills={draftBills}
-          paymentBills={paymentBills}
+          approvalAmountTotal={approvalAmountTotal}
+          approvalTotal={approvalTotal}
+          draftAmountTotal={draftAmountTotal}
+          draftTotal={draftTotal}
+          paymentAmountTotal={paymentAmountTotal}
+          paymentTotal={paymentTotal}
         />
       ) : null}
       {activeTab === 'drafts' ? (
@@ -333,11 +350,14 @@ export function BillsWorkspace({
             />
           </div>
           <BillsTable
+            amountTotal={draftAmountTotal}
             bills={draftBills}
             columns={draftVisibility.visibleColumns}
+            currentPage={currentPage}
             emptyMessage="No draft bills yet."
             isLoading={isPending}
             loadingMessage="Loading draft bills…"
+            totalBills={draftTotal}
           />
         </div>
       ) : null}
@@ -357,9 +377,12 @@ export function BillsWorkspace({
             />
           </div>
           <BillsTable
+            amountTotal={approvalAmountTotal}
             bills={approvalBills}
             columns={approvalVisibility.visibleColumns}
+            currentPage={currentPage}
             emptyMessage="No bills awaiting approval."
+            totalBills={approvalTotal}
           />
         </div>
       ) : null}
@@ -373,9 +396,12 @@ export function BillsWorkspace({
             />
           </div>
           <BillsTable
+            amountTotal={paymentAmountTotal}
             bills={paymentBills}
             columns={paymentVisibility.visibleColumns}
+            currentPage={currentPage}
             emptyMessage="No bills ready for payment."
+            totalBills={paymentTotal}
           />
         </div>
       ) : null}

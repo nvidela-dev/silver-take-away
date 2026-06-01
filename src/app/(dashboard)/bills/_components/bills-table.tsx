@@ -1,10 +1,14 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
 
+import { Button } from '@/app/_components/atoms/button';
 import { Card } from '@/app/_components/atoms/card';
 import { formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';
+
+const PAGE_SIZE = 10;
 
 export interface BillsTableColumn {
   id: string;
@@ -18,23 +22,38 @@ export interface BillsTableColumn {
 }
 
 interface BillsTableProps {
+  amountTotal?: string;
   bills: BillListItem[];
   columns: BillsTableColumn[];
+  currentPage?: number;
   emptyMessage: string;
   isLoading?: boolean;
   loadingMessage?: string;
+  totalBills?: number;
 }
 
 export function BillsTable({
+  amountTotal = undefined,
   bills,
   columns,
+  currentPage = 1,
   emptyMessage,
   isLoading = false,
   loadingMessage = 'Loading bills…',
+  totalBills = bills.length,
 }: BillsTableProps) {
-  const total = bills.reduce((sum, bill) => sum + Number(bill.amount), 0);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const total = amountTotal ?? bills.reduce((sum, bill) => sum + Number(bill.amount), 0).toFixed(2);
   const currency = bills[0]?.currency ?? 'USD';
   const colSpan = columns.length;
+  const pageCount = Math.max(1, Math.ceil(totalBills / PAGE_SIZE));
+
+  const goToPage = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(page));
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -95,18 +114,49 @@ export function BillsTable({
       {!isLoading && bills.length > 0 ? (
         <div
           className={[
-            'flex justify-end border-t border-slate-200 px-4 py-3',
+            'flex items-center justify-between gap-4 border-t border-slate-200 px-4 py-3',
             'text-xs text-slate-500',
           ].join(' ')}
         >
-          {bills.length}
-          {' '}
-          {bills.length === 1 ? 'bill' : 'bills'}
-          {' · '}
-          <span className="ml-1 font-medium text-slate-700">
-            {formatMoney(total.toFixed(2), currency)}
-            {' total'}
+          <span>
+            {totalBills}
+            {' '}
+            {totalBills === 1 ? 'bill' : 'bills'}
+            {' · '}
+            <span className="font-medium text-slate-700">
+              {formatMoney(total, currency)}
+              {' total'}
+            </span>
           </span>
+          <div className="flex items-center gap-3">
+            <span>
+              Page
+              {' '}
+              {currentPage}
+              {' of '}
+              {pageCount}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                disabled={currentPage === 1}
+                onClick={() => goToPage(currentPage - 1)}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                Previous
+              </Button>
+              <Button
+                disabled={currentPage === pageCount}
+                onClick={() => goToPage(currentPage + 1)}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </div>
       ) : null}
     </Card>

@@ -14,6 +14,7 @@ import { BillsWorkspace } from './_components';
 
 interface BillsPageProps {
   searchParams: Promise<{
+    page?: string | string[];
     tab?: string | string[];
   }>;
 }
@@ -28,18 +29,29 @@ function resolveActiveTab(tab?: string | string[]) {
   return 'drafts';
 }
 
-async function loadBillWorkspaceData() {
+function resolvePage(page?: string | string[]) {
+  const value = Number(Array.isArray(page) ? page[0] : page);
+  return Number.isInteger(value) && value > 0 ? value : 1;
+}
+
+async function loadBillWorkspaceData(page: number) {
   try {
     const [draftBills, approvalBills, paymentBills, billFormOptions] = await Promise.all([
-      listDraftBills(),
-      listApprovalBills(),
-      listPaymentBills(),
+      listDraftBills(page),
+      listApprovalBills(page),
+      listPaymentBills(page),
       getBillFormOptions(),
     ]);
     return {
-      draftBills,
-      approvalBills,
-      paymentBills,
+      draftBills: draftBills.bills,
+      draftAmountTotal: draftBills.amountTotal,
+      draftTotal: draftBills.total,
+      approvalBills: approvalBills.bills,
+      approvalAmountTotal: approvalBills.amountTotal,
+      approvalTotal: approvalBills.total,
+      paymentBills: paymentBills.bills,
+      paymentAmountTotal: paymentBills.amountTotal,
+      paymentTotal: paymentBills.total,
       billFormOptions,
       loadError: null,
     };
@@ -54,8 +66,14 @@ async function loadBillWorkspaceData() {
 
     return {
       draftBills: [],
+      draftAmountTotal: '0',
+      draftTotal: 0,
       approvalBills: [],
+      approvalAmountTotal: '0',
+      approvalTotal: 0,
       paymentBills: [],
+      paymentAmountTotal: '0',
+      paymentTotal: 0,
       billFormOptions: { vendors: [], categories: [] },
       loadError,
     };
@@ -65,16 +83,24 @@ async function loadBillWorkspaceData() {
 export default async function BillsPage({ searchParams }: BillsPageProps) {
   const params = await searchParams;
   const activeTab = resolveActiveTab(params.tab);
-  const workspaceData = await loadBillWorkspaceData();
+  const page = resolvePage(params.page);
+  const workspaceData = await loadBillWorkspaceData(page);
 
   return (
     <BillsWorkspace
       activeTab={activeTab}
       approvalBills={workspaceData.approvalBills}
+      approvalAmountTotal={workspaceData.approvalAmountTotal}
+      approvalTotal={workspaceData.approvalTotal}
+      currentPage={page}
       draftBills={workspaceData.draftBills}
+      draftAmountTotal={workspaceData.draftAmountTotal}
+      draftTotal={workspaceData.draftTotal}
       loadError={workspaceData.loadError}
       options={workspaceData.billFormOptions}
       paymentBills={workspaceData.paymentBills}
+      paymentAmountTotal={workspaceData.paymentAmountTotal}
+      paymentTotal={workspaceData.paymentTotal}
     />
   );
 }

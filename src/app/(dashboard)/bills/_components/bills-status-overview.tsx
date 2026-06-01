@@ -8,22 +8,23 @@ import {
 } from '@/app/_components/atoms/card';
 import { billStatusDisplay } from '@/app/_display';
 import { formatMoney } from '@/lib/utils';
-import type { BillListItem } from '@/lib/types/bill/views';
 
 interface BillsStatusOverviewProps {
-  approvalBills: BillListItem[];
-  draftBills: BillListItem[];
-  paymentBills: BillListItem[];
-}
-
-function sumAmount(bills: BillListItem[]) {
-  return bills.reduce((total, bill) => total + Number(bill.amount), 0);
+  approvalAmountTotal: string;
+  approvalTotal: number;
+  draftAmountTotal: string;
+  draftTotal: number;
+  paymentAmountTotal: string;
+  paymentTotal: number;
 }
 
 export function BillsStatusOverview({
-  approvalBills,
-  draftBills,
-  paymentBills,
+  approvalAmountTotal,
+  approvalTotal,
+  draftAmountTotal,
+  draftTotal,
+  paymentAmountTotal,
+  paymentTotal,
 }: BillsStatusOverviewProps) {
   const groups = [
     {
@@ -31,24 +32,24 @@ export function BillsStatusOverview({
       title: 'Drafts',
       description: 'Bills being prepared before approval.',
       status: billStatusDisplay.draft,
-      count: draftBills.length,
-      total: sumAmount(draftBills),
+      count: draftTotal,
+      total: Number(draftAmountTotal),
     },
     {
       id: 'approvals',
       title: 'For approval',
       description: 'Bills awaiting an approval decision.',
       status: billStatusDisplay.awaiting_approval,
-      count: approvalBills.length,
-      total: sumAmount(approvalBills),
+      count: approvalTotal,
+      total: Number(approvalAmountTotal),
     },
     {
       id: 'payment',
       title: 'For payment',
       description: 'Approved bills ready for payment work.',
       status: billStatusDisplay.scheduled,
-      count: paymentBills.length,
-      total: sumAmount(paymentBills),
+      count: paymentTotal,
+      total: Number(paymentAmountTotal),
     },
   ];
 
