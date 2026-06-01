@@ -1,16 +1,16 @@
 'use client';
 
 import { Edit2, Trash2, X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
+import { SelectionCheckbox } from '@/app/_components/atoms/selection-checkbox';
+import type { TableSelection } from '@/app/_components/hooks/use-table-selection';
 import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import { billStatusDisplay } from '@/app/_display';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';
 
 import type { BillsTableColumn } from './bills-table';
-import type { BillsSelection } from './hooks/use-bills-selection';
 
 const avatarTones = [
   'bg-rose-100 text-rose-700',
@@ -48,6 +48,7 @@ export const vendorOwnerColumn: BillsTableColumn = {
   headerClassName: 'py-3 pl-4 pr-4 font-medium',
   cellClassName: 'py-3 pl-4 pr-4',
   isConfigurable: false,
+  skeletonClassName: 'h-8',
   sortKey: 'vendor',
   render: (bill) => (
     <div className="flex items-center gap-3">
@@ -132,39 +133,7 @@ export const billReadColumns: BillsTableColumn[] = [
   linesColumn,
 ];
 
-interface SelectionCheckboxProps {
-  checked: boolean;
-  indeterminate?: boolean;
-  ariaLabel: string;
-  onChange: () => void;
-}
-
-function SelectionCheckbox({
-  checked,
-  indeterminate = false,
-  ariaLabel,
-  onChange,
-}: SelectionCheckboxProps) {
-  const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.indeterminate = indeterminate && !checked;
-    }
-  }, [checked, indeterminate]);
-
-  return (
-    <input
-      aria-label={ariaLabel}
-      checked={checked}
-      className="size-4 cursor-pointer rounded border-slate-300"
-      onChange={onChange}
-      ref={ref}
-      type="checkbox"
-    />
-  );
-}
-
-export function selectionColumn(selection: BillsSelection): BillsTableColumn {
+export function selectionColumn(selection: TableSelection): BillsTableColumn {
   return {
     id: 'selection',
     header: 'Select',

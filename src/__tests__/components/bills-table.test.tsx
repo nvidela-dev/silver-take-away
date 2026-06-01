@@ -13,6 +13,7 @@ const columns: BillsTableColumn[] = [
     id: 'invoiceNumber',
     header: 'Invoice #',
     render: (bill) => bill.invoiceNumber,
+    sortKey: 'invoiceNumber',
   },
 ];
 
@@ -101,5 +102,25 @@ describe('BillsTable', () => {
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
     expect(screen.getAllByLabelText('Loading bill')[0]).toHaveClass('h-14');
     expect(screen.queryByText('PAGE-1')).not.toBeInTheDocument();
+  });
+
+  it('exposes generic sortable headers through the bill adapter', async () => {
+    const user = userEvent.setup();
+    const onSortChange = vi.fn();
+    render(
+      <BillsTable
+        bills={bills}
+        columns={columns}
+        emptyMessage="No bills."
+        onSortChange={onSortChange}
+        sort={{ by: 'invoiceNumber', dir: 'desc' }}
+      />,
+    );
+
+    const sortButton = screen.getByRole('button', { name: 'Sort by Invoice # ascending' });
+    expect(sortButton.closest('th')).toHaveAttribute('aria-sort', 'descending');
+
+    await user.click(sortButton);
+    expect(onSortChange).toHaveBeenCalledWith('invoiceNumber');
   });
 });

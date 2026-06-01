@@ -5,15 +5,24 @@ import { useCallback, useRef, useState } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
 
-import { usePopoverDismiss } from '../hooks/use-popover-dismiss';
-import type { BillFilterDimension } from './bill-filter-dimensions';
+import { usePopoverDismiss } from '@/app/_components/hooks/use-popover-dismiss';
 
-interface AddFilterPopoverProps {
-  dimensions: readonly BillFilterDimension[];
+import { PopoverPanel } from '../popover-panel';
+
+export interface FilterOption {
+  id: string;
+  label: string;
+}
+
+interface AddFilterPopoverProps<TOption extends FilterOption> {
+  dimensions: readonly TOption[];
   onPick: (id: string) => void;
 }
 
-export function AddFilterPopover({ dimensions, onPick }: AddFilterPopoverProps) {
+export function AddFilterPopover<TOption extends FilterOption>({
+  dimensions,
+  onPick,
+}: AddFilterPopoverProps<TOption>) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -38,13 +47,7 @@ export function AddFilterPopover({ dimensions, onPick }: AddFilterPopoverProps) 
         Add filter
       </Button>
       {isOpen ? (
-        <div
-          className={[
-            'absolute left-0 top-full z-30 mt-2 w-56 rounded-md border',
-            'border-slate-200 bg-white p-2 shadow-lg',
-          ].join(' ')}
-          role="menu"
-        >
+        <PopoverPanel className="p-2" role="menu">
           <ul className="grid">
             {dimensions.map((dimension) => (
               <li key={dimension.id}>
@@ -64,7 +67,7 @@ export function AddFilterPopover({ dimensions, onPick }: AddFilterPopoverProps) 
               </li>
             ))}
           </ul>
-        </div>
+        </PopoverPanel>
       ) : null}
     </div>
   );

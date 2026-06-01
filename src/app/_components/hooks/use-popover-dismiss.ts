@@ -4,14 +4,14 @@ import { useEffect, type RefObject } from 'react';
 
 interface UsePopoverDismissOptions {
   containerRef: RefObject<HTMLElement | null>;
-  onDismiss: () => void;
   enabled: boolean;
+  onDismiss: () => void;
 }
 
 export function usePopoverDismiss({
   containerRef,
-  onDismiss,
   enabled,
+  onDismiss,
 }: UsePopoverDismissOptions) {
   useEffect(() => {
     if (!enabled) {

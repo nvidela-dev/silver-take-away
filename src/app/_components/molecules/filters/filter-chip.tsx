@@ -10,9 +10,11 @@ import {
 
 import { Button } from '@/app/_components/atoms/button';
 
-import { usePopoverDismiss } from '../hooks/use-popover-dismiss';
+import { usePopoverDismiss } from '@/app/_components/hooks/use-popover-dismiss';
 
-interface BillFilterChipProps {
+import { PopoverPanel } from '../popover-panel';
+
+interface FilterChipProps {
   label: string;
   valueSummary: string;
   onClear: () => void;
@@ -20,13 +22,13 @@ interface BillFilterChipProps {
   renderEditor: (close: () => void) => ReactNode;
 }
 
-export function BillFilterChip({
+export function FilterChip({
   label,
   valueSummary,
   onClear,
   initialOpen = false,
   renderEditor,
-}: BillFilterChipProps) {
+}: FilterChipProps) {
   const [isOpen, setIsOpen] = useState(initialOpen);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -64,15 +66,9 @@ export function BillFilterChip({
         </Button>
       </div>
       {isOpen ? (
-        <div
-          className={[
-            'absolute left-0 top-full z-30 mt-2 w-72 rounded-md border',
-            'border-slate-200 bg-white shadow-lg',
-          ].join(' ')}
-          role="dialog"
-        >
+        <PopoverPanel width="md" role="dialog">
           {renderEditor(close)}
-        </div>
+        </PopoverPanel>
       ) : null}
     </div>
   );

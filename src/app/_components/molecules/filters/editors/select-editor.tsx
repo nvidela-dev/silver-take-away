@@ -5,6 +5,7 @@ import {
 } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
+import { Input } from '@/app/_components/atoms/input';
 
 export interface SelectEditorOption {
   id: string;
@@ -44,12 +45,8 @@ export function SelectEditor({
 
   return (
     <div className="grid gap-2 p-3">
-      <input
-        className={[
-          'block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5',
-          'text-sm text-slate-950 placeholder:text-slate-400',
-          'focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300',
-        ].join(' ')}
+      <Input
+        controlSize="sm"
         onChange={(event) => setSearch(event.target.value)}
         placeholder="Search…"
         ref={inputRef}

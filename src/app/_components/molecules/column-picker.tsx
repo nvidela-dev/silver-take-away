@@ -9,27 +9,30 @@ import {
 } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
+import { usePopoverDismiss } from '@/app/_components/hooks/use-popover-dismiss';
 
-import type { BillsTableColumn } from './bills-table';
-import { usePopoverDismiss } from './hooks/use-popover-dismiss';
+import type { DataTableColumn } from './data-table';
+import { PopoverPanel } from './popover-panel';
 
-interface ColumnPickerProps {
-  columns: BillsTableColumn[];
+interface ColumnPickerProps<TRow, TSortKey extends string> {
+  columns: DataTableColumn<TRow, TSortKey>[];
   hiddenIds: Set<string>;
   onToggle: (id: string) => void;
 }
 
-export function ColumnPicker({ columns, hiddenIds, onToggle }: ColumnPickerProps) {
+export function ColumnPicker<TRow, TSortKey extends string>({
+  columns,
+  hiddenIds,
+  onToggle,
+}: ColumnPickerProps<TRow, TSortKey>) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const labelId = useId();
-
   const close = useCallback(() => setIsOpen(false), []);
-  usePopoverDismiss({ containerRef, onDismiss: close, enabled: isOpen });
 
-  if (columns.length === 0) {
-    return null;
-  }
+  usePopoverDismiss({ containerRef, enabled: isOpen, onDismiss: close });
+
+  if (columns.length === 0) return null;
 
   return (
     <div className="relative" ref={containerRef}>
@@ -45,14 +48,7 @@ export function ColumnPicker({ columns, hiddenIds, onToggle }: ColumnPickerProps
         Columns
       </Button>
       {isOpen ? (
-        <div
-          aria-labelledby={labelId}
-          className={[
-            'absolute right-0 top-full z-30 mt-2 w-56 rounded-md border border-slate-200',
-            'bg-white p-2 shadow-lg',
-          ].join(' ')}
-          role="menu"
-        >
+        <PopoverPanel align="right" aria-labelledby={labelId} className="p-2" role="menu">
           <p
             className="px-2 pb-2 pt-1 text-xs font-medium uppercase tracking-wide text-slate-500"
             id={labelId}
@@ -85,7 +81,7 @@ export function ColumnPicker({ columns, hiddenIds, onToggle }: ColumnPickerProps
               );
             })}
           </ul>
-        </div>
+        </PopoverPanel>
       ) : null}
     </div>
   );

@@ -1,12 +1,8 @@
 'use client';
 
-import { useQueryStates } from 'nuqs';
-import {
-  useCallback,
-  useMemo,
-  useTransition,
-} from 'react';
+import { useMemo } from 'react';
 
+import { useDataTableQueryState } from '@/app/_components/hooks/use-data-table-query-state';
 import {
   BILL_FILTER_FIELD_KEYS,
   BILL_PAGE_SIZE_OPTIONS,
@@ -18,7 +14,6 @@ import {
   type BillSort,
   type BillSortKey,
 } from '@/lib/validators/bill-sort-spec';
-import type { SortDirection } from '@/lib/validators/sort-spec';
 import type { BillStatus } from '@/lib/types/enums';
 
 export type BillFilterValues = {
@@ -47,79 +42,26 @@ const clearedFilters = Object.fromEntries(
 const sortParsers = billSortSpec.parsers;
 
 export function useBillFilters(): BillFiltersController {
-  const [isPending, startTransition] = useTransition();
-
-  const queryOptions = useMemo(
-    () => ({ shallow: false, history: 'push' as const, startTransition }),
-    [startTransition],
-  );
-
-  const [values, setValuesRaw] = useQueryStates(filterParsers, queryOptions);
-  const [pagination, setPaginationRaw] = useQueryStates(paginationParsers, queryOptions);
-  const [sortRaw, setSortRaw] = useQueryStates(sortParsers, queryOptions);
-
-  const setValues = useCallback(
-    (updates: Partial<BillFilterValues>) => {
-      void setPaginationRaw({ page: 1 });
-      return setValuesRaw(updates);
-    },
-    [setPaginationRaw, setValuesRaw],
-  );
-
-  const clearAll = useCallback(() => {
-    void setPaginationRaw({ page: 1 });
-    return setValuesRaw(clearedFilters);
-  }, [setPaginationRaw, setValuesRaw]);
-
-  const setPage = useCallback(
-    (page: number) => setPaginationRaw({ page }),
-    [setPaginationRaw],
-  );
-
-  const setPageSize = useCallback(
-    (pageSize: number) => setPaginationRaw({ pageSize, page: 1 }),
-    [setPaginationRaw],
-  );
+  const tableState = useDataTableQueryState<
+    typeof filterParsers,
+    typeof paginationParsers,
+    typeof sortParsers,
+    BillSortKey
+  >({
+    clearedFilters,
+    filterParsers,
+    pageSizeOptions: BILL_PAGE_SIZE_OPTIONS,
+    paginationParsers,
+    sortParsers,
+  });
 
   const status = useMemo(
-    () => (values.status ? (values.status as BillStatus[]) : null),
-    [values.status],
-  );
-
-  const sort: BillSort = useMemo(
-    () => ({ by: sortRaw.sort as BillSortKey, dir: sortRaw.dir as SortDirection }),
-    [sortRaw.sort, sortRaw.dir],
-  );
-
-  const setSort = useCallback(
-    (next: BillSort) => {
-      void setPaginationRaw({ page: 1 });
-      return setSortRaw({ sort: next.by, dir: next.dir });
-    },
-    [setPaginationRaw, setSortRaw],
-  );
-
-  const toggleSort = useCallback(
-    (key: BillSortKey) => {
-      const nextDir: SortDirection = sort.by === key && sort.dir === 'desc' ? 'asc' : 'desc';
-      void setPaginationRaw({ page: 1 });
-      return setSortRaw({ sort: key, dir: nextDir });
-    },
-    [setPaginationRaw, setSortRaw, sort.by, sort.dir],
+    () => (tableState.values.status ? (tableState.values.status as BillStatus[]) : null),
+    [tableState.values.status],
   );
 
   return {
-    values,
+    ...tableState,
     status,
-    pagination,
-    pageSizeOptions: BILL_PAGE_SIZE_OPTIONS,
-    sort,
-    isPending,
-    setValues,
-    clearAll,
-    setPage,
-    setPageSize,
-    setSort,
-    toggleSort,
   };
 }

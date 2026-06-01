@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
+import { Input } from '@/app/_components/atoms/input';
 
 interface DateRangeEditorProps {
   from: string | null;
@@ -43,12 +44,8 @@ export function DateRangeEditor({
       <div className="grid grid-cols-2 gap-2">
         <label className="grid gap-1" htmlFor={fromId}>
           <span className="text-xs font-medium text-slate-700">From</span>
-          <input
-            className={[
-              'block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5',
-              'text-sm text-slate-950',
-              'focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300',
-            ].join(' ')}
+          <Input
+            controlSize="sm"
             id={fromId}
             onChange={(event) => setFromDraft(event.target.value)}
             type="date"
@@ -57,12 +54,8 @@ export function DateRangeEditor({
         </label>
         <label className="grid gap-1" htmlFor={toId}>
           <span className="text-xs font-medium text-slate-700">To</span>
-          <input
-            className={[
-              'block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5',
-              'text-sm text-slate-950',
-              'focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300',
-            ].join(' ')}
+          <Input
+            controlSize="sm"
             id={toId}
             onChange={(event) => setToDraft(event.target.value)}
             type="date"

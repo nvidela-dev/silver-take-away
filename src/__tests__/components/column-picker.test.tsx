@@ -2,7 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach } from 'vitest';
 
-import { ColumnPicker } from '@/app/(dashboard)/bills/_components/column-picker';
+import { ColumnPicker } from '@/app/_components/molecules/column-picker';
 import type { BillsTableColumn } from '@/app/(dashboard)/bills/_components/bills-table';
 
 const noopRender: BillsTableColumn['render'] = () => null;

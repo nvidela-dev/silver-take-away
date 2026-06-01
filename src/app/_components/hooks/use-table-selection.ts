@@ -6,20 +6,19 @@ import {
   useState,
 } from 'react';
 
-export interface BillsSelection {
-  selectedIds: ReadonlySet<string>;
-  selectedCount: number;
+export interface TableSelection {
+  clear: () => void;
   isAllSelected: boolean;
-  isSomeSelected: boolean;
   isSelected: (id: string) => boolean;
+  isSomeSelected: boolean;
+  selectedCount: number;
+  selectedIds: ReadonlySet<string>;
   toggle: (id: string) => void;
   toggleAll: () => void;
-  clear: () => void;
 }
 
-export function useBillsSelection(visibleIds: readonly string[]): BillsSelection {
+export function useTableSelection(visibleIds: readonly string[]): TableSelection {
   const [rawSelected, setRawSelected] = useState<ReadonlySet<string>>(() => new Set());
-
   const visibleSet = useMemo(() => new Set(visibleIds), [visibleIds]);
 
   const selectedIds = useMemo(() => {
@@ -35,11 +34,8 @@ export function useBillsSelection(visibleIds: readonly string[]): BillsSelection
   const toggle = useCallback((id: string) => {
     setRawSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);
@@ -49,35 +45,27 @@ export function useBillsSelection(visibleIds: readonly string[]): BillsSelection
       const allVisibleSelected = visibleIds.length > 0
         && visibleIds.every((id) => prev.has(id));
       const next = new Set(prev);
-      if (allVisibleSelected) {
-        visibleIds.forEach((id) => next.delete(id));
-      } else {
-        visibleIds.forEach((id) => next.add(id));
-      }
+      if (allVisibleSelected) visibleIds.forEach((id) => next.delete(id));
+      else visibleIds.forEach((id) => next.add(id));
       return next;
     });
   }, [visibleIds]);
 
-  const clear = useCallback(() => {
-    setRawSelected(new Set());
-  }, []);
-
+  const clear = useCallback(() => setRawSelected(new Set()), []);
   const isSelected = useCallback((id: string) => selectedIds.has(id), [selectedIds]);
-
   const isAllSelected = visibleIds.length > 0
     && visibleIds.every((id) => selectedIds.has(id));
-
   const isSomeSelected = !isAllSelected
     && visibleIds.some((id) => selectedIds.has(id));
 
   return {
-    selectedIds,
-    selectedCount: selectedIds.size,
+    clear,
     isAllSelected,
-    isSomeSelected,
     isSelected,
+    isSomeSelected,
+    selectedCount: selectedIds.size,
+    selectedIds,
     toggle,
     toggleAll,
-    clear,
   };
 }

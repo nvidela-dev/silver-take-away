@@ -2,6 +2,14 @@
 
 import type { ComponentType } from 'react';
 
+import { DateRangeEditor } from '@/app/_components/molecules/filters/editors/date-range-editor';
+import { MultiSelectEditor } from '@/app/_components/molecules/filters/editors/multi-select-editor';
+import { NumberRangeEditor } from '@/app/_components/molecules/filters/editors/number-range-editor';
+import {
+  SelectEditor,
+  type SelectEditorOption,
+} from '@/app/_components/molecules/filters/editors/select-editor';
+import { TextEditor } from '@/app/_components/molecules/filters/editors/text-editor';
 import { billStatusDisplay } from '@/app/_display';
 import { formatDate, formatMoney } from '@/lib/utils';
 import type { BillReferenceData } from '@/lib/types/bill/filters';
@@ -9,11 +17,6 @@ import { PAYMENT_TAB_STATUSES, type BillFilterTab } from '@/lib/types/bill/tabs'
 import { BILL_FILTER_FIELD_SPECS } from '@/lib/validators/bill-filter-spec';
 
 import type { BillFiltersController } from '../hooks/use-bill-filters';
-import { DateRangeEditor } from './editors/date-range-editor';
-import { MultiSelectEditor } from './editors/multi-select-editor';
-import { NumberRangeEditor } from './editors/number-range-editor';
-import { SelectEditor, type SelectEditorOption } from './editors/select-editor';
-import { TextEditor } from './editors/text-editor';
 
 export type { BillFilterTab };
 

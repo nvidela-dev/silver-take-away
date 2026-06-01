@@ -4,6 +4,10 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/app/_components/atoms/button';
+import { Alert } from '@/app/_components/atoms/alert';
+import { Input } from '@/app/_components/atoms/input';
+import { Select } from '@/app/_components/atoms/select';
+import { Textarea } from '@/app/_components/atoms/textarea';
 import { formatMoney } from '@/lib/utils';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
 import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
@@ -75,24 +79,14 @@ export function DraftBillForm({
         </p>
       </div>
       {loadError ? (
-        <div
-          className={[
-            'rounded-md border border-rose-200 bg-rose-50 p-4',
-            'text-sm text-rose-950',
-          ].join(' ')}
-        >
+        <Alert>
           {loadError}
-        </div>
+        </Alert>
       ) : null}
       {!loadError && formDisabled ? (
-        <div
-          className={[
-            'rounded-md border border-amber-200 bg-amber-50 p-4',
-            'text-sm text-amber-950',
-          ].join(' ')}
-        >
+        <Alert tone="warning">
           Seed vendors and categories before creating draft bills.
-        </div>
+        </Alert>
       ) : null}
       {!loadError && !formDisabled ? (
         <form
@@ -106,9 +100,8 @@ export function DraftBillForm({
               htmlFor="bill-vendor"
             >
               Vendor
-              <select
+              <Select
                 aria-invalid={errors.vendorId ? true : undefined}
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-vendor"
                 {...register('vendorId')}
               >
@@ -118,7 +111,7 @@ export function DraftBillForm({
                     {vendor.name}
                   </option>
                 ))}
-              </select>
+              </Select>
               <FieldError message={errors.vendorId?.message} />
             </label>
             <label
@@ -126,9 +119,8 @@ export function DraftBillForm({
               htmlFor="bill-invoice-number"
             >
               Invoice #
-              <input
+              <Input
                 aria-invalid={errors.invoiceNumber ? true : undefined}
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-invoice-number"
                 {...register('invoiceNumber')}
               />
@@ -139,9 +131,8 @@ export function DraftBillForm({
               htmlFor="bill-amount"
             >
               Amount
-              <input
+              <Input
                 aria-invalid={errors.amount ? true : undefined}
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-amount"
                 inputMode="decimal"
                 {...register('amount')}
@@ -156,9 +147,9 @@ export function DraftBillForm({
               htmlFor="bill-currency"
             >
               Currency
-              <input
+              <Input
                 aria-invalid={errors.currency ? true : undefined}
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm uppercase"
+                className="uppercase"
                 id="bill-currency"
                 maxLength={3}
                 {...registerCurrency()}
@@ -170,9 +161,8 @@ export function DraftBillForm({
               htmlFor="bill-invoice-date"
             >
               Invoice date
-              <input
+              <Input
                 aria-invalid={errors.invoiceDate ? true : undefined}
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-invoice-date"
                 type="date"
                 {...register('invoiceDate')}
@@ -184,9 +174,8 @@ export function DraftBillForm({
               htmlFor="bill-due-date"
             >
               Due date
-              <input
+              <Input
                 aria-invalid={errors.dueDate ? true : undefined}
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-due-date"
                 type="date"
                 {...register('dueDate')}
@@ -198,9 +187,8 @@ export function DraftBillForm({
               htmlFor="bill-invoice-url"
             >
               Invoice URL
-              <input
+              <Input
                 aria-invalid={errors.invoiceUrl ? true : undefined}
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-invoice-url"
                 type="url"
                 {...register('invoiceUrl')}
@@ -214,9 +202,9 @@ export function DraftBillForm({
             htmlFor="bill-description"
           >
             Description
-            <textarea
+            <Textarea
               aria-invalid={errors.description ? true : undefined}
-              className="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="min-h-20"
               id="bill-description"
               {...register('description')}
             />

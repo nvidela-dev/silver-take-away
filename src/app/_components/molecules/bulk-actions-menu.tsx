@@ -2,26 +2,30 @@
 
 import { ChevronDown } from 'lucide-react';
 import {
-  useEffect,
+  useCallback,
   useId,
   useRef,
   useState,
 } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
+import { usePopoverDismiss } from '@/app/_components/hooks/use-popover-dismiss';
+
+import { PopoverPanel } from './popover-panel';
 
 export interface BulkActionDescriptor {
   id: string;
   label: string;
-  variant?: 'accent' | 'destructive' | 'outline' | 'secondary';
   onClick: () => void;
+  variant?: 'accent' | 'destructive' | 'outline' | 'secondary';
 }
 
-interface BillsBulkActionsMenuProps {
-  count: number;
+interface BulkActionsMenuProps {
   actions: readonly BulkActionDescriptor[];
-  onClear: () => void;
+  count: number;
+  entityLabel: string;
   isPending?: boolean;
+  onClear: () => void;
 }
 
 const variantClassName: Record<NonNullable<BulkActionDescriptor['variant']>, string> = {
@@ -31,49 +35,28 @@ const variantClassName: Record<NonNullable<BulkActionDescriptor['variant']>, str
   secondary: 'text-slate-800 hover:bg-slate-100',
 };
 
-export function BillsBulkActionsMenu({
-  count,
+export function BulkActionsMenu({
   actions,
-  onClear,
+  count,
+  entityLabel,
   isPending = false,
-}: BillsBulkActionsMenuProps) {
+  onClear,
+}: BulkActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const labelId = useId();
   const isDisabled = count === 0 || isPending;
+  const close = useCallback(() => setIsOpen(false), []);
 
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
-    }
-
-    const onPointerDown = (event: MouseEvent) => {
-      const node = containerRef.current;
-      if (node && !node.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [isOpen]);
+  usePopoverDismiss({ containerRef, enabled: isOpen, onDismiss: close });
 
   const handleActionClick = (action: BulkActionDescriptor) => {
-    setIsOpen(false);
+    close();
     action.onClick();
   };
 
   const handleClear = () => {
-    setIsOpen(false);
+    close();
     onClear();
   };
 
@@ -102,21 +85,15 @@ export function BillsBulkActionsMenu({
         <ChevronDown aria-hidden className="size-4" />
       </Button>
       {isOpen ? (
-        <div
-          aria-labelledby={labelId}
-          className={[
-            'absolute right-0 top-full z-30 mt-2 w-60 rounded-md border border-slate-200',
-            'bg-white p-2 shadow-lg',
-          ].join(' ')}
-          role="menu"
-        >
+        <PopoverPanel align="right" aria-labelledby={labelId} className="w-60 p-2" role="menu">
           <p
             className="px-2 pb-2 pt-1 text-xs font-medium uppercase tracking-wide text-slate-500"
             id={labelId}
           >
             {count}
             {' '}
-            {count === 1 ? 'bill' : 'bills'}
+            {entityLabel}
+            {count === 1 ? '' : 's'}
             {' selected'}
           </p>
           <ul className="grid">
@@ -147,7 +124,7 @@ export function BillsBulkActionsMenu({
               Clear selection
             </button>
           </div>
-        </div>
+        </PopoverPanel>
       ) : null}
     </div>
   );

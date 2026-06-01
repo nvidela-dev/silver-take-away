@@ -14,7 +14,16 @@ import {
   useTransition,
 } from 'react';
 
+import { Alert } from '@/app/_components/atoms/alert';
 import { Button } from '@/app/_components/atoms/button';
+import { useColumnVisibility } from '@/app/_components/hooks/use-column-visibility';
+import { useDialogBehavior } from '@/app/_components/hooks/use-dialog-behavior';
+import { useTableSelection } from '@/app/_components/hooks/use-table-selection';
+import {
+  BulkActionsMenu,
+  type BulkActionDescriptor,
+} from '@/app/_components/molecules/bulk-actions-menu';
+import { ColumnPicker } from '@/app/_components/molecules/column-picker';
 import { PageHeader } from '@/app/_components/molecules/page-header';
 import { SurfaceTabs } from '@/app/_components/molecules/surface-tabs';
 import { createBill } from '@/lib/actions/bills/create-bill';
@@ -32,7 +41,6 @@ import type { BillListItem } from '@/lib/types/bill/views';
 
 import { BillNoteDialog } from './bill-note-dialog';
 import { BillTransitionDialog } from './bill-transition-dialog';
-import { BillsBulkActionsMenu, type BulkActionDescriptor } from './bills-bulk-actions-bar';
 import { BillsStatusOverview } from './bills-status-overview';
 import { BillsTable } from './bills-table';
 import {
@@ -43,15 +51,11 @@ import {
 } from './bills-table-columns';
 import { BulkConfirmDialog } from './bulk-confirm-dialog';
 import { BulkEditDialog } from './bulk-edit-dialog';
-import { ColumnPicker } from './column-picker';
 import { DraftBillForm } from './draft-bill-form';
 import { BillFilterBar } from './filters/bill-filter-bar';
 import { useBillBulkActions } from './hooks/use-bill-bulk-actions';
 import { useBillFilters } from './hooks/use-bill-filters';
 import { useBillTransitions } from './hooks/use-bill-transitions';
-import { useBillsSelection } from './hooks/use-bills-selection';
-import { useColumnVisibility } from './hooks/use-column-visibility';
-import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
 type BillTabValue = 'overview' | BillFilterTab;
 
@@ -94,8 +98,8 @@ export function BillsWorkspace({
 
   const activeIds = useMemo(() => activeBills.items.map((bill) => bill.id), [activeBills.items]);
 
-  const draftSelection = useBillsSelection(activeTab === 'drafts' ? activeIds : []);
-  const approvalSelection = useBillsSelection(activeTab === 'approvals' ? activeIds : []);
+  const draftSelection = useTableSelection(activeTab === 'drafts' ? activeIds : []);
+  const approvalSelection = useTableSelection(activeTab === 'approvals' ? activeIds : []);
 
   const editingBill = useMemo(
     () => (editingBillId && activeTab === 'drafts'
@@ -269,17 +273,19 @@ export function BillsWorkspace({
         actions={(
           <>
             {activeTab === 'drafts' ? (
-              <BillsBulkActionsMenu
+              <BulkActionsMenu
                 actions={draftBulkActions}
                 count={draftSelection.selectedCount}
+                entityLabel="bill"
                 isPending={isPending}
                 onClear={draftSelection.clear}
               />
             ) : null}
             {activeTab === 'approvals' ? (
-              <BillsBulkActionsMenu
+              <BulkActionsMenu
                 actions={approvalBulkActions}
                 count={approvalSelection.selectedCount}
+                entityLabel="bill"
                 isPending={isPending}
                 onClear={approvalSelection.clear}
               />
@@ -364,15 +370,9 @@ export function BillsWorkspace({
       ) : null}
 
       {!isFormOpen && formError ? (
-        <div
-          className={[
-            'rounded-md border border-rose-200 bg-rose-50 p-4',
-            'text-sm text-rose-950',
-          ].join(' ')}
-          role="alert"
-        >
+        <Alert>
           {formError}
-        </div>
+        </Alert>
       ) : null}
 
       {activeTab === 'overview' ? (

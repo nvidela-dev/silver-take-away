@@ -1,67 +1,11 @@
 'use client';
 
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  useTransition,
-  type ReactNode,
-} from 'react';
-
-import { Button } from '@/app/_components/atoms/button';
-import { Card } from '@/app/_components/atoms/card';
+import { DataTable, type DataTableColumn } from '@/app/_components/molecules/data-table';
 import { formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';
 import type { BillSort, BillSortKey } from '@/lib/validators/bill-sort-spec';
 
-function BillsTableSkeletonRows({
-  columns,
-  count,
-}: {
-  columns: BillsTableColumn[];
-  count: number;
-}) {
-  return Array.from({ length: count }, (_, index) => (
-    <tr className="h-14 border-b border-slate-100 last:border-0" key={index}>
-      {columns.map((column) => (
-        <td
-          aria-label="Loading bill"
-          className={[
-            'h-14',
-            column.cellClassName ?? 'py-3 pr-4',
-          ].join(' ')}
-          key={column.id}
-        >
-          <div
-            className={[
-              'animate-pulse rounded bg-slate-100',
-              column.id === 'vendor' ? 'h-8' : 'h-5',
-            ].join(' ')}
-          />
-        </td>
-      ))}
-    </tr>
-  ));
-}
-
-function BillsTableFillerRows({ count, colSpan }: { count: number; colSpan: number }) {
-  return Array.from({ length: count }, (_, index) => (
-    <tr aria-hidden className="h-14 border-b border-slate-100 last:border-0" key={index}>
-      <td aria-label="Reserved bill row" colSpan={colSpan} />
-    </tr>
-  ));
-}
-
-export interface BillsTableColumn {
-  id: string;
-  header: string;
-  headerClassName?: string;
-  cellClassName?: string;
-  srOnlyHeader?: boolean;
-  isConfigurable?: boolean;
-  sortKey?: BillSortKey;
-  renderHeader?: () => ReactNode;
-  render: (bill: BillListItem) => ReactNode;
-}
+export type BillsTableColumn = DataTableColumn<BillListItem, BillSortKey>;
 
 interface BillsTableProps {
   amountTotal?: string;
@@ -79,102 +23,6 @@ interface BillsTableProps {
   totalBills?: number;
 }
 
-function SortIndicator({
-  active,
-  direction,
-}: {
-  active: boolean;
-  direction: 'asc' | 'desc';
-}) {
-  if (!active) {
-    return <ArrowUpDown aria-hidden className="size-3.5 opacity-40" />;
-  }
-  return direction === 'asc'
-    ? <ArrowUp aria-hidden className="size-3.5" />
-    : <ArrowDown aria-hidden className="size-3.5" />;
-}
-
-function SortableHeader({
-  column,
-  isActive,
-  direction,
-  onSort,
-}: {
-  column: BillsTableColumn;
-  isActive: boolean;
-  direction: 'asc' | 'desc';
-  onSort: (key: BillSortKey) => void;
-}) {
-  if (!column.sortKey) return column.header;
-  const { sortKey } = column;
-  const nextDir = isActive && direction === 'desc' ? 'asc' : 'desc';
-  const isRightAligned = (column.headerClassName ?? '').includes('text-right');
-
-  return (
-    <button
-      aria-label={`Sort by ${column.header} ${nextDir}ending`}
-      className={[
-        'inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700',
-        isRightAligned ? 'w-full justify-end' : '',
-      ].join(' ').trim()}
-      onClick={() => onSort(sortKey)}
-      type="button"
-    >
-      <span>{column.header}</span>
-      <SortIndicator active={isActive} direction={direction} />
-    </button>
-  );
-}
-
-function resolveAriaSort(
-  active: boolean,
-  direction: 'asc' | 'desc' | undefined,
-): 'ascending' | 'descending' | undefined {
-  if (!active) return undefined;
-  return direction === 'asc' ? 'ascending' : 'descending';
-}
-
-function BillsTableHeaderCell({
-  column,
-  onSortChange = undefined,
-  sort = undefined,
-}: {
-  column: BillsTableColumn;
-  onSortChange?: (key: BillSortKey) => void;
-  sort?: BillSort;
-}) {
-  const isSortable = Boolean(column.sortKey && onSortChange);
-  const isActive = isSortable && sort?.by === column.sortKey;
-  const ariaSort = resolveAriaSort(isActive, sort?.dir);
-
-  let content: ReactNode;
-  if (column.renderHeader) {
-    content = column.renderHeader();
-  } else if (column.srOnlyHeader) {
-    content = <span className="sr-only">{column.header}</span>;
-  } else if (isSortable && onSortChange) {
-    content = (
-      <SortableHeader
-        column={column}
-        direction={sort?.dir ?? 'desc'}
-        isActive={isActive}
-        onSort={onSortChange}
-      />
-    );
-  } else {
-    content = column.header;
-  }
-
-  return (
-    <th
-      aria-sort={ariaSort}
-      className={column.headerClassName ?? 'py-3 pr-4 font-medium'}
-    >
-      {content}
-    </th>
-  );
-}
-
 export function BillsTable({
   amountTotal = undefined,
   bills,
@@ -190,147 +38,37 @@ export function BillsTable({
   sort = undefined,
   totalBills = bills.length,
 }: BillsTableProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isNavigating, startNavigation] = useTransition();
   const total = amountTotal ?? bills.reduce((sum, bill) => sum + Number(bill.amount), 0).toFixed(2);
   const currency = bills[0]?.currency ?? 'USD';
-  const colSpan = columns.length;
-  const pageCount = Math.max(1, Math.ceil(totalBills / pageSize));
-  const showSkeleton = isLoading || isNavigating;
-
-  const goToPage = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', String(page));
-    startNavigation(() => {
-      router.push(`?${params.toString()}`, { scroll: false });
-    });
-  };
 
   return (
-    <Card className="overflow-hidden">
-      <div className="overflow-x-auto" aria-busy={showSkeleton}>
-        <table className="w-full min-w-[760px] text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs font-medium text-slate-500">
-            <tr>
-              {columns.map((column) => (
-                <BillsTableHeaderCell
-                  column={column}
-                  key={column.id}
-                  onSortChange={onSortChange}
-                  sort={sort}
-                />
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {showSkeleton ? (
-              <>
-                <tr className="sr-only">
-                  <td colSpan={colSpan}>{loadingMessage}</td>
-                </tr>
-                <BillsTableSkeletonRows columns={columns} count={pageSize} />
-              </>
-            ) : null}
-            {!showSkeleton && bills.length === 0 ? (
-              <tr>
-                <td className="py-8 text-center text-slate-600" colSpan={colSpan}>
-                  {emptyMessage}
-                </td>
-              </tr>
-            ) : null}
-            {!showSkeleton
-              ? bills.map((bill) => (
-                <tr
-                  className={[
-                    'h-14 border-b border-slate-100 last:border-0 hover:bg-slate-50',
-                    'animate-[bills-row-fade-in_180ms_ease-out]',
-                  ].join(' ')}
-                  key={bill.id}
-                >
-                  {columns.map((column) => (
-                    <td
-                      className={column.cellClassName ?? 'py-3 pr-4'}
-                      key={column.id}
-                    >
-                      {column.render(bill)}
-                    </td>
-                  ))}
-                </tr>
-              ))
-              : null}
-            {!showSkeleton && bills.length > 0 && bills.length < pageSize ? (
-              <BillsTableFillerRows count={pageSize - bills.length} colSpan={colSpan} />
-            ) : null}
-          </tbody>
-        </table>
-      </div>
-      {totalBills > 0 ? (
-        <div
-          className={[
-            'flex items-center justify-between gap-4 border-t border-slate-200 px-4 py-3',
-            'text-xs text-slate-500',
-          ].join(' ')}
-        >
-          <span>
-            {totalBills}
-            {' '}
-            {totalBills === 1 ? 'bill' : 'bills'}
-            {' · '}
-            <span className="font-medium text-slate-700">
-              {formatMoney(total, currency)}
-              {' total'}
-            </span>
+    <DataTable
+      columns={columns}
+      currentPage={currentPage}
+      emptyMessage={emptyMessage}
+      footerSummary={(
+        <span>
+          {totalBills}
+          {' '}
+          {totalBills === 1 ? 'bill' : 'bills'}
+          {' · '}
+          <span className="font-medium text-slate-700">
+            {formatMoney(total, currency)}
+            {' total'}
           </span>
-          <div className="flex items-center gap-3">
-            {onPageSizeChange && pageSizeOptions.length > 0 ? (
-              <label className="flex items-center gap-2" htmlFor="bill-page-size">
-                <span>Per page</span>
-                <select
-                  className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs"
-                  disabled={showSkeleton}
-                  id="bill-page-size"
-                  onChange={(event) => onPageSizeChange(Number(event.target.value))}
-                  value={pageSize}
-                >
-                  {pageSizeOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
-            <span>
-              Page
-              {' '}
-              {currentPage}
-              {' of '}
-              {pageCount}
-            </span>
-            <div className="flex gap-2">
-              <Button
-                disabled={showSkeleton || currentPage === 1}
-                onClick={() => goToPage(currentPage - 1)}
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                Previous
-              </Button>
-              <Button
-                disabled={showSkeleton || currentPage === pageCount}
-                onClick={() => goToPage(currentPage + 1)}
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </Card>
+        </span>
+      )}
+      getRowKey={(bill) => bill.id}
+      isLoading={isLoading}
+      loadingLabel="Loading bill"
+      loadingMessage={loadingMessage}
+      onPageSizeChange={onPageSizeChange}
+      onSortChange={onSortChange}
+      pageSize={pageSize}
+      pageSizeOptions={pageSizeOptions}
+      rows={bills}
+      sort={sort}
+      totalRows={totalBills}
+    />
   );
 }
