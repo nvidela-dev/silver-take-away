@@ -33,8 +33,8 @@ import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
 import type {
   BillListResult,
+  BillOverviewGroup,
   BillReferenceData,
-  BillStatusAggregate,
 } from '@/lib/types/bill/filters';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
 import type { BillListItem } from '@/lib/types/bill/views';
@@ -62,7 +62,7 @@ type BillTabValue = 'overview' | BillFilterTab;
 interface BillsWorkspaceProps {
   activeBills: BillListResult<BillListItem>;
   activeTab: BillTabValue;
-  aggregates: BillStatusAggregate[];
+  overviewGroups: BillOverviewGroup[];
   loadError: string | null;
   referenceData: BillReferenceData;
 }
@@ -70,7 +70,7 @@ interface BillsWorkspaceProps {
 export function BillsWorkspace({
   activeBills,
   activeTab,
-  aggregates,
+  overviewGroups,
   loadError,
   referenceData,
 }: BillsWorkspaceProps) {
@@ -316,13 +316,11 @@ export function BillsWorkspace({
         activeValue={activeTab}
         tabs={billTabs}
       />
-      {activeTab !== 'overview' ? (
-        <BillFilterBar
-          controller={filtersController}
-          options={referenceData}
-          tab={activeTab}
-        />
-      ) : null}
+      <BillFilterBar
+        controller={filtersController}
+        options={referenceData}
+        tab={activeTab}
+      />
 
       {isFormOpen ? (
         <div
@@ -376,7 +374,7 @@ export function BillsWorkspace({
       ) : null}
 
       {activeTab === 'overview' ? (
-        <BillsStatusOverview aggregates={aggregates} />
+        <BillsStatusOverview groups={overviewGroups} />
       ) : null}
       {activeTab === 'drafts' ? (
         <div>

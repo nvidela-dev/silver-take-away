@@ -4,8 +4,8 @@ import {
 } from '@/lib/auth';
 import { billTabs } from '@/app/_navigation';
 import {
-  getBillOverviewAggregates,
   getBillReferenceData,
+  listBillOverviewGroups,
   listBillsForTab,
 } from '@/lib/queries';
 import {
@@ -16,6 +16,10 @@ import {
   type BillFilters,
 } from '@/lib/validators/bill-filter-spec';
 import { billSortSpec } from '@/lib/validators/bill-sort-spec';
+import {
+  clampOverviewCount,
+  overviewCountParam,
+} from '@/lib/types/bill/overview';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
 import type {
   BillListResult,
@@ -68,6 +72,21 @@ function parseSort(params: Record<string, string>): BillSort {
   return billSortSpec.parseSearchParams(params);
 }
 
+const OVERVIEW_GROUP_TABS: readonly BillFilterTab[] = ['drafts', 'approvals', 'payment'];
+
+function parseOverviewLimits(
+  params: Record<string, string>,
+): Partial<Record<BillFilterTab, number>> {
+  const limits: Partial<Record<BillFilterTab, number>> = {};
+  OVERVIEW_GROUP_TABS.forEach((tab) => {
+    const raw = params[overviewCountParam(tab)];
+    if (raw !== undefined) {
+      limits[tab] = clampOverviewCount(Number(raw));
+    }
+  });
+  return limits;
+}
+
 const emptyListResult: BillListResult<BillListItem> = { amountTotal: '0', items: [], total: 0 };
 
 const errorMessages = {
@@ -96,28 +115,39 @@ async function loadActiveTabBills(
   });
 }
 
+async function loadOverviewGroups(
+  activeTab: BillTabValue,
+  filters: BillFilters,
+  sort: BillSort,
+  limits: Partial<Record<BillFilterTab, number>>,
+) {
+  if (activeTab !== 'overview') return [];
+  return listBillOverviewGroups({ filters, sort, limits });
+}
+
 async function loadBillWorkspaceData(
   activeTab: BillTabValue,
   filters: BillFilters,
   pagination: BillPagination,
   sort: BillSort,
+  overviewLimits: Partial<Record<BillFilterTab, number>>,
 ) {
   try {
-    const [activeBills, aggregates, referenceData] = await Promise.all([
+    const [activeBills, overviewGroups, referenceData] = await Promise.all([
       loadActiveTabBills(activeTab, filters, pagination, sort),
-      getBillOverviewAggregates(),
+      loadOverviewGroups(activeTab, filters, sort, overviewLimits),
       getBillReferenceData(),
     ]);
     return {
       activeBills,
-      aggregates,
+      overviewGroups,
       referenceData,
       loadError: null,
     };
   } catch (error) {
     return {
       activeBills: emptyListResult,
-      aggregates: [],
+      overviewGroups: [],
       referenceData: { vendors: [], owners: [], categories: [] },
       loadError: resolveLoadError(error),
     };
@@ -131,13 +161,20 @@ export default async function BillsPage({ searchParams }: BillsPageProps) {
   const filters = parseFilters(flatParams);
   const pagination = parsePagination(flatParams);
   const sort = parseSort(flatParams);
-  const workspaceData = await loadBillWorkspaceData(activeTab, filters, pagination, sort);
+  const overviewLimits = parseOverviewLimits(flatParams);
+  const workspaceData = await loadBillWorkspaceData(
+    activeTab,
+    filters,
+    pagination,
+    sort,
+    overviewLimits,
+  );
 
   return (
     <BillsWorkspace
       activeBills={workspaceData.activeBills}
       activeTab={activeTab}
-      aggregates={workspaceData.aggregates}
+      overviewGroups={workspaceData.overviewGroups}
       loadError={workspaceData.loadError}
       referenceData={workspaceData.referenceData}
     />

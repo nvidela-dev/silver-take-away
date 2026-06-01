@@ -12,7 +12,7 @@ import type { BillFiltersController } from './use-bill-filters';
 
 interface UseBillFilterBarOptions {
   controller: BillFiltersController;
-  tab: BillFilterTab;
+  tab: BillFilterTab | 'overview';
 }
 
 export interface BillFilterBarController {
@@ -30,9 +30,14 @@ export function useBillFilterBar({
 }: UseBillFilterBarOptions): BillFilterBarController {
   const [pendingOpenId, setPendingOpenId] = useState<string | null>(null);
 
+  // Overview spans every list tab, so it exposes the dimensions common to
+  // all of them (everything except the payment-only status filter). Those
+  // are exactly the dimensions applicable to 'drafts'.
+  const dimensionTab: BillFilterTab = tab === 'overview' ? 'drafts' : tab;
+
   const tabDimensions = useMemo(
-    () => BILL_FILTER_DIMENSIONS.filter((d) => d.applicableTabs.includes(tab)),
-    [tab],
+    () => BILL_FILTER_DIMENSIONS.filter((d) => d.applicableTabs.includes(dimensionTab)),
+    [dimensionTab],
   );
 
   const activeDimensions = useMemo(

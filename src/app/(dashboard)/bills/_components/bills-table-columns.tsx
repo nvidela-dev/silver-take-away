@@ -20,13 +20,13 @@ const avatarTones = [
   'bg-violet-100 text-violet-700',
 ];
 
-function vendorInitials(name: string) {
+export function vendorInitials(name: string) {
   const parts = name.trim().split(/\s+/).slice(0, 2);
   const letters = parts.map((part) => part[0] ?? '').join('');
   return letters ? letters.toUpperCase() : '?';
 }
 
-function vendorTone(name: string) {
+export function vendorTone(name: string) {
   let hash = 0;
   for (let index = 0; index < name.length; index += 1) {
     hash = (hash + name.charCodeAt(index)) % avatarTones.length;
@@ -34,7 +34,7 @@ function vendorTone(name: string) {
   return avatarTones[hash];
 }
 
-function formatOwnerDate(date: Date) {
+export function formatOwnerDate(date: Date) {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',

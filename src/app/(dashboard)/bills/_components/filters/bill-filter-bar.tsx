@@ -10,7 +10,7 @@ import { useBillFilterBar } from '../hooks/use-bill-filter-bar';
 interface BillFilterBarProps {
   controller: BillFiltersController;
   options: BillReferenceData;
-  tab: BillFilterTab;
+  tab: BillFilterTab | 'overview';
 }
 
 export function BillFilterBar({ controller, options, tab }: BillFilterBarProps) {
