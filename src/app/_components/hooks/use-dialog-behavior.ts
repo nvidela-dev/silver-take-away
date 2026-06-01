@@ -13,14 +13,14 @@ const FOCUSABLE_SELECTOR = [
 
 interface UseDialogBehaviorOptions {
   containerRef: RefObject<HTMLElement | null>;
-  onClose: () => void;
   enabled?: boolean;
+  onClose: () => void;
 }
 
 export function useDialogBehavior({
   containerRef,
-  onClose,
   enabled = true,
+  onClose,
 }: UseDialogBehaviorOptions) {
   useEffect(() => {
     if (!enabled) {

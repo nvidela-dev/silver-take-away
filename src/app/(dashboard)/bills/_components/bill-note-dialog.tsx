@@ -1,131 +1,55 @@
 'use client';
 
-import {
-  useCallback,
-  useId,
-  useRef,
-  useState,
-} from 'react';
-import { X } from 'lucide-react';
+import { useCallback, useId, useState } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
-
-import { useDialogBehavior } from './hooks/use-dialog-behavior';
+import { Textarea } from '@/app/_components/atoms/textarea';
+import { Modal } from '@/app/_components/molecules/modal';
 
 interface BillNoteDialogProps {
-  title: string;
-  description?: string;
   confirmLabel: string;
   confirmVariant?: 'accent' | 'destructive';
-  noteRequired: boolean;
-  notePlaceholder?: string;
-  isPending: boolean;
+  description?: string;
   error: string | null;
-  onConfirm: (note: string) => void;
+  isPending: boolean;
+  notePlaceholder?: string;
+  noteRequired: boolean;
   onCancel: () => void;
+  onConfirm: (note: string) => void;
+  title: string;
 }
 
 export function BillNoteDialog({
-  title,
-  description = '',
   confirmLabel,
   confirmVariant = 'accent',
-  noteRequired,
-  notePlaceholder = '',
-  isPending,
+  description = '',
   error,
-  onConfirm,
+  isPending,
+  notePlaceholder = '',
+  noteRequired,
   onCancel,
+  onConfirm,
+  title,
 }: BillNoteDialogProps) {
-  const titleId = useId();
   const noteId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
-
-  useDialogBehavior({ containerRef: dialogRef, onClose: onCancel });
 
   const handleConfirm = useCallback(() => {
     setSubmitted(true);
     const trimmed = note.trim();
-    if (noteRequired && trimmed.length === 0) {
-      return;
-    }
+    if (noteRequired && trimmed.length === 0) return;
     onConfirm(trimmed);
   }, [note, noteRequired, onConfirm]);
 
   const showNoteRequiredError = submitted && noteRequired && note.trim().length === 0;
 
   return (
-    <div
-      aria-labelledby={titleId}
-      aria-modal
-      className={[
-        'fixed inset-0 z-50 grid place-items-center bg-slate-950/50',
-        'p-3 sm:p-6',
-      ].join(' ')}
-      ref={dialogRef}
-      role="dialog"
-      tabIndex={-1}
-    >
-      <div className="w-full max-w-lg rounded-md border border-slate-200 bg-white shadow-2xl">
-        <div className="flex items-start justify-between gap-3 px-5 pt-5">
-          <div>
-            <h2 className="text-base font-semibold text-slate-950" id={titleId}>
-              {title}
-            </h2>
-            {description ? (
-              <p className="mt-1 text-sm text-slate-600">{description}</p>
-            ) : null}
-          </div>
-          <Button
-            aria-label="Close dialog"
-            onClick={onCancel}
-            size="icon"
-            type="button"
-            variant="ghost"
-          >
-            <X aria-hidden className="size-4" />
-          </Button>
-        </div>
-        <div className="px-5 pb-5 pt-4">
-          <label
-            className="block text-xs font-medium text-slate-700"
-            htmlFor={noteId}
-          >
-            {noteRequired ? 'Note (required)' : 'Note (optional)'}
-          </label>
-          <textarea
-            className={[
-              'mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2',
-              'text-sm text-slate-950 placeholder:text-slate-400',
-              'focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300',
-            ].join(' ')}
-            id={noteId}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder={notePlaceholder}
-            rows={4}
-            value={note}
-          />
-          {showNoteRequiredError ? (
-            <p className="mt-2 text-xs text-rose-700">A note is required.</p>
-          ) : null}
-          {error ? (
-            <p className="mt-2 text-xs text-rose-700">{error}</p>
-          ) : null}
-        </div>
-        <div
-          className={[
-            'flex items-center justify-end gap-2 border-t border-slate-200',
-            'bg-slate-50 px-5 py-3',
-          ].join(' ')}
-        >
-          <Button
-            disabled={isPending}
-            onClick={onCancel}
-            type="button"
-            variant="ghost"
-          >
+    <Modal
+      description={description}
+      footer={(
+        <>
+          <Button disabled={isPending} onClick={onCancel} type="button" variant="ghost">
             Cancel
           </Button>
           <Button
@@ -136,8 +60,28 @@ export function BillNoteDialog({
           >
             {isPending ? 'Working…' : confirmLabel}
           </Button>
-        </div>
+        </>
+      )}
+      onClose={onCancel}
+      title={title}
+    >
+      <div className="px-5 pb-5 pt-4">
+        <label className="block text-xs font-medium text-slate-700" htmlFor={noteId}>
+          {noteRequired ? 'Note (required)' : 'Note (optional)'}
+        </label>
+        <Textarea
+          className="mt-1"
+          id={noteId}
+          onChange={(event) => setNote(event.target.value)}
+          placeholder={notePlaceholder}
+          rows={4}
+          value={note}
+        />
+        {showNoteRequiredError ? (
+          <p className="mt-2 text-xs text-rose-700">A note is required.</p>
+        ) : null}
+        {error ? <p className="mt-2 text-xs text-rose-700">{error}</p> : null}
       </div>
-    </div>
+    </Modal>
   );
 }

@@ -2,18 +2,19 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach } from 'vitest';
 
-import { BillsBulkActionsMenu } from '@/app/(dashboard)/bills/_components/bills-bulk-actions-bar';
+import { BulkActionsMenu } from '@/app/_components/molecules/bulk-actions-menu';
 
 afterEach(() => {
   cleanup();
 });
 
-describe('BillsBulkActionsMenu', () => {
+describe('BulkActionsMenu', () => {
   it('renders a disabled trigger when nothing is selected', () => {
     render(
-      <BillsBulkActionsMenu
+      <BulkActionsMenu
         actions={[{ id: 'approve', label: 'Approve', onClick: () => {} }]}
         count={0}
+        entityLabel="bill"
         onClear={() => {}}
       />,
     );
@@ -23,9 +24,10 @@ describe('BillsBulkActionsMenu', () => {
 
   it('shows the selected count on the trigger badge', () => {
     render(
-      <BillsBulkActionsMenu
+      <BulkActionsMenu
         actions={[{ id: 'approve', label: 'Approve', onClick: () => {} }]}
         count={3}
+        entityLabel="bill"
         onClear={() => {}}
       />,
     );
@@ -36,7 +38,7 @@ describe('BillsBulkActionsMenu', () => {
   it('opens a menu listing every action when the trigger is clicked', async () => {
     const user = userEvent.setup();
     render(
-      <BillsBulkActionsMenu
+      <BulkActionsMenu
         actions={[
           { id: 'approve', label: 'Approve', onClick: () => {} },
           {
@@ -44,6 +46,7 @@ describe('BillsBulkActionsMenu', () => {
           },
         ]}
         count={2}
+        entityLabel="bill"
         onClear={() => {}}
       />,
     );
@@ -62,9 +65,10 @@ describe('BillsBulkActionsMenu', () => {
     const user = userEvent.setup();
     const onApprove = vi.fn();
     render(
-      <BillsBulkActionsMenu
+      <BulkActionsMenu
         actions={[{ id: 'approve', label: 'Approve', onClick: onApprove }]}
         count={2}
+        entityLabel="bill"
         onClear={() => {}}
       />,
     );
@@ -80,9 +84,10 @@ describe('BillsBulkActionsMenu', () => {
     const user = userEvent.setup();
     const onClear = vi.fn();
     render(
-      <BillsBulkActionsMenu
+      <BulkActionsMenu
         actions={[{ id: 'approve', label: 'Approve', onClick: () => {} }]}
         count={2}
+        entityLabel="bill"
         onClear={onClear}
       />,
     );
@@ -96,13 +101,29 @@ describe('BillsBulkActionsMenu', () => {
 
   it('disables the trigger while pending', async () => {
     render(
-      <BillsBulkActionsMenu
+      <BulkActionsMenu
         actions={[{ id: 'approve', label: 'Approve', onClick: () => {} }]}
         count={2}
+        entityLabel="bill"
         isPending
         onClear={() => {}}
       />,
     );
     expect(screen.getByRole('button', { name: /bulk actions/i })).toBeDisabled();
+  });
+
+  it('uses the supplied entity label for payment workspaces', async () => {
+    const user = userEvent.setup();
+    render(
+      <BulkActionsMenu
+        actions={[{ id: 'release', label: 'Release', onClick: () => {} }]}
+        count={2}
+        entityLabel="payment"
+        onClear={() => {}}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /bulk actions/i }));
+    expect(screen.getByRole('menu')).toHaveTextContent('2 payments selected');
   });
 });

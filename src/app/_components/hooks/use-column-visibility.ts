@@ -2,26 +2,25 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import type { BillsTableColumn } from '../bills-table';
+import type { DataTableColumn } from '@/app/_components/molecules/data-table';
 
-export interface ColumnVisibility {
-  visibleColumns: BillsTableColumn[];
-  configurableColumns: BillsTableColumn[];
+export interface ColumnVisibility<TRow, TSortKey extends string> {
+  configurableColumns: DataTableColumn<TRow, TSortKey>[];
   hiddenIds: Set<string>;
   toggle: (id: string) => void;
+  visibleColumns: DataTableColumn<TRow, TSortKey>[];
 }
 
-export function useColumnVisibility(columns: BillsTableColumn[]): ColumnVisibility {
+export function useColumnVisibility<TRow, TSortKey extends string>(
+  columns: DataTableColumn<TRow, TSortKey>[],
+): ColumnVisibility<TRow, TSortKey> {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
 
   const toggle = useCallback((id: string) => {
     setHiddenIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);
@@ -39,9 +38,9 @@ export function useColumnVisibility(columns: BillsTableColumn[]): ColumnVisibili
   );
 
   return {
-    visibleColumns,
     configurableColumns,
     hiddenIds,
     toggle,
+    visibleColumns,
   };
 }

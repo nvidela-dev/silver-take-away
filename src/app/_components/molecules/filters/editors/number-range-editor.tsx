@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
+import { Input } from '@/app/_components/atoms/input';
 
 interface NumberRangeEditorProps {
   min: number | null;
@@ -50,12 +51,9 @@ export function NumberRangeEditor({
       <div className="grid grid-cols-2 gap-2">
         <label className="grid gap-1" htmlFor={minId}>
           <span className="text-xs font-medium text-slate-700">Min</span>
-          <input
-            className={[
-              'block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5',
-              'text-sm tabular-nums text-slate-950',
-              'focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300',
-            ].join(' ')}
+          <Input
+            className="tabular-nums"
+            controlSize="sm"
             id={minId}
             inputMode="decimal"
             onChange={(event) => setMinDraft(event.target.value)}
@@ -66,12 +64,9 @@ export function NumberRangeEditor({
         </label>
         <label className="grid gap-1" htmlFor={maxId}>
           <span className="text-xs font-medium text-slate-700">Max</span>
-          <input
-            className={[
-              'block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5',
-              'text-sm tabular-nums text-slate-950',
-              'focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300',
-            ].join(' ')}
+          <Input
+            className="tabular-nums"
+            controlSize="sm"
             id={maxId}
             inputMode="decimal"
             onChange={(event) => setMaxDraft(event.target.value)}

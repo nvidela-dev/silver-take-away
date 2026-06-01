@@ -5,6 +5,8 @@ import { useCallback } from 'react';
 import type { FieldError, UseFormRegister } from 'react-hook-form';
 
 import { Button } from '@/app/_components/atoms/button';
+import { Input } from '@/app/_components/atoms/input';
+import { Select } from '@/app/_components/atoms/select';
 import type { DraftBillFormInput } from '@/lib/validators/bill.schemas';
 import type { BillFormOptions } from '@/lib/types/bill/views';
 
@@ -47,25 +49,22 @@ export function DraftBillLineItemRow({
       key={fieldId}
     >
       <div className="grid gap-2 md:grid-cols-[1fr_140px_180px_auto]">
-        <input
+        <Input
           aria-invalid={errors?.description ? true : undefined}
           aria-label={`Line ${index + 1} description`}
-          className="h-10 rounded-md border border-slate-300 px-3 text-sm"
           placeholder="Description"
           {...register(`lineItems.${index}.description`)}
         />
-        <input
+        <Input
           aria-invalid={errors?.amount ? true : undefined}
           aria-label={`Line ${index + 1} amount`}
-          className="h-10 rounded-md border border-slate-300 px-3 text-sm"
           inputMode="decimal"
           placeholder="0.00"
           {...register(`lineItems.${index}.amount`)}
         />
-        <select
+        <Select
           aria-invalid={errors?.categoryId ? true : undefined}
           aria-label={`Line ${index + 1} category`}
-          className="h-10 rounded-md border border-slate-300 px-3 text-sm"
           {...register(`lineItems.${index}.categoryId`)}
         >
           <option value="">Category</option>
@@ -74,7 +73,7 @@ export function DraftBillLineItemRow({
               {category.name}
             </option>
           ))}
-        </select>
+        </Select>
         <Button
           aria-label={`Remove line ${index + 1}`}
           disabled={isOnlyLineItem}

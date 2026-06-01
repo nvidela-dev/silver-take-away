@@ -28,6 +28,15 @@ const eslintConfig = defineConfig([
         tsconfigRootDir: rootDir,
       },
     },
+    settings: {
+      'jsx-a11y': {
+        components: {
+          Input: 'input',
+          Select: 'select',
+          Textarea: 'textarea',
+        },
+      },
+    },
     rules: {
       // The codebase uses double quotes consistently; flip Airbnb's default.
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
