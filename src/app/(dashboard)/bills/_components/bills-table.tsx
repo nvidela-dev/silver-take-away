@@ -13,7 +13,6 @@ import type { BillListItem } from '@/lib/types/bill/views';
 
 const PAGE_SIZE = 10;
 const SKELETON_ROW_COUNT = 10;
-const TABLE_BODY_CLASS_NAME = 'h-[560px]';
 
 function BillsTableSkeletonRows({ columns }: { columns: BillsTableColumn[] }) {
   return Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
@@ -32,6 +31,14 @@ function BillsTableSkeletonRows({ columns }: { columns: BillsTableColumn[] }) {
           />
         </td>
       ))}
+    </tr>
+  ));
+}
+
+function BillsTableFillerRows({ count, colSpan }: { count: number; colSpan: number }) {
+  return Array.from({ length: count }, (_, index) => (
+    <tr aria-hidden className="h-14 border-b border-slate-100 last:border-0" key={index}>
+      <td aria-label="Reserved bill row" colSpan={colSpan} />
     </tr>
   ));
 }
@@ -106,7 +113,7 @@ export function BillsTable({
               ))}
             </tr>
           </thead>
-          <tbody className={TABLE_BODY_CLASS_NAME}>
+          <tbody>
             {showSkeleton ? (
               <>
                 <tr className="sr-only">
@@ -142,6 +149,9 @@ export function BillsTable({
                 </tr>
               ))
               : null}
+            {!showSkeleton && bills.length > 0 && bills.length < PAGE_SIZE ? (
+              <BillsTableFillerRows count={PAGE_SIZE - bills.length} colSpan={colSpan} />
+            ) : null}
           </tbody>
         </table>
       </div>

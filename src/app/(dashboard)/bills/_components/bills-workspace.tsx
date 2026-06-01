@@ -268,7 +268,51 @@ export function BillsWorkspace({
         eyebrow="Bill Pay"
         title="Bills"
       />
-      <SurfaceTabs activeValue={activeTab} tabs={billTabs} />
+      <SurfaceTabs
+        actions={(
+          <>
+            {activeTab === 'drafts' ? (
+              <BillsBulkActionsMenu
+                actions={draftBulkActions}
+                count={draftSelection.selectedCount}
+                isPending={isPending}
+                onClear={draftSelection.clear}
+              />
+            ) : null}
+            {activeTab === 'approvals' ? (
+              <BillsBulkActionsMenu
+                actions={approvalBulkActions}
+                count={approvalSelection.selectedCount}
+                isPending={isPending}
+                onClear={approvalSelection.clear}
+              />
+            ) : null}
+            {activeTab === 'drafts' ? (
+              <ColumnPicker
+                columns={draftVisibility.configurableColumns}
+                hiddenIds={draftVisibility.hiddenIds}
+                onToggle={draftVisibility.toggle}
+              />
+            ) : null}
+            {activeTab === 'approvals' ? (
+              <ColumnPicker
+                columns={approvalVisibility.configurableColumns}
+                hiddenIds={approvalVisibility.hiddenIds}
+                onToggle={approvalVisibility.toggle}
+              />
+            ) : null}
+            {activeTab === 'payment' ? (
+              <ColumnPicker
+                columns={paymentVisibility.configurableColumns}
+                hiddenIds={paymentVisibility.hiddenIds}
+                onToggle={paymentVisibility.toggle}
+              />
+            ) : null}
+          </>
+        )}
+        activeValue={activeTab}
+        tabs={billTabs}
+      />
 
       {isFormOpen ? (
         <div
@@ -335,20 +379,7 @@ export function BillsWorkspace({
         />
       ) : null}
       {activeTab === 'drafts' ? (
-        <div className="grid gap-3">
-          <div className="flex items-center justify-end gap-2">
-            <BillsBulkActionsMenu
-              actions={draftBulkActions}
-              count={draftSelection.selectedCount}
-              isPending={isPending}
-              onClear={draftSelection.clear}
-            />
-            <ColumnPicker
-              columns={draftVisibility.configurableColumns}
-              hiddenIds={draftVisibility.hiddenIds}
-              onToggle={draftVisibility.toggle}
-            />
-          </div>
+        <div>
           <BillsTable
             amountTotal={draftAmountTotal}
             bills={draftBills}
@@ -362,20 +393,7 @@ export function BillsWorkspace({
         </div>
       ) : null}
       {activeTab === 'approvals' ? (
-        <div className="grid gap-3">
-          <div className="flex items-center justify-end gap-2">
-            <BillsBulkActionsMenu
-              actions={approvalBulkActions}
-              count={approvalSelection.selectedCount}
-              isPending={isPending}
-              onClear={approvalSelection.clear}
-            />
-            <ColumnPicker
-              columns={approvalVisibility.configurableColumns}
-              hiddenIds={approvalVisibility.hiddenIds}
-              onToggle={approvalVisibility.toggle}
-            />
-          </div>
+        <div>
           <BillsTable
             amountTotal={approvalAmountTotal}
             bills={approvalBills}
@@ -389,14 +407,7 @@ export function BillsWorkspace({
         </div>
       ) : null}
       {activeTab === 'payment' ? (
-        <div className="grid gap-3">
-          <div className="flex justify-end">
-            <ColumnPicker
-              columns={paymentVisibility.configurableColumns}
-              hiddenIds={paymentVisibility.hiddenIds}
-              onToggle={paymentVisibility.toggle}
-            />
-          </div>
+        <div>
           <BillsTable
             amountTotal={paymentAmountTotal}
             bills={paymentBills}
