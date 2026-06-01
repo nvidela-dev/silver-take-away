@@ -11,11 +11,14 @@ import { Card } from '@/app/_components/atoms/card';
 import { formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';
 
-const PAGE_SIZE = 10;
-const SKELETON_ROW_COUNT = 10;
-
-function BillsTableSkeletonRows({ columns }: { columns: BillsTableColumn[] }) {
-  return Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
+function BillsTableSkeletonRows({
+  columns,
+  count,
+}: {
+  columns: BillsTableColumn[];
+  count: number;
+}) {
+  return Array.from({ length: count }, (_, index) => (
     <tr className="h-14 border-b border-slate-100 last:border-0" key={index}>
       {columns.map((column) => (
         <td
@@ -62,6 +65,9 @@ interface BillsTableProps {
   emptyMessage: string;
   isLoading?: boolean;
   loadingMessage?: string;
+  onPageSizeChange?: (pageSize: number) => void;
+  pageSize?: number;
+  pageSizeOptions?: readonly number[];
   totalBills?: number;
 }
 
@@ -73,6 +79,9 @@ export function BillsTable({
   emptyMessage,
   isLoading = false,
   loadingMessage = 'Loading bills…',
+  onPageSizeChange = undefined,
+  pageSize = 10,
+  pageSizeOptions = [],
   totalBills = bills.length,
 }: BillsTableProps) {
   const router = useRouter();
@@ -81,7 +90,7 @@ export function BillsTable({
   const total = amountTotal ?? bills.reduce((sum, bill) => sum + Number(bill.amount), 0).toFixed(2);
   const currency = bills[0]?.currency ?? 'USD';
   const colSpan = columns.length;
-  const pageCount = Math.max(1, Math.ceil(totalBills / PAGE_SIZE));
+  const pageCount = Math.max(1, Math.ceil(totalBills / pageSize));
   const showSkeleton = isLoading || isNavigating;
 
   const goToPage = (page: number) => {
@@ -119,7 +128,7 @@ export function BillsTable({
                 <tr className="sr-only">
                   <td colSpan={colSpan}>{loadingMessage}</td>
                 </tr>
-                <BillsTableSkeletonRows columns={columns} />
+                <BillsTableSkeletonRows columns={columns} count={pageSize} />
               </>
             ) : null}
             {!showSkeleton && bills.length === 0 ? (
@@ -149,8 +158,8 @@ export function BillsTable({
                 </tr>
               ))
               : null}
-            {!showSkeleton && bills.length > 0 && bills.length < PAGE_SIZE ? (
-              <BillsTableFillerRows count={PAGE_SIZE - bills.length} colSpan={colSpan} />
+            {!showSkeleton && bills.length > 0 && bills.length < pageSize ? (
+              <BillsTableFillerRows count={pageSize - bills.length} colSpan={colSpan} />
             ) : null}
           </tbody>
         </table>
@@ -173,6 +182,24 @@ export function BillsTable({
             </span>
           </span>
           <div className="flex items-center gap-3">
+            {onPageSizeChange && pageSizeOptions.length > 0 ? (
+              <label className="flex items-center gap-2" htmlFor="bill-page-size">
+                <span>Per page</span>
+                <select
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs"
+                  disabled={showSkeleton}
+                  id="bill-page-size"
+                  onChange={(event) => onPageSizeChange(Number(event.target.value))}
+                  value={pageSize}
+                >
+                  {pageSizeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
             <span>
               Page
               {' '}
