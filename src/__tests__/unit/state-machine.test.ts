@@ -94,7 +94,7 @@ describe('assertValidTransition', () => {
   it('InvalidTransitionError carries the failing pair and stable code', () => {
     try {
       assertValidTransition('paid', 'approve');
-      fail('expected throw');
+      expect.fail('expected throw');
     } catch (err) {
       expect(err).toBeInstanceOf(InvalidTransitionError);
       const e = err as InvalidTransitionError;
@@ -141,7 +141,7 @@ describe('assertDraftBillEditable', () => {
   it('rejects non-draft bill operations with a stable code', () => {
     try {
       assertDraftBillEditable({ status: 'approved' });
-      fail('expected throw');
+      expect.fail('expected throw');
     } catch (err) {
       expect(err).toBeInstanceOf(DraftBillGuardError);
       expect((err as DraftBillGuardError).code).toBe('BILL_NOT_DRAFT');
