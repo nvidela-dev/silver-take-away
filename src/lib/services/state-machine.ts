@@ -97,3 +97,12 @@ export function getAvailableActions(status: BillStatus): BillActionType[] {
 export function canDelete(status: BillStatus): boolean {
   return DELETABLE_STATUSES.has(status);
 }
+
+/**
+ * Whether the bill can be archived from this status via the row action.
+ * Drafts are excluded — they have a dedicated hard-delete action instead,
+ * even though the raw transition map technically allows draft -> archived.
+ */
+export function canArchive(status: BillStatus): boolean {
+  return status !== 'draft' && 'archive' in TRANSITION_MAP[status];
+}

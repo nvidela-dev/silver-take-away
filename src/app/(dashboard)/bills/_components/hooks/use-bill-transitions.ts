@@ -4,6 +4,7 @@ import type { useRouter } from 'next/navigation';
 import { useCallback, useState, type TransitionStartFunction } from 'react';
 
 import { approveBill } from '@/lib/actions/bills/approve-bill';
+import { archiveBill } from '@/lib/actions/bills/archive-bill';
 import { rejectBill } from '@/lib/actions/bills/reject-bill';
 import { submitForApproval } from '@/lib/actions/bills/submit-for-approval';
 import type { BillListItem } from '@/lib/types/bill/views';
@@ -27,6 +28,13 @@ export interface BillTransitions {
   requestReject: (bill: BillListItem) => void;
   cancelTransition: () => void;
   confirmTransition: (note: string) => void;
+  // Archive uses a plain confirm (no note), so it gets its own candidate
+  // state rather than sharing the note-dialog transition flow.
+  archiveCandidate: BillListItem | null;
+  archiveError: string | null;
+  requestArchive: (bill: BillListItem) => void;
+  cancelArchive: () => void;
+  confirmArchive: () => void;
 }
 
 export function useBillTransitions({
@@ -36,6 +44,8 @@ export function useBillTransitions({
 }: UseBillTransitionsOptions): BillTransitions {
   const [pendingTransition, setPendingTransition] = useState<PendingBillTransition | null>(null);
   const [transitionError, setTransitionError] = useState<string | null>(null);
+  const [archiveCandidate, setArchiveCandidate] = useState<BillListItem | null>(null);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
 
   const submit = useCallback((bill: BillListItem) => {
     startTransition(async () => {
@@ -88,6 +98,35 @@ export function useBillTransitions({
     });
   }, [pendingTransition, router, startTransition]);
 
+  const requestArchive = useCallback((bill: BillListItem) => {
+    setArchiveError(null);
+    setArchiveCandidate(bill);
+  }, []);
+
+  const cancelArchive = useCallback(() => {
+    setArchiveCandidate(null);
+    setArchiveError(null);
+  }, []);
+
+  const confirmArchive = useCallback(() => {
+    if (!archiveCandidate) {
+      return;
+    }
+    const { id } = archiveCandidate;
+    setArchiveError(null);
+
+    startTransition(async () => {
+      const result = await archiveBill({ billId: id });
+      if (!result.ok) {
+        setArchiveError(result.error.message);
+        return;
+      }
+
+      setArchiveCandidate(null);
+      router.refresh();
+    });
+  }, [archiveCandidate, router, startTransition]);
+
   return {
     pendingTransition,
     transitionError,
@@ -96,5 +135,10 @@ export function useBillTransitions({
     requestReject,
     cancelTransition,
     confirmTransition,
+    archiveCandidate,
+    archiveError,
+    requestArchive,
+    cancelArchive,
+    confirmArchive,
   };
 }

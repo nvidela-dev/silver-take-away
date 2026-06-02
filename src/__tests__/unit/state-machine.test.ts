@@ -2,6 +2,7 @@ import {
   InvalidTransitionError,
   TRANSITION_MAP,
   assertValidTransition,
+  canArchive,
   canDelete,
   getAvailableActions,
 } from '@/lib/services/state-machine';
@@ -130,6 +131,25 @@ describe('canDelete', () => {
     for (const status of ALL_STATUSES.filter((s) => s !== 'draft')) {
       expect(canDelete(status)).toBe(false);
     }
+  });
+});
+
+describe('canArchive', () => {
+  const ARCHIVABLE: BillStatus[] = ['approved', 'paid', 'rejected', 'payment_failed'];
+
+  it('permits archive from terminal-or-approved statuses, excluding draft', () => {
+    for (const status of ARCHIVABLE) {
+      expect(canArchive(status)).toBe(true);
+    }
+  });
+
+  it('blocks archive from draft, in-flight, and already-archived statuses', () => {
+    for (const status of ALL_STATUSES.filter((s) => !ARCHIVABLE.includes(s))) {
+      expect(canArchive(status)).toBe(false);
+    }
+    // Draft is excluded even though the raw transition map allows it.
+    expect('archive' in TRANSITION_MAP.draft).toBe(true);
+    expect(canArchive('draft')).toBe(false);
   });
 });
 

@@ -21,7 +21,7 @@ import {
   clampOverviewPage,
   overviewPageParam,
 } from '@/lib/types/bill/overview';
-import type { BillFilterTab } from '@/lib/types/bill/tabs';
+import type { BillFilterTab, OverviewGroupTab } from '@/lib/types/bill/tabs';
 import type { BillListItem } from '@/lib/types/bill/views';
 
 import { formatOwnerDate, vendorInitials, vendorTone } from './bills-table-columns';
@@ -35,7 +35,7 @@ interface GroupMeta {
   Icon: ComponentType<{ className?: string }>;
 }
 
-const GROUP_META: Record<BillFilterTab, GroupMeta> = {
+const GROUP_META: Record<OverviewGroupTab, GroupMeta> = {
   drafts: { title: 'Ready for review', Icon: CircleDot },
   approvals: { title: 'Awaiting approvals', Icon: CircleCheck },
   payment: { title: 'For payment', Icon: Banknote },

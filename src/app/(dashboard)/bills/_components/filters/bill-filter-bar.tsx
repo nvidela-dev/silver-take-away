@@ -15,6 +15,9 @@ interface BillFilterBarProps {
 
 export function BillFilterBar({ controller, options, tab }: BillFilterBarProps) {
   const bar = useBillFilterBar({ controller, tab });
+  // Overview borrows the drafts dimension set; coerce so editors always
+  // receive a concrete list tab.
+  const editorTab: BillFilterTab = tab === 'overview' ? 'drafts' : tab;
   const activeFilters = bar.activeDimensions.map((dimension) => {
     const { Editor } = dimension;
     return {
@@ -22,7 +25,7 @@ export function BillFilterBar({ controller, options, tab }: BillFilterBarProps) 
       initialOpen: dimension.id === bar.pendingOpenId,
       label: dimension.label,
       renderEditor: (close: () => void) => (
-        <Editor controller={controller} onClose={close} options={options} />
+        <Editor controller={controller} onClose={close} options={options} tab={editorTab} />
       ),
       valueSummary: dimension.summarise(controller, options),
     };

@@ -11,7 +11,7 @@ import type { PaymentFilterTab } from '@/lib/types/payment/tabs';
 
 import { isoDateSchema, uuidSchema } from './shared';
 
-const ALL_LIST_TABS: readonly PaymentFilterTab[] = ['upcoming', 'processing', 'completed'];
+const ALL_LIST_TABS: readonly PaymentFilterTab[] = ['upcoming', 'processing', 'history'];
 
 const paymentStatusEnumSchema = z.enum([
   'pending',
@@ -65,7 +65,7 @@ export const PAYMENT_FILTER_FIELD_SPECS = {
   status: defineField({
     parser: parseAsArrayOf(parseAsString),
     schema: csvList.pipe(z.array(paymentStatusEnumSchema).min(1)).optional(),
-    applicableTabs: ['completed'] as const,
+    applicableTabs: ['history'] as const,
   }),
   paymentMethod: defineField({
     parser: parseAsArrayOf(parseAsString),

@@ -43,6 +43,12 @@ export const billTabs = [
     href: '/bills?tab=payment',
     description: 'Approved bills ready to schedule or release for payment.',
   },
+  {
+    value: 'history',
+    label: 'History',
+    href: '/bills?tab=history',
+    description: 'Paid and archived bills, kept for audit.',
+  },
 ] as const satisfies readonly SurfaceTab[];
 
 export const paymentTabs = [
@@ -59,9 +65,9 @@ export const paymentTabs = [
     description: 'Payments initiated or in transit with the processor.',
   },
   {
-    value: 'completed',
-    label: 'Completed',
-    href: '/payments?tab=completed',
+    value: 'history',
+    label: 'History',
+    href: '/payments?tab=history',
     description: 'Paid, failed, and cancelled payments.',
   },
 ] as const satisfies readonly SurfaceTab[];

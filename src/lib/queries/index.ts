@@ -29,7 +29,7 @@ import type {
   BillSort,
   BillStatusAggregate,
 } from '@/lib/types/bill/filters';
-import type { BillFilterTab } from '@/lib/types/bill/tabs';
+import type { BillFilterTab, OverviewGroupTab } from '@/lib/types/bill/tabs';
 import type { BillStatus, PaymentStatus } from '@/lib/types/enums';
 import type { BillListItem } from '@/lib/types/bill/views';
 import type {
@@ -89,7 +89,7 @@ export async function getBillOverviewAggregates(): Promise<BillStatusAggregate[]
 }
 
 // Ordered operational groups shown on the Bills overview tab.
-const OVERVIEW_GROUP_TABS: readonly BillFilterTab[] = ['drafts', 'approvals', 'payment'];
+const OVERVIEW_GROUP_TABS: readonly OverviewGroupTab[] = ['drafts', 'approvals', 'payment'];
 
 export async function listBillOverviewGroups(
   args: {
@@ -146,7 +146,7 @@ export async function getPaymentReferenceData(): Promise<PaymentReferenceData> {
 const PAYMENT_OVERVIEW_STATUSES: readonly PaymentStatus[] = [
   ...PAYMENT_STATUSES_BY_TAB.upcoming,
   ...PAYMENT_STATUSES_BY_TAB.processing,
-  ...PAYMENT_STATUSES_BY_TAB.completed,
+  ...PAYMENT_STATUSES_BY_TAB.history,
 ];
 
 export async function getPaymentOverviewAggregates(): Promise<PaymentStatusAggregate[]> {

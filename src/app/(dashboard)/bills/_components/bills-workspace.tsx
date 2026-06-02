@@ -58,6 +58,7 @@ import { BillsTable } from './bills-table';
 import {
   approvalActionsColumn,
   billReadColumns,
+  billRowActionsColumn,
   draftActionsColumn,
   selectionColumn,
 } from './bills-table-columns';
@@ -83,6 +84,7 @@ const BILL_TAB_TO_WORKSPACE_KEY: Record<BillFilterTab, WorkspaceKey> = {
   drafts: 'bills.drafts',
   approvals: 'bills.approvals',
   payment: 'bills.payment',
+  history: 'bills.history',
 };
 
 export function BillsWorkspace({
@@ -218,7 +220,11 @@ export function BillsWorkspace({
       onReject: transitions.requestReject,
     }),
   ];
-  const paymentColumns = billReadColumns;
+  const paymentColumns = [
+    ...billReadColumns,
+    billRowActionsColumn({ onArchive: transitions.requestArchive }),
+  ];
+  const historyColumns = billReadColumns;
 
   const initialHiddenColumns = savedPreferences?.hiddenColumns ?? [];
   const draftVisibility = useColumnVisibility(
@@ -233,11 +239,16 @@ export function BillsWorkspace({
     paymentColumns,
     activeTab === 'payment' ? initialHiddenColumns : [],
   );
+  const historyVisibility = useColumnVisibility(
+    historyColumns,
+    activeTab === 'history' ? initialHiddenColumns : [],
+  );
 
   const activeVisibility = (() => {
     if (activeTab === 'drafts') return draftVisibility;
     if (activeTab === 'approvals') return approvalVisibility;
     if (activeTab === 'payment') return paymentVisibility;
+    if (activeTab === 'history') return historyVisibility;
     return null;
   })();
 
@@ -388,6 +399,13 @@ export function BillsWorkspace({
                 onToggle={paymentVisibility.toggle}
               />
             ) : null}
+            {activeTab === 'history' ? (
+              <ColumnPicker
+                columns={historyVisibility.configurableColumns}
+                hiddenIds={historyVisibility.hiddenIds}
+                onToggle={historyVisibility.toggle}
+              />
+            ) : null}
           </>
         )}
         activeValue={activeTab}
@@ -522,8 +540,46 @@ export function BillsWorkspace({
           />
         </div>
       ) : null}
+      {activeTab === 'history' ? (
+        <div>
+          <BillsTable
+            amountTotal={activeBills.amountTotal}
+            bills={activeBills.items}
+            columns={historyVisibility.visibleColumns}
+            currentPage={filtersController.pagination.page}
+            emptyMessage="No paid or archived bills match this view."
+            isLoading={isTableLoading}
+            loadingMessage="Loading bill history…"
+            onPageSizeChange={(pageSize) => {
+              void filtersController.setPageSize(pageSize);
+            }}
+            onSortChange={(key) => {
+              void filtersController.toggleSort(key);
+            }}
+            pageSize={filtersController.pagination.pageSize}
+            pageSizeOptions={filtersController.pageSizeOptions}
+            sort={filtersController.sort}
+            totalBills={activeBills.total}
+          />
+        </div>
+      ) : null}
 
       <BillTransitionDialog isPending={isPending} transitions={transitions} />
+
+      {transitions.archiveCandidate ? (
+        <BulkConfirmDialog
+          confirmLabel="Archive bill"
+          confirmVariant="destructive"
+          description={`Archive the ${transitions.archiveCandidate.vendor.name} bill? `
+            + 'It is removed from your active queue and marked closed without payment. '
+            + 'It moves to History as Archived and cannot be undone.'}
+          error={transitions.archiveError}
+          isPending={isPending}
+          onCancel={transitions.cancelArchive}
+          onConfirm={transitions.confirmArchive}
+          title="Archive bill"
+        />
+      ) : null}
 
       {bulk.pending?.kind === 'approve' ? (
         <NoteDialog

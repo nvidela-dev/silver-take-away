@@ -5,8 +5,10 @@ import { Edit2, Trash2, X } from 'lucide-react';
 import { Button } from '@/app/_components/atoms/button';
 import { SelectionCheckbox } from '@/app/_components/atoms/selection-checkbox';
 import type { TableSelection } from '@/app/_components/hooks/use-table-selection';
+import { RowActionsMenu, type RowAction } from '@/app/_components/molecules/row-actions-menu';
 import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import { billStatusDisplay } from '@/app/_display';
+import { canArchive } from '@/lib/services/state-machine';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';
 
@@ -237,6 +239,42 @@ export function draftActionsColumn(handlers: DraftActionsHandlers): BillsTableCo
               <Trash2 aria-hidden className="size-4" />
             </Button>
           )}
+        </div>
+      );
+    },
+  };
+}
+
+interface RowActionsHandlers {
+  onArchive: (bill: BillListItem) => void;
+}
+
+// A trailing kebab (⋮) menu for per-row lifecycle actions. Currently only
+// exposes "Archive bill", shown when the bill's status permits archiving.
+export function billRowActionsColumn(handlers: RowActionsHandlers): BillsTableColumn {
+  const { onArchive } = handlers;
+
+  return {
+    id: 'row-actions',
+    header: 'Actions',
+    srOnlyHeader: true,
+    isConfigurable: false,
+    render: (bill) => {
+      const actions: RowAction[] = [];
+      if (canArchive(bill.status)) {
+        actions.push({
+          label: 'Archive bill',
+          variant: 'destructive',
+          onSelect: () => onArchive(bill),
+        });
+      }
+
+      return (
+        <div className="flex justify-end">
+          <RowActionsMenu
+            actions={actions}
+            ariaLabel={`Actions for ${bill.vendor.name} bill`}
+          />
         </div>
       );
     },

@@ -3,7 +3,7 @@ import type { BillStatus } from '../enums';
 import type { User } from '../user';
 import type { Vendor } from '../vendor';
 
-import type { BillFilterTab } from './tabs';
+import type { OverviewGroupTab } from './tabs';
 import type { BillListItem } from './views';
 
 export type { BillFilters } from '@/lib/validators/bill-filter-spec';
@@ -42,6 +42,6 @@ export interface BillStatusAggregate {
 // One operational group on the Bills overview: the tab it maps to plus the
 // bills (with counts/total) currently sitting in that group's statuses.
 export interface BillOverviewGroup {
-  tab: BillFilterTab;
+  tab: OverviewGroupTab;
   result: BillListResult<BillListItem>;
 }

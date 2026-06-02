@@ -10,17 +10,19 @@ export type WorkspaceKey =
   | 'bills.drafts'
   | 'bills.approvals'
   | 'bills.payment'
+  | 'bills.history'
   | 'payments.upcoming'
   | 'payments.processing'
-  | 'payments.completed';
+  | 'payments.history';
 
 export const WORKSPACE_KEYS: readonly WorkspaceKey[] = [
   'bills.drafts',
   'bills.approvals',
   'bills.payment',
+  'bills.history',
   'payments.upcoming',
   'payments.processing',
-  'payments.completed',
+  'payments.history',
 ];
 
 // Bumped on breaking schema changes; deserializers should ignore entries
