@@ -11,7 +11,7 @@ import type { BillStatus } from '@/lib/types/enums';
 
 import { isoDateSchema, uuidSchema } from './shared';
 
-const ALL_LIST_TABS: readonly BillFilterTab[] = ['drafts', 'approvals', 'payment'];
+const ALL_LIST_TABS: readonly BillFilterTab[] = ['drafts', 'approvals', 'payment', 'history'];
 
 const billStatusEnumSchema = z.enum([
   'draft',
@@ -60,7 +60,7 @@ export const BILL_FILTER_FIELD_SPECS = {
   status: defineField({
     parser: parseAsArrayOf(parseAsString),
     schema: csvList.pipe(z.array(billStatusEnumSchema).min(1)).optional(),
-    applicableTabs: ['payment'] as const,
+    applicableTabs: ['payment', 'history'] as const,
   }),
   vendorId: defineField({
     parser: parseAsString,

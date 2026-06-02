@@ -5,8 +5,10 @@ import { Edit2, Trash2, X } from 'lucide-react';
 import { Button } from '@/app/_components/atoms/button';
 import { SelectionCheckbox } from '@/app/_components/atoms/selection-checkbox';
 import type { TableSelection } from '@/app/_components/hooks/use-table-selection';
+import { RowActionsMenu, type RowAction } from '@/app/_components/molecules/row-actions-menu';
 import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import { billStatusDisplay } from '@/app/_display';
+import { canArchive } from '@/lib/services/state-machine';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';
 
@@ -243,15 +245,67 @@ export function draftActionsColumn(handlers: DraftActionsHandlers): BillsTableCo
   };
 }
 
+interface RowActionsHandlers {
+  onArchive: (bill: BillListItem) => void;
+}
+
+// The per-row archive entry, shown for any bill whose status permits
+// archiving (everything except drafts and already-archived bills).
+function archiveRowActions(
+  bill: BillListItem,
+  onArchive: (bill: BillListItem) => void,
+): RowAction[] {
+  if (!canArchive(bill.status)) return [];
+  return [{
+    label: 'Archive bill',
+    variant: 'destructive',
+    onSelect: () => onArchive(bill),
+  }];
+}
+
+function ArchiveRowMenu({
+  bill,
+  onArchive,
+}: {
+  bill: BillListItem;
+  onArchive: (bill: BillListItem) => void;
+}) {
+  return (
+    <RowActionsMenu
+      actions={archiveRowActions(bill, onArchive)}
+      ariaLabel={`Actions for ${bill.vendor.name} bill`}
+    />
+  );
+}
+
+// A trailing kebab (⋮) menu for per-row lifecycle actions. Currently only
+// exposes "Archive bill", shown when the bill's status permits archiving.
+export function billRowActionsColumn(handlers: RowActionsHandlers): BillsTableColumn {
+  const { onArchive } = handlers;
+
+  return {
+    id: 'row-actions',
+    header: 'Actions',
+    srOnlyHeader: true,
+    isConfigurable: false,
+    render: (bill) => (
+      <div className="flex justify-end">
+        <ArchiveRowMenu bill={bill} onArchive={onArchive} />
+      </div>
+    ),
+  };
+}
+
 interface ApprovalActionsHandlers {
   onApprove: (bill: BillListItem) => void;
   onReject: (bill: BillListItem) => void;
+  onArchive: (bill: BillListItem) => void;
 }
 
 export function approvalActionsColumn(
   handlers: ApprovalActionsHandlers,
 ): BillsTableColumn {
-  const { onApprove, onReject } = handlers;
+  const { onApprove, onReject, onArchive } = handlers;
 
   return {
     id: 'approval-actions',
@@ -259,7 +313,7 @@ export function approvalActionsColumn(
     srOnlyHeader: true,
     isConfigurable: false,
     render: (bill) => (
-      <div className="flex justify-end gap-2">
+      <div className="flex items-center justify-end gap-2">
         <Button
           onClick={() => onApprove(bill)}
           size="sm"
@@ -276,6 +330,7 @@ export function approvalActionsColumn(
         >
           Reject
         </Button>
+        <ArchiveRowMenu bill={bill} onArchive={onArchive} />
       </div>
     ),
   };

@@ -59,6 +59,10 @@ export interface RejectBillInput {
   note: string;
 }
 
+export interface ArchiveBillInput {
+  billId: string;
+}
+
 export interface BulkSubmitForApprovalInput {
   billIds: string[];
 }

@@ -230,6 +230,10 @@ export const rejectBillSchema = z.object({
   note: noteField.min(1, 'A rejection note is required.'),
 });
 
+export const archiveBillSchema = z.object({
+  billId: uuidSchema,
+});
+
 export const billIdListSchema = z.array(uuidSchema).min(1).max(100);
 
 export const bulkSubmitForApprovalSchema = z.object({

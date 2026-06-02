@@ -46,6 +46,7 @@ const BILL_TAB_TO_WORKSPACE_KEY: Record<BillFilterTab, WorkspaceKey> = {
   drafts: 'bills.drafts',
   approvals: 'bills.approvals',
   payment: 'bills.payment',
+  history: 'bills.history',
 };
 
 // Keys whose presence in the URL means the user explicitly chose a view;

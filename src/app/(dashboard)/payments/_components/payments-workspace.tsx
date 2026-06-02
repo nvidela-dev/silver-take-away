@@ -39,7 +39,7 @@ import { usePaymentTransitions } from './hooks/use-payment-transitions';
 import { PaymentTransitionDialog } from './payment-transition-dialog';
 import { PaymentsTable } from './payments-table';
 import {
-  completedActionsColumn,
+  historyActionsColumn,
   paymentReadColumns,
   processingActionsColumn,
   selectionColumn,
@@ -57,19 +57,19 @@ interface PaymentsWorkspaceProps {
 const PAYMENT_TAB_TO_WORKSPACE_KEY: Record<PaymentFilterTab, WorkspaceKey> = {
   upcoming: 'payments.upcoming',
   processing: 'payments.processing',
-  completed: 'payments.completed',
+  history: 'payments.history',
 };
 
 const EMPTY_MESSAGE_BY_TAB: Record<PaymentFilterTab, string> = {
   upcoming: 'No upcoming payments match this view.',
   processing: 'No payments are currently processing.',
-  completed: 'No completed payments match this view.',
+  history: 'No paid, failed, or cancelled payments match this view.',
 };
 
 const LOADING_MESSAGE_BY_TAB: Record<PaymentFilterTab, string> = {
   upcoming: 'Loading upcoming payments…',
   processing: 'Loading payments in processing…',
-  completed: 'Loading completed payments…',
+  history: 'Loading payment history…',
 };
 
 export function PaymentsWorkspace({
@@ -105,7 +105,7 @@ export function PaymentsWorkspace({
   // the on-screen rows; the others stay zero-length and never collide.
   const upcomingSelection = useTableSelection(activeTab === 'upcoming' ? activeIds : []);
   const processingSelection = useTableSelection(activeTab === 'processing' ? activeIds : []);
-  const completedSelection = useTableSelection(activeTab === 'completed' ? activeIds : []);
+  const historySelection = useTableSelection(activeTab === 'history' ? activeIds : []);
 
   const upcomingColumns = [
     selectionColumn(upcomingSelection),
@@ -123,10 +123,10 @@ export function PaymentsWorkspace({
       onMarkFailed: transitions.requestMarkFailed,
     }),
   ];
-  const completedColumns = [
-    selectionColumn(completedSelection),
+  const historyColumns = [
+    selectionColumn(historySelection),
     ...paymentReadColumns,
-    completedActionsColumn({
+    historyActionsColumn({
       onRetry: transitions.retry,
     }),
   ];
@@ -140,15 +140,15 @@ export function PaymentsWorkspace({
     processingColumns,
     activeTab === 'processing' ? initialHiddenColumns : [],
   );
-  const completedVisibility = useColumnVisibility(
-    completedColumns,
-    activeTab === 'completed' ? initialHiddenColumns : [],
+  const historyVisibility = useColumnVisibility(
+    historyColumns,
+    activeTab === 'history' ? initialHiddenColumns : [],
   );
 
   const activeVisibility = (() => {
     if (activeTab === 'upcoming') return upcomingVisibility;
     if (activeTab === 'processing') return processingVisibility;
-    return completedVisibility;
+    return historyVisibility;
   })();
 
   const applyFilters = useCallback((filters: Record<string, unknown>) => {
@@ -224,17 +224,17 @@ export function PaymentsWorkspace({
     },
   ];
 
-  // Completed-tab retry only applies to failed rows; bulk-retry will silently
+  // History-tab retry only applies to failed rows; bulk-retry will silently
   // skip non-failed selections at the DB layer (the bulk update is scoped to
   // status='failed').
-  const completedBulkActions: BulkActionDescriptor[] = [
+  const historyBulkActions: BulkActionDescriptor[] = [
     {
       id: 'retry',
       label: 'Retry failed',
       variant: 'accent',
       onClick: () => bulk.retry({
-        paymentIds: [...completedSelection.selectedIds],
-        onSuccess: completedSelection.clear,
+        paymentIds: [...historySelection.selectedIds],
+        onSuccess: historySelection.clear,
       }),
     },
   ];
@@ -280,19 +280,19 @@ export function PaymentsWorkspace({
                 />
               </>
             ) : null}
-            {activeTab === 'completed' ? (
+            {activeTab === 'history' ? (
               <>
                 <BulkActionsMenu
-                  actions={completedBulkActions}
-                  count={completedSelection.selectedCount}
+                  actions={historyBulkActions}
+                  count={historySelection.selectedCount}
                   entityLabel="payment"
                   isPending={isPending}
-                  onClear={completedSelection.clear}
+                  onClear={historySelection.clear}
                 />
                 <ColumnPicker
-                  columns={completedVisibility.configurableColumns}
-                  hiddenIds={completedVisibility.hiddenIds}
-                  onToggle={completedVisibility.toggle}
+                  columns={historyVisibility.configurableColumns}
+                  hiddenIds={historyVisibility.hiddenIds}
+                  onToggle={historyVisibility.toggle}
                 />
               </>
             ) : null}
@@ -356,15 +356,15 @@ export function PaymentsWorkspace({
           />
         </div>
       ) : null}
-      {activeTab === 'completed' ? (
+      {activeTab === 'history' ? (
         <div>
           <PaymentsTable
             amountTotal={activePayments.amountTotal}
-            columns={completedVisibility.visibleColumns}
+            columns={historyVisibility.visibleColumns}
             currentPage={filtersController.pagination.page}
-            emptyMessage={EMPTY_MESSAGE_BY_TAB.completed}
+            emptyMessage={EMPTY_MESSAGE_BY_TAB.history}
             isLoading={isTableLoading}
-            loadingMessage={LOADING_MESSAGE_BY_TAB.completed}
+            loadingMessage={LOADING_MESSAGE_BY_TAB.history}
             onPageSizeChange={(pageSize) => {
               void filtersController.setPageSize(pageSize);
             }}

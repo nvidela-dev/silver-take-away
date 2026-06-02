@@ -236,16 +236,16 @@ export function processingActionsColumn(
   };
 }
 
-interface CompletedActionsHandlers {
+interface HistoryActionsHandlers {
   onRetry: (payment: PaymentListItem) => void;
 }
 
-export function completedActionsColumn(
-  handlers: CompletedActionsHandlers,
+export function historyActionsColumn(
+  handlers: HistoryActionsHandlers,
 ): PaymentsTableColumn {
   const { onRetry } = handlers;
   return {
-    id: 'completed-actions',
+    id: 'history-actions',
     header: 'Actions',
     srOnlyHeader: true,
     isConfigurable: false,

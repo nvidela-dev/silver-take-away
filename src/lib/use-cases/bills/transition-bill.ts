@@ -12,6 +12,7 @@ const ACTION_LOG_STRINGS: Partial<Record<BillActionType, string>> = {
   submit_for_approval: 'submitted_for_approval',
   approve: 'approved',
   reject: 'rejected',
+  archive: 'archived',
 };
 
 interface TransitionBillInput {

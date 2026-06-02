@@ -13,7 +13,11 @@ import { TextEditor } from '@/app/_components/molecules/filters/editors/text-edi
 import { billStatusDisplay } from '@/app/_display';
 import { formatDate, formatMoney } from '@/lib/utils';
 import type { BillReferenceData } from '@/lib/types/bill/filters';
-import { PAYMENT_TAB_STATUSES, type BillFilterTab } from '@/lib/types/bill/tabs';
+import {
+  HISTORY_TAB_STATUSES,
+  PAYMENT_TAB_STATUSES,
+  type BillFilterTab,
+} from '@/lib/types/bill/tabs';
 import { BILL_FILTER_FIELD_SPECS } from '@/lib/validators/bill-filter-spec';
 
 import type { BillFiltersController } from '../hooks/use-bill-filters';
@@ -24,6 +28,8 @@ export interface BillFilterDimensionEditorProps {
   controller: BillFiltersController;
   // eslint-disable-next-line react/no-unused-prop-types
   options: BillReferenceData;
+  // eslint-disable-next-line react/no-unused-prop-types
+  tab: BillFilterTab;
   onClose: () => void;
 }
 
@@ -109,20 +115,23 @@ const statusDimension: BillFilterDimension = {
     if (c.status.length === 1) return billStatusDisplay[c.status[0]].label;
     return `${c.status.length} selected`;
   },
-  Editor: ({ controller, onClose }: BillFilterDimensionEditorProps) => (
-    <MultiSelectEditor
-      onApply={(v) => {
-        void controller.setValues({ status: v });
-        onClose();
-      }}
-      onCancel={onClose}
-      options={PAYMENT_TAB_STATUSES.map((s) => ({
-        id: s,
-        label: billStatusDisplay[s].label,
-      }))}
-      value={controller.status}
-    />
-  ),
+  Editor: ({ controller, onClose, tab }: BillFilterDimensionEditorProps) => {
+    const statuses = tab === 'history' ? HISTORY_TAB_STATUSES : PAYMENT_TAB_STATUSES;
+    return (
+      <MultiSelectEditor
+        onApply={(v) => {
+          void controller.setValues({ status: v });
+          onClose();
+        }}
+        onCancel={onClose}
+        options={statuses.map((s) => ({
+          id: s,
+          label: billStatusDisplay[s].label,
+        }))}
+        value={controller.status}
+      />
+    );
+  },
 };
 
 const vendorDimension: BillFilterDimension = {

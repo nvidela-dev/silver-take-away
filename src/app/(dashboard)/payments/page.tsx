@@ -40,7 +40,7 @@ import { PaymentsWorkspace } from './_components';
 const PAYMENT_TAB_TO_WORKSPACE_KEY: Record<PaymentFilterTab, WorkspaceKey> = {
   upcoming: 'payments.upcoming',
   processing: 'payments.processing',
-  completed: 'payments.completed',
+  history: 'payments.history',
 };
 
 const PAYMENT_VIEW_PARAM_KEYS: readonly string[] = [
