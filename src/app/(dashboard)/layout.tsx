@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import type { ReactNode } from 'react';
+import { Toaster } from 'sonner';
 
 import { Button } from '@/app/_components/atoms/button';
 import { dashboardNavigation } from '@/app/_navigation';
@@ -27,6 +28,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <NuqsAdapter>
+      <Toaster richColors closeButton position="bottom-right" />
       <div className="min-h-dvh bg-emerald-950 p-0 text-slate-950 lg:p-8">
         <div
           className={[

@@ -8,9 +8,16 @@ import { initiatePayment } from '@/lib/actions/payments/initiate-payment';
 import { markPaymentFailed } from '@/lib/actions/payments/mark-failed-payment';
 import { markPaymentPaid } from '@/lib/actions/payments/mark-paid-payment';
 import { retryPayment } from '@/lib/actions/payments/retry-payment';
+import { notify } from '@/app/_components/feedback/notify';
 import type { PaymentListItem } from '@/lib/types/payment/views';
 
 export type PendingPaymentTransitionKind = 'cancel' | 'mark_paid' | 'mark_failed';
+
+const PAYMENT_TRANSITION_SUCCESS: Record<PendingPaymentTransitionKind, string> = {
+  cancel: 'Payment cancelled',
+  mark_paid: 'Payment marked as paid',
+  mark_failed: 'Payment marked as failed',
+};
 
 export interface PendingPaymentTransition {
   kind: PendingPaymentTransitionKind;
@@ -50,6 +57,7 @@ export function usePaymentTransitions({
         onDirectError(result.error.message);
         return;
       }
+      notify.success('Payment initiated');
       router.refresh();
     });
   }, [onDirectError, router, startTransition]);
@@ -61,6 +69,7 @@ export function usePaymentTransitions({
         onDirectError(result.error.message);
         return;
       }
+      notify.success('Payment retry started');
       router.refresh();
     });
   }, [onDirectError, router, startTransition]);
@@ -111,6 +120,7 @@ export function usePaymentTransitions({
         return;
       }
 
+      notify.success(PAYMENT_TRANSITION_SUCCESS[kind]);
       setPendingTransition(null);
       router.refresh();
     });

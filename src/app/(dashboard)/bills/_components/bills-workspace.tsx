@@ -29,6 +29,7 @@ import { ExportCsvButton } from '@/app/_components/molecules/export-csv-button';
 import { PageHeader } from '@/app/_components/molecules/page-header';
 import { SavedViewControls } from '@/app/_components/molecules/saved-view-controls';
 import { SurfaceTabs } from '@/app/_components/molecules/surface-tabs';
+import { notify } from '@/app/_components/feedback/notify';
 import { createBill } from '@/lib/actions/bills/create-bill';
 import { deleteBill } from '@/lib/actions/bills/delete-bill';
 import { updateBill } from '@/lib/actions/bills/update-bill';
@@ -176,6 +177,7 @@ export function BillsWorkspace({
         return;
       }
 
+      notify.success(editingBill ? 'Bill updated' : 'Bill created');
       closeForm();
       router.refresh();
     });
@@ -193,6 +195,7 @@ export function BillsWorkspace({
         closeForm();
       }
 
+      notify.success('Bill deleted');
       setDeleteCandidateId(null);
       router.refresh();
     });

@@ -7,6 +7,7 @@ import { approveBill } from '@/lib/actions/bills/approve-bill';
 import { archiveBill } from '@/lib/actions/bills/archive-bill';
 import { rejectBill } from '@/lib/actions/bills/reject-bill';
 import { submitForApproval } from '@/lib/actions/bills/submit-for-approval';
+import { notify } from '@/app/_components/feedback/notify';
 import type { BillListItem } from '@/lib/types/bill/views';
 
 export interface PendingBillTransition {
@@ -54,6 +55,7 @@ export function useBillTransitions({
         onDirectError(result.error.message);
         return;
       }
+      notify.success('Bill submitted for approval');
       router.refresh();
     });
   }, [onDirectError, router, startTransition]);
@@ -93,6 +95,7 @@ export function useBillTransitions({
         return;
       }
 
+      notify.success(kind === 'approve' ? 'Bill approved' : 'Bill rejected');
       setPendingTransition(null);
       router.refresh();
     });
@@ -122,6 +125,7 @@ export function useBillTransitions({
         return;
       }
 
+      notify.success('Bill archived');
       setArchiveCandidate(null);
       router.refresh();
     });
