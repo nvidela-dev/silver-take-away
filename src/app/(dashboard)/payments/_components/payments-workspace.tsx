@@ -31,9 +31,9 @@ import type {
   WorkspaceTabPreferences,
 } from '@/lib/types/workspace-preferences';
 import {
-  PAYMENT_FILTER_FIELD_KEYS,
-  type PaymentFilters,
+  parseSavedPaymentFilterValues,
 } from '@/lib/validators/payment-filter-spec';
+import { isPaymentSortKey } from '@/lib/validators/payment-sort-spec';
 import { PAYMENT_EXPORT_COLUMN_IDS } from '@/lib/export/columns';
 
 import { PaymentFilterBar } from './filters/payment-filter-bar';
@@ -63,6 +63,8 @@ const PAYMENT_TAB_TO_WORKSPACE_KEY: Record<PaymentFilterTab, WorkspaceKey> = {
   processing: 'payments.processing',
   history: 'payments.history',
 };
+
+const PAYMENT_EXPORT_COLUMN_ID_SET = new Set<string>(PAYMENT_EXPORT_COLUMN_IDS);
 
 const EMPTY_MESSAGE_BY_TAB: Record<PaymentFilterTab, string> = {
   upcoming: 'No upcoming payments match this view.',
@@ -156,13 +158,12 @@ export function PaymentsWorkspace({
   })();
 
   const applyFilters = useCallback((filters: Record<string, unknown>) => {
-    const updates = Object.fromEntries(
-      PAYMENT_FILTER_FIELD_KEYS.map((key) => [key, filters[key] ?? null]),
-    ) as Partial<PaymentFilters>;
-    void filtersController.setValues(updates);
+    void filtersController.setValues(parseSavedPaymentFilterValues(filters));
   }, [filtersController]);
   const applySort = useCallback((sort: { by: string; dir: 'asc' | 'desc' }) => {
-    void filtersController.setSort(sort as Parameters<typeof filtersController.setSort>[0]);
+    if (isPaymentSortKey(sort.by)) {
+      void filtersController.setSort({ by: sort.by, dir: sort.dir });
+    }
   }, [filtersController]);
   const applyPageSize = useCallback((pageSize: number) => {
     void filtersController.setPageSize(pageSize);
@@ -245,7 +246,7 @@ export function PaymentsWorkspace({
   const isTableLoading = isPending || filtersController.isPending;
   const exportColumnIds = activeVisibility.visibleColumns
     .map((column) => column.id)
-    .filter((id) => (PAYMENT_EXPORT_COLUMN_IDS as readonly string[]).includes(id));
+    .filter((id) => PAYMENT_EXPORT_COLUMN_ID_SET.has(id));
 
   return (
     <main className="grid gap-6">

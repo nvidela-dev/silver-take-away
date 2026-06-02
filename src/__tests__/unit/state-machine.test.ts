@@ -82,8 +82,7 @@ describe('assertValidTransition', () => {
   it('throws on every combination not in TRANSITION_MAP', () => {
     for (const status of ALL_STATUSES) {
       for (const action of ALL_ACTIONS) {
-        type StatusMap = (typeof TRANSITION_MAP)[typeof status];
-        const mapped = TRANSITION_MAP[status][action as keyof StatusMap];
+        const mapped = TRANSITION_MAP[status][action];
         if (mapped) {
           expect(assertValidTransition(status, action)).toBe(mapped);
         } else {
@@ -101,10 +100,10 @@ describe('assertValidTransition', () => {
       expect.fail('expected throw');
     } catch (err) {
       expect(err).toBeInstanceOf(InvalidTransitionError);
-      const e = err as InvalidTransitionError;
-      expect(e.code).toBe('INVALID_TRANSITION');
-      expect(e.current).toBe('paid');
-      expect(e.action).toBe('approve');
+      if (!(err instanceof InvalidTransitionError)) throw err;
+      expect(err.code).toBe('INVALID_TRANSITION');
+      expect(err.current).toBe('paid');
+      expect(err.action).toBe('approve');
     }
   });
 });
@@ -166,7 +165,8 @@ describe('assertDraftBillEditable', () => {
       expect.fail('expected throw');
     } catch (err) {
       expect(err).toBeInstanceOf(DraftBillGuardError);
-      expect((err as DraftBillGuardError).code).toBe('BILL_NOT_DRAFT');
+      if (!(err instanceof DraftBillGuardError)) throw err;
+      expect(err.code).toBe('BILL_NOT_DRAFT');
     }
   });
 });

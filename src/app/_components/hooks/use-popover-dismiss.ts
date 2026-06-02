@@ -20,7 +20,7 @@ export function usePopoverDismiss({
 
     const onPointerDown = (event: MouseEvent) => {
       const node = containerRef.current;
-      if (node && !node.contains(event.target as Node)) {
+      if (node && !node.contains(event.target instanceof Node ? event.target : null)) {
         onDismiss();
       }
     };

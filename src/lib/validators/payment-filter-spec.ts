@@ -3,6 +3,7 @@ import {
   parseAsFloat,
   parseAsInteger,
   parseAsString,
+  parseAsStringLiteral,
 } from 'nuqs/server';
 import { z } from 'zod';
 
@@ -13,7 +14,7 @@ import { isoDateSchema, uuidSchema } from './shared';
 
 const ALL_LIST_TABS: readonly PaymentFilterTab[] = ['upcoming', 'processing', 'history'];
 
-const paymentStatusEnumSchema = z.enum([
+const PAYMENT_STATUS_FILTER_OPTIONS = [
   'pending',
   'scheduled',
   'initiated',
@@ -21,14 +22,17 @@ const paymentStatusEnumSchema = z.enum([
   'paid',
   'failed',
   'cancelled',
-]);
+] as const;
 
-const paymentMethodEnumSchema = z.enum([
+const PAYMENT_METHOD_FILTER_OPTIONS = [
   'ach',
   'wire',
   'check',
   'card',
-]);
+] as const;
+
+const paymentStatusEnumSchema = z.enum(PAYMENT_STATUS_FILTER_OPTIONS);
+const paymentMethodEnumSchema = z.enum(PAYMENT_METHOD_FILTER_OPTIONS);
 
 const csvList = z
   .string()
@@ -63,12 +67,12 @@ export const PAYMENT_FILTER_FIELD_SPECS = {
     applicableTabs: ALL_LIST_TABS,
   }),
   status: defineField({
-    parser: parseAsArrayOf(parseAsString),
+    parser: parseAsArrayOf(parseAsStringLiteral(PAYMENT_STATUS_FILTER_OPTIONS)),
     schema: csvList.pipe(z.array(paymentStatusEnumSchema).min(1)).optional(),
     applicableTabs: ['history'] as const,
   }),
   paymentMethod: defineField({
-    parser: parseAsArrayOf(parseAsString),
+    parser: parseAsArrayOf(parseAsStringLiteral(PAYMENT_METHOD_FILTER_OPTIONS)),
     schema: csvList.pipe(z.array(paymentMethodEnumSchema).min(1)).optional(),
     applicableTabs: ALL_LIST_TABS,
   }),
@@ -121,17 +125,78 @@ export const PAYMENT_FILTER_FIELD_SPECS = {
 
 export type PaymentFilterFieldKey = keyof typeof PAYMENT_FILTER_FIELD_SPECS;
 
-export const PAYMENT_FILTER_FIELD_KEYS = Object.keys(
-  PAYMENT_FILTER_FIELD_SPECS,
-) as PaymentFilterFieldKey[];
+export const PAYMENT_FILTER_FIELD_KEYS: readonly PaymentFilterFieldKey[] = [
+  'search',
+  'status',
+  'paymentMethod',
+  'vendorId',
+  'vendorOwnerId',
+  'billId',
+  'amountMin',
+  'amountMax',
+  'scheduledDateFrom',
+  'scheduledDateTo',
+  'arrivalDateFrom',
+  'arrivalDateTo',
+];
 
-export const filterParsers = Object.fromEntries(
-  PAYMENT_FILTER_FIELD_KEYS.map((key) => [key, PAYMENT_FILTER_FIELD_SPECS[key].parser]),
-) as { [K in PaymentFilterFieldKey]: typeof PAYMENT_FILTER_FIELD_SPECS[K]['parser'] };
+export const filterParsers = {
+  search: PAYMENT_FILTER_FIELD_SPECS.search.parser,
+  status: PAYMENT_FILTER_FIELD_SPECS.status.parser,
+  paymentMethod: PAYMENT_FILTER_FIELD_SPECS.paymentMethod.parser,
+  vendorId: PAYMENT_FILTER_FIELD_SPECS.vendorId.parser,
+  vendorOwnerId: PAYMENT_FILTER_FIELD_SPECS.vendorOwnerId.parser,
+  billId: PAYMENT_FILTER_FIELD_SPECS.billId.parser,
+  amountMin: PAYMENT_FILTER_FIELD_SPECS.amountMin.parser,
+  amountMax: PAYMENT_FILTER_FIELD_SPECS.amountMax.parser,
+  scheduledDateFrom: PAYMENT_FILTER_FIELD_SPECS.scheduledDateFrom.parser,
+  scheduledDateTo: PAYMENT_FILTER_FIELD_SPECS.scheduledDateTo.parser,
+  arrivalDateFrom: PAYMENT_FILTER_FIELD_SPECS.arrivalDateFrom.parser,
+  arrivalDateTo: PAYMENT_FILTER_FIELD_SPECS.arrivalDateTo.parser,
+};
 
-const fieldSchemas = Object.fromEntries(
-  PAYMENT_FILTER_FIELD_KEYS.map((key) => [key, PAYMENT_FILTER_FIELD_SPECS[key].schema]),
-) as { [K in PaymentFilterFieldKey]: typeof PAYMENT_FILTER_FIELD_SPECS[K]['schema'] };
+export type PaymentFilterQueryValues = {
+  [K in keyof typeof filterParsers]: ReturnType<typeof filterParsers[K]['parseServerSide']>;
+};
+
+const savedNullableString = z.string().nullable().catch(null);
+const savedNullableNumber = z.number().nullable().catch(null);
+const savedPaymentStatuses = z.array(paymentStatusEnumSchema).nullable().catch(null);
+const savedPaymentMethods = z.array(paymentMethodEnumSchema).nullable().catch(null);
+
+export function parseSavedPaymentFilterValues(
+  filters: Record<string, unknown>,
+): Partial<PaymentFilterQueryValues> {
+  return {
+    search: savedNullableString.parse(filters.search ?? null),
+    status: savedPaymentStatuses.parse(filters.status ?? null),
+    paymentMethod: savedPaymentMethods.parse(filters.paymentMethod ?? null),
+    vendorId: savedNullableString.parse(filters.vendorId ?? null),
+    vendorOwnerId: savedNullableString.parse(filters.vendorOwnerId ?? null),
+    billId: savedNullableString.parse(filters.billId ?? null),
+    amountMin: savedNullableNumber.parse(filters.amountMin ?? null),
+    amountMax: savedNullableNumber.parse(filters.amountMax ?? null),
+    scheduledDateFrom: savedNullableString.parse(filters.scheduledDateFrom ?? null),
+    scheduledDateTo: savedNullableString.parse(filters.scheduledDateTo ?? null),
+    arrivalDateFrom: savedNullableString.parse(filters.arrivalDateFrom ?? null),
+    arrivalDateTo: savedNullableString.parse(filters.arrivalDateTo ?? null),
+  };
+}
+
+const fieldSchemas = {
+  search: PAYMENT_FILTER_FIELD_SPECS.search.schema,
+  status: PAYMENT_FILTER_FIELD_SPECS.status.schema,
+  paymentMethod: PAYMENT_FILTER_FIELD_SPECS.paymentMethod.schema,
+  vendorId: PAYMENT_FILTER_FIELD_SPECS.vendorId.schema,
+  vendorOwnerId: PAYMENT_FILTER_FIELD_SPECS.vendorOwnerId.schema,
+  billId: PAYMENT_FILTER_FIELD_SPECS.billId.schema,
+  amountMin: PAYMENT_FILTER_FIELD_SPECS.amountMin.schema,
+  amountMax: PAYMENT_FILTER_FIELD_SPECS.amountMax.schema,
+  scheduledDateFrom: PAYMENT_FILTER_FIELD_SPECS.scheduledDateFrom.schema,
+  scheduledDateTo: PAYMENT_FILTER_FIELD_SPECS.scheduledDateTo.schema,
+  arrivalDateFrom: PAYMENT_FILTER_FIELD_SPECS.arrivalDateFrom.schema,
+  arrivalDateTo: PAYMENT_FILTER_FIELD_SPECS.arrivalDateTo.schema,
+};
 
 export const paymentFiltersSchema = z.object(fieldSchemas);
 
@@ -152,7 +217,7 @@ export type PaymentMethodFilterValue = NonNullable<
   : never;
 
 export const DEFAULT_PAYMENT_PAGE_SIZE = 10;
-export const PAYMENT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+export const PAYMENT_PAGE_SIZE_OPTIONS: readonly number[] = [10, 25, 50, 100];
 
 export const paginationParsers = {
   page: parseAsInteger.withDefault(1),
@@ -162,7 +227,7 @@ export const paginationParsers = {
 export const paymentPaginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().refine(
-    (size) => (PAYMENT_PAGE_SIZE_OPTIONS as readonly number[]).includes(size),
+    (size) => PAYMENT_PAGE_SIZE_OPTIONS.includes(size),
     { message: 'pageSize must be one of the allowed options.' },
   ).default(DEFAULT_PAYMENT_PAGE_SIZE),
 });

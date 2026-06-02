@@ -4,28 +4,28 @@ import { useId, useState } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
 
-export interface MultiSelectOption {
-  id: string;
+export interface MultiSelectOption<TValue extends string = string> {
+  id: TValue;
   label: string;
 }
 
-interface MultiSelectEditorProps {
-  value: readonly string[] | null;
-  options: readonly MultiSelectOption[];
-  onApply: (value: string[] | null) => void;
+interface MultiSelectEditorProps<TValue extends string> {
+  value: readonly TValue[] | null;
+  options: readonly MultiSelectOption<TValue>[];
+  onApply: (value: TValue[] | null) => void;
   onCancel: () => void;
 }
 
-export function MultiSelectEditor({
+export function MultiSelectEditor<TValue extends string>({
   value,
   options,
   onApply,
   onCancel,
-}: MultiSelectEditorProps) {
+}: MultiSelectEditorProps<TValue>) {
   const groupId = useId();
-  const [selected, setSelected] = useState<Set<string>>(new Set(value ?? []));
+  const [selected, setSelected] = useState<Set<TValue>>(new Set(value ?? []));
 
-  const toggle = (id: string) => {
+  const toggle = (id: TValue) => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {

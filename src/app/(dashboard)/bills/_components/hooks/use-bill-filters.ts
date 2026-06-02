@@ -1,28 +1,23 @@
 'use client';
 
-import { useMemo } from 'react';
-
 import { useDataTableQueryState } from '@/app/_components/hooks/use-data-table-query-state';
 import {
-  BILL_FILTER_FIELD_KEYS,
   BILL_PAGE_SIZE_OPTIONS,
   filterParsers,
   paginationParsers,
+  type BillFilterQueryValues,
 } from '@/lib/validators/bill-filter-spec';
 import {
   billSortSpec,
   type BillSort,
   type BillSortKey,
 } from '@/lib/validators/bill-sort-spec';
-import type { BillStatus } from '@/lib/types/enums';
 
-export type BillFilterValues = {
-  [K in keyof typeof filterParsers]: ReturnType<typeof filterParsers[K]['parseServerSide']>;
-};
+export type BillFilterValues = BillFilterQueryValues;
 
 export interface BillFiltersController {
   values: BillFilterValues;
-  status: BillStatus[] | null;
+  status: BillFilterValues['status'];
   pagination: { page: number; pageSize: number };
   pageSizeOptions: readonly number[];
   sort: BillSort;
@@ -35,17 +30,25 @@ export interface BillFiltersController {
   toggleSort: (key: BillSortKey) => Promise<URLSearchParams>;
 }
 
-const clearedFilters = Object.fromEntries(
-  BILL_FILTER_FIELD_KEYS.map((key) => [key, null]),
-) as Partial<BillFilterValues>;
+const clearedFilters: Partial<BillFilterValues> = {
+  search: null,
+  status: null,
+  vendorId: null,
+  vendorOwnerId: null,
+  categoryId: null,
+  amountMin: null,
+  amountMax: null,
+  invoiceDateFrom: null,
+  invoiceDateTo: null,
+  dueDateFrom: null,
+  dueDateTo: null,
+};
 
 const sortParsers = billSortSpec.parsers;
 
 export function useBillFilters(): BillFiltersController {
   const tableState = useDataTableQueryState<
     typeof filterParsers,
-    typeof paginationParsers,
-    typeof sortParsers,
     BillSortKey
   >({
     clearedFilters,
@@ -55,13 +58,8 @@ export function useBillFilters(): BillFiltersController {
     sortParsers,
   });
 
-  const status = useMemo(
-    () => (tableState.values.status ? (tableState.values.status as BillStatus[]) : null),
-    [tableState.values.status],
-  );
-
   return {
     ...tableState,
-    status,
+    status: tableState.values.status,
   };
 }

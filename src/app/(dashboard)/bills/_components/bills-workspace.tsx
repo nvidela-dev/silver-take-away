@@ -46,9 +46,9 @@ import type {
   WorkspaceTabPreferences,
 } from '@/lib/types/workspace-preferences';
 import {
-  BILL_FILTER_FIELD_KEYS,
-  type BillFilters,
+  parseSavedBillFilterValues,
 } from '@/lib/validators/bill-filter-spec';
+import { isBillSortKey } from '@/lib/validators/bill-sort-spec';
 import { BILL_EXPORT_COLUMN_IDS } from '@/lib/export/columns';
 
 import { BulkConfirmDialog } from '@/app/_components/molecules/bulk-confirm-dialog';
@@ -88,6 +88,8 @@ const BILL_TAB_TO_WORKSPACE_KEY: Record<BillFilterTab, WorkspaceKey> = {
   payment: 'bills.payment',
   history: 'bills.history',
 };
+
+const BILL_EXPORT_COLUMN_ID_SET = new Set<string>(BILL_EXPORT_COLUMN_IDS);
 
 export function BillsWorkspace({
   activeBills,
@@ -260,13 +262,12 @@ export function BillsWorkspace({
   // single setValues call that explicitly nulls keys not present in the
   // snapshot, so partial overlaps don't leak old filter values.
   const applyFilters = useCallback((filters: Record<string, unknown>) => {
-    const updates = Object.fromEntries(
-      BILL_FILTER_FIELD_KEYS.map((key) => [key, filters[key] ?? null]),
-    ) as Partial<BillFilters>;
-    void filtersController.setValues(updates);
+    void filtersController.setValues(parseSavedBillFilterValues(filters));
   }, [filtersController]);
   const applySort = useCallback((sort: { by: string; dir: 'asc' | 'desc' }) => {
-    void filtersController.setSort(sort as Parameters<typeof filtersController.setSort>[0]);
+    if (isBillSortKey(sort.by)) {
+      void filtersController.setSort({ by: sort.by, dir: sort.dir });
+    }
   }, [filtersController]);
   const applyPageSize = useCallback((pageSize: number) => {
     void filtersController.setPageSize(pageSize);
@@ -345,7 +346,7 @@ export function BillsWorkspace({
   const isTableLoading = isPending || filtersController.isPending;
   const exportColumnIds = activeVisibility?.visibleColumns
     .map((column) => column.id)
-    .filter((id) => (BILL_EXPORT_COLUMN_IDS as readonly string[]).includes(id)) ?? [];
+    .filter((id) => BILL_EXPORT_COLUMN_ID_SET.has(id)) ?? [];
 
   return (
     <main className="grid gap-6">

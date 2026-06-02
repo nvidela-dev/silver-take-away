@@ -12,11 +12,10 @@ export async function GET() {
   try {
     assertDatabaseConfigured();
     await db.execute(sql`select 1 as ok`);
-    const schemaResult = await db.execute(
+    const schemaResult = await db.execute<{ users_table: string | null }>(
       sql`select to_regclass('public.users')::text as users_table`,
     );
-    const rows = schemaResult.rows as { users_table: string | null }[];
-    const hasUsersTable = Boolean(rows[0]?.users_table);
+    const hasUsersTable = Boolean(schemaResult.rows[0]?.users_table);
 
     return NextResponse.json(
       {
@@ -38,7 +37,7 @@ export async function GET() {
         ok: false,
         provider: 'neon',
         latencyMs: Date.now() - startedAt,
-        error: (error as Error).message,
+        error: error instanceof Error ? error.message : 'Unknown database error.',
       },
       { status: 503 },
     );

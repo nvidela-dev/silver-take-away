@@ -1,4 +1,4 @@
-import type { PaymentActionType } from '@/lib/types/payment/actions';
+import { PAYMENT_ACTIONS, type PaymentActionType } from '@/lib/types/payment/actions';
 import type { PaymentStatus } from '@/lib/types/enums';
 
 /**
@@ -11,7 +11,10 @@ import type { PaymentStatus } from '@/lib/types/enums';
  * `initiated -> in_transit`) are not user-driven and live elsewhere; they
  * are not represented here.
  */
-export const TRANSITION_MAP = {
+export const TRANSITION_MAP: Record<
+  PaymentStatus,
+  Partial<Record<PaymentActionType, PaymentStatus>>
+> = {
   pending: {
     initiate: 'initiated',
     cancel: 'cancelled',
@@ -33,10 +36,7 @@ export const TRANSITION_MAP = {
     retry: 'scheduled',
   },
   cancelled: {},
-} as const satisfies Record<
-  PaymentStatus,
-  Partial<Record<PaymentActionType, PaymentStatus>>
->;
+};
 
 export class InvalidPaymentTransitionError extends Error {
   readonly code = 'INVALID_PAYMENT_TRANSITION';
@@ -56,8 +56,7 @@ export function assertValidPaymentTransition(
   current: PaymentStatus,
   action: PaymentActionType,
 ): PaymentStatus {
-  type CurrentMap = (typeof TRANSITION_MAP)[typeof current];
-  const next = TRANSITION_MAP[current][action as keyof CurrentMap];
+  const next = TRANSITION_MAP[current][action];
   if (!next) {
     throw new InvalidPaymentTransitionError(current, action);
   }
@@ -65,5 +64,5 @@ export function assertValidPaymentTransition(
 }
 
 export function getAvailablePaymentActions(status: PaymentStatus): PaymentActionType[] {
-  return Object.keys(TRANSITION_MAP[status]) as PaymentActionType[];
+  return PAYMENT_ACTIONS.filter((action) => TRANSITION_MAP[status][action] !== undefined);
 }

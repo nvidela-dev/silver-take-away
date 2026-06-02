@@ -50,6 +50,11 @@ const eslintConfig = defineConfig([
         'error',
         { functions: false, classes: true, variables: true },
       ],
+      // Require runtime narrowing or typed APIs instead of compiler trust casts.
+      '@typescript-eslint/consistent-type-assertions': [
+        'error',
+        { assertionStyle: 'never' },
+      ],
       // Tests use `void identifier` to silence unused-binding warnings while
       // still exercising a destructure pattern.
       'no-void': ['error', { allowAsStatement: true }],

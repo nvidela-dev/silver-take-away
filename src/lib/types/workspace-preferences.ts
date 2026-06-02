@@ -6,15 +6,7 @@
 // tab name is reused (e.g. `payment` exists on bills, `processing` is
 // payment-only).
 
-export type WorkspaceKey = | 'bills.drafts'
-  | 'bills.approvals'
-  | 'bills.payment'
-  | 'bills.history'
-  | 'payments.upcoming'
-  | 'payments.processing'
-  | 'payments.history';
-
-export const WORKSPACE_KEYS: readonly WorkspaceKey[] = [
+export const WORKSPACE_KEYS = [
   'bills.drafts',
   'bills.approvals',
   'bills.payment',
@@ -22,7 +14,9 @@ export const WORKSPACE_KEYS: readonly WorkspaceKey[] = [
   'payments.upcoming',
   'payments.processing',
   'payments.history',
-];
+] as const;
+
+export type WorkspaceKey = (typeof WORKSPACE_KEYS)[number];
 
 // Bumped on breaking schema changes; deserializers should ignore entries
 // with an unrecognized version so an older client doesn't load values it

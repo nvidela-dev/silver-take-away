@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { WebhookEvent } from '@clerk/nextjs/server';
 import { Webhook } from 'svix';
+import { z } from 'zod';
 
 import { assertDatabaseConfigured } from '@/db';
 import { profileFromWebhookUser } from '@/lib/auth/clerk-user-profile';
@@ -10,12 +10,28 @@ import { upsertLocalUserFromClerkProfile } from '@/lib/auth/user-sync';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+const webhookEventSchema = z.object({
+  type: z.string(),
+  data: z.unknown(),
+});
+
+const clerkWebhookUserSchema = z.object({
+  id: z.string(),
+  first_name: z.string().nullable(),
+  last_name: z.string().nullable(),
+  primary_email_address_id: z.string().nullable(),
+  email_addresses: z.array(z.object({
+    id: z.string(),
+    email_address: z.string(),
+  })),
+});
+
 export async function POST(req: NextRequest) {
   try {
     assertDatabaseConfigured();
   } catch (error) {
     return NextResponse.json(
-      { error: (error as Error).message },
+      { error: error instanceof Error ? error.message : 'Database is not configured.' },
       { status: 500 },
     );
   }
@@ -40,23 +56,34 @@ export async function POST(req: NextRequest) {
   const payload = await req.text();
   const verifier = new Webhook(webhookSecret);
 
-  let event: WebhookEvent;
+  let verifiedEvent: unknown;
   try {
-    event = verifier.verify(payload, {
+    verifiedEvent = verifier.verify(payload, {
       'svix-id': svixId,
       'svix-timestamp': svixTimestamp,
       'svix-signature': svixSignature,
-    }) as WebhookEvent;
+    });
   } catch {
     return NextResponse.json({ error: 'Invalid webhook signature.' }, { status: 400 });
   }
+
+  const parsedEvent = webhookEventSchema.safeParse(verifiedEvent);
+  if (!parsedEvent.success) {
+    return NextResponse.json({ error: 'Invalid webhook payload.' }, { status: 400 });
+  }
+  const event = parsedEvent.data;
 
   if (event.type !== 'user.created' && event.type !== 'user.updated') {
     return NextResponse.json({ ok: true });
   }
 
+  const parsedUser = clerkWebhookUserSchema.safeParse(event.data);
+  if (!parsedUser.success) {
+    return NextResponse.json({ error: 'Invalid Clerk user payload.' }, { status: 400 });
+  }
+
   const localUser = await upsertLocalUserFromClerkProfile(
-    profileFromWebhookUser(event.data),
+    profileFromWebhookUser(parsedUser.data),
   );
 
   return NextResponse.json({ ok: true, userId: localUser.id });

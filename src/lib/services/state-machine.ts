@@ -1,4 +1,4 @@
-import type { BillActionType } from '@/lib/types/bill/actions';
+import { BILL_ACTIONS, type BillActionType } from '@/lib/types/bill/actions';
 import type { BillStatus } from '@/lib/types/enums';
 
 /**
@@ -16,7 +16,10 @@ import type { BillStatus } from '@/lib/types/enums';
  * user-driven and are owned by the payment lifecycle service. They are not
  * represented here.
  */
-export const TRANSITION_MAP = {
+export const TRANSITION_MAP: Record<
+  BillStatus,
+  Partial<Record<BillActionType, BillStatus>>
+> = {
   draft: {
     submit_for_approval: 'awaiting_approval',
     archive: 'archived',
@@ -53,10 +56,7 @@ export const TRANSITION_MAP = {
     retry_payment: 'initiated',
     archive: 'archived',
   },
-} as const satisfies Record<
-  BillStatus,
-  Partial<Record<BillActionType, BillStatus>>
->;
+};
 
 /** Statuses from which a hard delete is allowed (drafts only, per spec §6). */
 const DELETABLE_STATUSES = new Set<BillStatus>(['draft']);
@@ -85,7 +85,7 @@ export function assertValidTransition(
   current: BillStatus,
   action: BillActionType,
 ): BillStatus {
-  const next = TRANSITION_MAP[current][action as keyof (typeof TRANSITION_MAP)[typeof current]];
+  const next = TRANSITION_MAP[current][action];
   if (!next) {
     throw new InvalidTransitionError(current, action);
   }
@@ -94,7 +94,7 @@ export function assertValidTransition(
 
 /** Returns the set of actions available from a given status (excludes delete). */
 export function getAvailableActions(status: BillStatus): BillActionType[] {
-  const actions = Object.keys(TRANSITION_MAP[status]) as BillActionType[];
+  const actions = BILL_ACTIONS.filter((action) => TRANSITION_MAP[status][action] !== undefined);
   if (DELETABLE_STATUSES.has(status)) {
     return [...actions, 'delete'];
   }

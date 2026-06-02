@@ -3,10 +3,9 @@ import { z } from 'zod';
 import {
   WORKSPACE_KEYS,
   WORKSPACE_PREFERENCES_VERSION,
-  type WorkspaceKey,
 } from '@/lib/types/workspace-preferences';
 
-const workspaceKeySchema = z.enum(WORKSPACE_KEYS as readonly [WorkspaceKey, ...WorkspaceKey[]]);
+export const workspaceKeySchema = z.enum(WORKSPACE_KEYS);
 
 const sortSchema = z.object({
   by: z.string().min(1).max(64),

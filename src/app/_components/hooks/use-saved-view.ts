@@ -36,12 +36,11 @@ function isDeepEqual(a: unknown, b: unknown): boolean {
     return a.every((item, index) => isDeepEqual(item, b[index]));
   }
   if (a && b && typeof a === 'object' && typeof b === 'object') {
-    const aKeys = Object.keys(a);
-    const bKeys = Object.keys(b);
-    if (aKeys.length !== bKeys.length) return false;
-    return aKeys.every((key) => isDeepEqual(
-      (a as Record<string, unknown>)[key],
-      (b as Record<string, unknown>)[key],
+    const aEntries = Object.entries(a);
+    const bValues = new Map(Object.entries(b));
+    if (aEntries.length !== bValues.size) return false;
+    return aEntries.every(([key, value]) => (
+      bValues.has(key) && isDeepEqual(value, bValues.get(key))
     ));
   }
   return false;

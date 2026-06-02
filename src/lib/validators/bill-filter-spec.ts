@@ -3,6 +3,7 @@ import {
   parseAsFloat,
   parseAsInteger,
   parseAsString,
+  parseAsStringLiteral,
 } from 'nuqs/server';
 import { z } from 'zod';
 
@@ -13,7 +14,7 @@ import { isoDateSchema, uuidSchema } from './shared';
 
 const ALL_LIST_TABS: readonly BillFilterTab[] = ['drafts', 'approvals', 'payment', 'history'];
 
-const billStatusEnumSchema = z.enum([
+const BILL_STATUS_FILTER_OPTIONS = [
   'draft',
   'awaiting_approval',
   'approved',
@@ -23,7 +24,9 @@ const billStatusEnumSchema = z.enum([
   'archived',
   'rejected',
   'payment_failed',
-]);
+] as const;
+
+const billStatusEnumSchema = z.enum(BILL_STATUS_FILTER_OPTIONS);
 
 const csvList = z
   .string()
@@ -58,7 +61,7 @@ export const BILL_FILTER_FIELD_SPECS = {
     applicableTabs: ALL_LIST_TABS,
   }),
   status: defineField({
-    parser: parseAsArrayOf(parseAsString),
+    parser: parseAsArrayOf(parseAsStringLiteral(BILL_STATUS_FILTER_OPTIONS)),
     schema: csvList.pipe(z.array(billStatusEnumSchema).min(1)).optional(),
     applicableTabs: ['payment', 'history'] as const,
   }),
@@ -111,15 +114,73 @@ export const BILL_FILTER_FIELD_SPECS = {
 
 export type BillFilterFieldKey = keyof typeof BILL_FILTER_FIELD_SPECS;
 
-export const BILL_FILTER_FIELD_KEYS = Object.keys(BILL_FILTER_FIELD_SPECS) as BillFilterFieldKey[];
+export const BILL_FILTER_FIELD_KEYS: readonly BillFilterFieldKey[] = [
+  'search',
+  'status',
+  'vendorId',
+  'vendorOwnerId',
+  'categoryId',
+  'amountMin',
+  'amountMax',
+  'invoiceDateFrom',
+  'invoiceDateTo',
+  'dueDateFrom',
+  'dueDateTo',
+];
 
-export const filterParsers = Object.fromEntries(
-  BILL_FILTER_FIELD_KEYS.map((key) => [key, BILL_FILTER_FIELD_SPECS[key].parser]),
-) as { [K in BillFilterFieldKey]: typeof BILL_FILTER_FIELD_SPECS[K]['parser'] };
+export const filterParsers = {
+  search: BILL_FILTER_FIELD_SPECS.search.parser,
+  status: BILL_FILTER_FIELD_SPECS.status.parser,
+  vendorId: BILL_FILTER_FIELD_SPECS.vendorId.parser,
+  vendorOwnerId: BILL_FILTER_FIELD_SPECS.vendorOwnerId.parser,
+  categoryId: BILL_FILTER_FIELD_SPECS.categoryId.parser,
+  amountMin: BILL_FILTER_FIELD_SPECS.amountMin.parser,
+  amountMax: BILL_FILTER_FIELD_SPECS.amountMax.parser,
+  invoiceDateFrom: BILL_FILTER_FIELD_SPECS.invoiceDateFrom.parser,
+  invoiceDateTo: BILL_FILTER_FIELD_SPECS.invoiceDateTo.parser,
+  dueDateFrom: BILL_FILTER_FIELD_SPECS.dueDateFrom.parser,
+  dueDateTo: BILL_FILTER_FIELD_SPECS.dueDateTo.parser,
+};
 
-const fieldSchemas = Object.fromEntries(
-  BILL_FILTER_FIELD_KEYS.map((key) => [key, BILL_FILTER_FIELD_SPECS[key].schema]),
-) as { [K in BillFilterFieldKey]: typeof BILL_FILTER_FIELD_SPECS[K]['schema'] };
+export type BillFilterQueryValues = {
+  [K in keyof typeof filterParsers]: ReturnType<typeof filterParsers[K]['parseServerSide']>;
+};
+
+const savedNullableString = z.string().nullable().catch(null);
+const savedNullableNumber = z.number().nullable().catch(null);
+const savedBillStatuses = z.array(billStatusEnumSchema).nullable().catch(null);
+
+export function parseSavedBillFilterValues(
+  filters: Record<string, unknown>,
+): Partial<BillFilterQueryValues> {
+  return {
+    search: savedNullableString.parse(filters.search ?? null),
+    status: savedBillStatuses.parse(filters.status ?? null),
+    vendorId: savedNullableString.parse(filters.vendorId ?? null),
+    vendorOwnerId: savedNullableString.parse(filters.vendorOwnerId ?? null),
+    categoryId: savedNullableString.parse(filters.categoryId ?? null),
+    amountMin: savedNullableNumber.parse(filters.amountMin ?? null),
+    amountMax: savedNullableNumber.parse(filters.amountMax ?? null),
+    invoiceDateFrom: savedNullableString.parse(filters.invoiceDateFrom ?? null),
+    invoiceDateTo: savedNullableString.parse(filters.invoiceDateTo ?? null),
+    dueDateFrom: savedNullableString.parse(filters.dueDateFrom ?? null),
+    dueDateTo: savedNullableString.parse(filters.dueDateTo ?? null),
+  };
+}
+
+const fieldSchemas = {
+  search: BILL_FILTER_FIELD_SPECS.search.schema,
+  status: BILL_FILTER_FIELD_SPECS.status.schema,
+  vendorId: BILL_FILTER_FIELD_SPECS.vendorId.schema,
+  vendorOwnerId: BILL_FILTER_FIELD_SPECS.vendorOwnerId.schema,
+  categoryId: BILL_FILTER_FIELD_SPECS.categoryId.schema,
+  amountMin: BILL_FILTER_FIELD_SPECS.amountMin.schema,
+  amountMax: BILL_FILTER_FIELD_SPECS.amountMax.schema,
+  invoiceDateFrom: BILL_FILTER_FIELD_SPECS.invoiceDateFrom.schema,
+  invoiceDateTo: BILL_FILTER_FIELD_SPECS.invoiceDateTo.schema,
+  dueDateFrom: BILL_FILTER_FIELD_SPECS.dueDateFrom.schema,
+  dueDateTo: BILL_FILTER_FIELD_SPECS.dueDateTo.schema,
+};
 
 export const billFiltersSchema = z.object(fieldSchemas);
 
@@ -132,7 +193,7 @@ export type BillStatusFilterValue = NonNullable<BillFilters['status']> extends r
   : never;
 
 export const DEFAULT_BILL_PAGE_SIZE = 10;
-export const BILL_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+export const BILL_PAGE_SIZE_OPTIONS: readonly number[] = [10, 25, 50, 100];
 
 export const paginationParsers = {
   page: parseAsInteger.withDefault(1),
@@ -142,7 +203,7 @@ export const paginationParsers = {
 export const billPaginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().refine(
-    (size) => (BILL_PAGE_SIZE_OPTIONS as readonly number[]).includes(size),
+    (size) => BILL_PAGE_SIZE_OPTIONS.includes(size),
     { message: 'pageSize must be one of the allowed options.' },
   ).default(DEFAULT_BILL_PAGE_SIZE),
 });

@@ -15,27 +15,35 @@ import type { SortDirection, SortValue } from '@/lib/validators/sort-spec';
 
 type ClearedFilters<TParsers extends UseQueryStatesKeysMap> = Partial<Values<TParsers>>;
 
-type SetPagination = (updates: { page?: number; pageSize?: number }) => Promise<URLSearchParams>;
-type SetSort<TSortKey extends string> = (
-  updates: { dir: SortDirection; sort: TSortKey },
-) => Promise<URLSearchParams>;
+interface ParserWithDefault<TValue> {
+  defaultValue: TValue;
+  parse: (value: string) => TValue | null;
+  serialize: (value: TValue) => string;
+}
+
+interface PaginationParsers {
+  page: ParserWithDefault<number>;
+  pageSize: ParserWithDefault<number>;
+}
+
+interface SortParsers<TSortKey extends string> {
+  sort: ParserWithDefault<TSortKey>;
+  dir: ParserWithDefault<SortDirection>;
+}
 
 interface UseDataTableQueryStateOptions<
   TFilterParsers extends UseQueryStatesKeysMap,
-  TPaginationParsers extends UseQueryStatesKeysMap,
-  TSortParsers extends UseQueryStatesKeysMap,
+  TSortKey extends string,
 > {
   clearedFilters: ClearedFilters<TFilterParsers>;
   filterParsers: TFilterParsers;
   pageSizeOptions: readonly number[];
-  paginationParsers: TPaginationParsers;
-  sortParsers: TSortParsers;
+  paginationParsers: PaginationParsers;
+  sortParsers: SortParsers<TSortKey>;
 }
 
 export function useDataTableQueryState<
   TFilterParsers extends UseQueryStatesKeysMap,
-  TPaginationParsers extends UseQueryStatesKeysMap,
-  TSortParsers extends UseQueryStatesKeysMap,
   TSortKey extends string,
 >({
   clearedFilters,
@@ -43,7 +51,10 @@ export function useDataTableQueryState<
   pageSizeOptions,
   paginationParsers,
   sortParsers,
-}: UseDataTableQueryStateOptions<TFilterParsers, TPaginationParsers, TSortParsers>) {
+}: UseDataTableQueryStateOptions<
+  TFilterParsers,
+  TSortKey
+>) {
   const [isPending, startTransition] = useTransition();
   const queryOptions = useMemo(
     () => ({ shallow: false, history: 'push' as const, startTransition }),
@@ -51,15 +62,18 @@ export function useDataTableQueryState<
   );
 
   const [values, setValuesRaw] = useQueryStates(filterParsers, queryOptions);
-  const [paginationRaw, setPaginationRaw] = useQueryStates(paginationParsers, queryOptions);
-  const [sortRaw, setSortRaw] = useQueryStates(sortParsers, queryOptions);
-  const setPagination = setPaginationRaw as unknown as SetPagination;
-  const setSortValues = setSortRaw as unknown as SetSort<TSortKey>;
-  const pagination = paginationRaw as { page: number; pageSize: number };
+  const [pagination, setPagination] = useQueryStates({
+    page: paginationParsers.page,
+    pageSize: paginationParsers.pageSize,
+  }, queryOptions);
+  const [sortRaw, setSortValues] = useQueryStates({
+    sort: sortParsers.sort,
+    dir: sortParsers.dir,
+  }, queryOptions);
   const sort = useMemo(
     () => ({
-      by: sortRaw.sort as TSortKey,
-      dir: sortRaw.dir as SortDirection,
+      by: sortRaw.sort,
+      dir: sortRaw.dir,
     }),
     [sortRaw.dir, sortRaw.sort],
   );

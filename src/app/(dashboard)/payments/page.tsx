@@ -55,11 +55,15 @@ interface PaymentsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
+function isPaymentFilterTab(value: string | undefined): value is PaymentFilterTab {
+  return value !== undefined && paymentTabs.some((item) => item.value === value);
+}
+
 function resolveActiveTab(tab: string | string[] | undefined): PaymentFilterTab {
   const value = Array.isArray(tab) ? tab[0] : tab;
 
-  if (value && paymentTabs.some((item) => item.value === value)) {
-    return value as PaymentFilterTab;
+  if (isPaymentFilterTab(value)) {
+    return value;
   }
 
   return 'upcoming';
@@ -68,11 +72,13 @@ function resolveActiveTab(tab: string | string[] | undefined): PaymentFilterTab 
 function flattenSearchParams(
   params: Record<string, string | string[] | undefined>,
 ): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(params)
-      .filter(([, value]) => value !== undefined && value !== '')
-      .map(([key, value]) => [key, Array.isArray(value) ? value[0] ?? '' : value as string]),
-  );
+  return Object.entries(params).reduce<Record<string, string>>((flatParams, [key, value]) => {
+    if (value === undefined || value === '') return flatParams;
+    return {
+      ...flatParams,
+      [key]: Array.isArray(value) ? value[0] ?? '' : value,
+    };
+  }, {});
 }
 
 function parseFilters(params: Record<string, string>): PaymentFilters {

@@ -66,11 +66,15 @@ interface BillsPageProps {
 
 type BillTabValue = 'overview' | BillFilterTab;
 
+function isBillTabValue(value: string | undefined): value is BillTabValue {
+  return value !== undefined && billTabs.some((item) => item.value === value);
+}
+
 function resolveActiveTab(tab: string | string[] | undefined): BillTabValue {
   const value = Array.isArray(tab) ? tab[0] : tab;
 
-  if (value && billTabs.some((item) => item.value === value)) {
-    return value as BillTabValue;
+  if (isBillTabValue(value)) {
+    return value;
   }
 
   return 'drafts';
@@ -79,11 +83,13 @@ function resolveActiveTab(tab: string | string[] | undefined): BillTabValue {
 function flattenSearchParams(
   params: Record<string, string | string[] | undefined>,
 ): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(params)
-      .filter(([, value]) => value !== undefined && value !== '')
-      .map(([key, value]) => [key, Array.isArray(value) ? value[0] ?? '' : value as string]),
-  );
+  return Object.entries(params).reduce<Record<string, string>>((flatParams, [key, value]) => {
+    if (value === undefined || value === '') return flatParams;
+    return {
+      ...flatParams,
+      [key]: Array.isArray(value) ? value[0] ?? '' : value,
+    };
+  }, {});
 }
 
 function parseFilters(params: Record<string, string>): BillFilters {

@@ -10,24 +10,26 @@ export interface SortValue<TKey extends string> {
 }
 
 export interface SortSpec<TKey extends string> {
-  allowedKeys: readonly TKey[];
+  allowedKeys: readonly [TKey, ...TKey[]];
   defaultKey: TKey;
   defaultDir: SortDirection;
   parsers: {
-    sort: ReturnType<typeof parseAsStringLiteral<TKey>>;
-    dir: ReturnType<typeof parseAsStringLiteral<SortDirection>>;
+    sort: ReturnType<typeof parseAsStringLiteral<TKey>> & { defaultValue: TKey };
+    dir: ReturnType<typeof parseAsStringLiteral<SortDirection>> & {
+      defaultValue: SortDirection;
+    };
   };
   parseSearchParams: (params: Record<string, string>) => SortValue<TKey>;
 }
 
 export function createSortSpec<TKey extends string>(opts: {
-  allowedKeys: readonly TKey[];
+  allowedKeys: readonly [TKey, ...TKey[]];
   defaultKey: TKey;
   defaultDir?: SortDirection;
 }): SortSpec<TKey> {
   const { allowedKeys, defaultKey, defaultDir = 'desc' } = opts;
 
-  const keyEnum = z.enum(allowedKeys as readonly [TKey, ...TKey[]]);
+  const keyEnum = z.enum(allowedKeys);
   const dirEnum = z.enum(SORT_DIRECTIONS);
 
   const schema = z.object({

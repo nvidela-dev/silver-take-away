@@ -3,35 +3,28 @@ import { eq, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import {
-  WORKSPACE_PREFERENCES_VERSION,
   type WorkspaceKey,
   type WorkspacePreferencesMap,
   type WorkspaceTabPreferences,
 } from '@/lib/types/workspace-preferences';
+import {
+  workspaceKeySchema,
+  workspaceTabPreferencesSchema,
+} from '@/lib/validators/workspace-preferences.schemas';
 
 // Defensive read: filter out malformed entries and entries from an older
 // preference schema version, so a client running new code never tries to
 // hydrate from a payload it doesn't understand.
 export function deserializeWorkspacePreferences(raw: unknown): WorkspacePreferencesMap {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-  return Object.entries(raw as Record<string, unknown>).reduce<WorkspacePreferencesMap>(
+  return Object.entries(raw).reduce<WorkspacePreferencesMap>(
     (out, [key, value]) => {
-      if (!value || typeof value !== 'object' || Array.isArray(value)) return out;
-      const entry = value as Partial<WorkspaceTabPreferences>;
-      if (entry.version !== WORKSPACE_PREFERENCES_VERSION) return out;
-      if (!entry.sort || typeof entry.sort.by !== 'string') return out;
-      if (typeof entry.pageSize !== 'number') return out;
-      if (!Array.isArray(entry.hiddenColumns)) return out;
-      if (!entry.filters || typeof entry.filters !== 'object') return out;
+      const workspaceKey = workspaceKeySchema.safeParse(key);
+      const preferences = workspaceTabPreferencesSchema.safeParse(value);
+      if (!workspaceKey.success || !preferences.success) return out;
       return {
         ...out,
-        [key as WorkspaceKey]: {
-          version: WORKSPACE_PREFERENCES_VERSION,
-          filters: entry.filters,
-          sort: { by: entry.sort.by, dir: entry.sort.dir ?? 'desc' },
-          pageSize: entry.pageSize,
-          hiddenColumns: entry.hiddenColumns,
-        },
+        [workspaceKey.data]: preferences.data,
       };
     },
     {},
