@@ -349,7 +349,7 @@ export function BillsWorkspace({
     .filter((id) => BILL_EXPORT_COLUMN_ID_SET.has(id)) ?? [];
 
   return (
-    <main className="grid gap-6">
+    <main className="grid grid-cols-1 gap-6">
       <PageHeader
         actions={(
           <Button onClick={openCreateForm} type="button" variant="accent">
