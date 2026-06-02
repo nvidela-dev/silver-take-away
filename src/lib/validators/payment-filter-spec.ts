@@ -139,11 +139,15 @@ export type PaymentFilters = z.infer<typeof paymentFiltersSchema>;
 
 export type PaymentFilterValue<K extends PaymentFilterFieldKey> = NonNullable<PaymentFilters[K]>;
 
-export type PaymentStatusFilterValue = NonNullable<PaymentFilters['status']> extends readonly (infer S)[]
+export type PaymentStatusFilterValue = NonNullable<
+  PaymentFilters['status']
+> extends readonly (infer S)[]
   ? S extends PaymentStatus ? S : never
   : never;
 
-export type PaymentMethodFilterValue = NonNullable<PaymentFilters['paymentMethod']> extends readonly (infer M)[]
+export type PaymentMethodFilterValue = NonNullable<
+  PaymentFilters['paymentMethod']
+> extends readonly (infer M)[]
   ? M extends PaymentMethodType ? M : never
   : never;
 

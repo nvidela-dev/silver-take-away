@@ -260,11 +260,10 @@ export function BillsWorkspace({
   // single setValues call that explicitly nulls keys not present in the
   // snapshot, so partial overlaps don't leak old filter values.
   const applyFilters = useCallback((filters: Record<string, unknown>) => {
-    const updates: Partial<BillFilters> = {};
-    for (const key of BILL_FILTER_FIELD_KEYS) {
-      (updates as Record<string, unknown>)[key] = filters[key] ?? null;
-    }
-    void filtersController.setValues(updates as Partial<BillFilters>);
+    const updates = Object.fromEntries(
+      BILL_FILTER_FIELD_KEYS.map((key) => [key, filters[key] ?? null]),
+    ) as Partial<BillFilters>;
+    void filtersController.setValues(updates);
   }, [filtersController]);
   const applySort = useCallback((sort: { by: string; dir: 'asc' | 'desc' }) => {
     void filtersController.setSort(sort as Parameters<typeof filtersController.setSort>[0]);
@@ -282,7 +281,7 @@ export function BillsWorkspace({
       // Inactive on overview; the controls don't render there.
       : 'bills.drafts',
     savedPreferences,
-    currentFilters: filtersController.values as unknown as Record<string, unknown>,
+    currentFilters: filtersController.values,
     currentSort: filtersController.sort,
     currentPageSize: filtersController.pagination.pageSize,
     currentHiddenColumns: activeVisibility ? [...activeVisibility.hiddenIds] : [],

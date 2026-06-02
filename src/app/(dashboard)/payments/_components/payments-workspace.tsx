@@ -1,7 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import {
+  useCallback, useMemo, useState, useTransition,
+} from 'react';
 
 import { Alert } from '@/app/_components/atoms/alert';
 import { useColumnVisibility } from '@/app/_components/hooks/use-column-visibility';
@@ -154,11 +156,10 @@ export function PaymentsWorkspace({
   })();
 
   const applyFilters = useCallback((filters: Record<string, unknown>) => {
-    const updates: Partial<PaymentFilters> = {};
-    for (const key of PAYMENT_FILTER_FIELD_KEYS) {
-      (updates as Record<string, unknown>)[key] = filters[key] ?? null;
-    }
-    void filtersController.setValues(updates as Partial<PaymentFilters>);
+    const updates = Object.fromEntries(
+      PAYMENT_FILTER_FIELD_KEYS.map((key) => [key, filters[key] ?? null]),
+    ) as Partial<PaymentFilters>;
+    void filtersController.setValues(updates);
   }, [filtersController]);
   const applySort = useCallback((sort: { by: string; dir: 'asc' | 'desc' }) => {
     void filtersController.setSort(sort as Parameters<typeof filtersController.setSort>[0]);
@@ -173,7 +174,7 @@ export function PaymentsWorkspace({
   const savedView = useSavedView({
     workspaceKey: PAYMENT_TAB_TO_WORKSPACE_KEY[activeTab],
     savedPreferences,
-    currentFilters: filtersController.values as unknown as Record<string, unknown>,
+    currentFilters: filtersController.values,
     currentSort: filtersController.sort,
     currentPageSize: filtersController.pagination.pageSize,
     currentHiddenColumns: [...activeVisibility.hiddenIds],

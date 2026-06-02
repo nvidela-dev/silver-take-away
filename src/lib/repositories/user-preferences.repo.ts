@@ -14,24 +14,28 @@ import {
 // hydrate from a payload it doesn't understand.
 export function deserializeWorkspacePreferences(raw: unknown): WorkspacePreferencesMap {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-  const out: WorkspacePreferencesMap = {};
-  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
-    const entry = value as Partial<WorkspaceTabPreferences>;
-    if (entry.version !== WORKSPACE_PREFERENCES_VERSION) continue;
-    if (!entry.sort || typeof entry.sort.by !== 'string') continue;
-    if (typeof entry.pageSize !== 'number') continue;
-    if (!Array.isArray(entry.hiddenColumns)) continue;
-    if (!entry.filters || typeof entry.filters !== 'object') continue;
-    out[key as WorkspaceKey] = {
-      version: WORKSPACE_PREFERENCES_VERSION,
-      filters: entry.filters as Record<string, unknown>,
-      sort: { by: entry.sort.by, dir: entry.sort.dir ?? 'desc' },
-      pageSize: entry.pageSize,
-      hiddenColumns: entry.hiddenColumns as string[],
-    };
-  }
-  return out;
+  return Object.entries(raw as Record<string, unknown>).reduce<WorkspacePreferencesMap>(
+    (out, [key, value]) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return out;
+      const entry = value as Partial<WorkspaceTabPreferences>;
+      if (entry.version !== WORKSPACE_PREFERENCES_VERSION) return out;
+      if (!entry.sort || typeof entry.sort.by !== 'string') return out;
+      if (typeof entry.pageSize !== 'number') return out;
+      if (!Array.isArray(entry.hiddenColumns)) return out;
+      if (!entry.filters || typeof entry.filters !== 'object') return out;
+      return {
+        ...out,
+        [key as WorkspaceKey]: {
+          version: WORKSPACE_PREFERENCES_VERSION,
+          filters: entry.filters,
+          sort: { by: entry.sort.by, dir: entry.sort.dir ?? 'desc' },
+          pageSize: entry.pageSize,
+          hiddenColumns: entry.hiddenColumns,
+        },
+      };
+    },
+    {},
+  );
 }
 
 export async function getUserWorkspacePreferences(

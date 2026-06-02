@@ -6,8 +6,7 @@
 // tab name is reused (e.g. `payment` exists on bills, `processing` is
 // payment-only).
 
-export type WorkspaceKey =
-  | 'bills.drafts'
+export type WorkspaceKey = | 'bills.drafts'
   | 'bills.approvals'
   | 'bills.payment'
   | 'bills.history'

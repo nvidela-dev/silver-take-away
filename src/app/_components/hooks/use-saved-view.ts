@@ -1,7 +1,9 @@
 'use client';
 
 import type { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import {
+  useCallback, useMemo, useState, useTransition,
+} from 'react';
 
 import { deleteWorkspaceTabPreference } from '@/lib/actions/workspace-preferences/delete';
 import { saveWorkspaceTabPreference } from '@/lib/actions/workspace-preferences/save';
@@ -14,14 +16,17 @@ import {
 // Treat null / undefined / empty arrays as "unset" so a missing key in
 // saved prefs compares equal to a controller value of null.
 function normaliseFilters(filters: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(filters)) {
-    if (value === null || value === undefined) continue;
-    if (Array.isArray(value) && value.length === 0) continue;
-    if (typeof value === 'string' && value.length === 0) continue;
-    out[key] = value;
-  }
-  return out;
+  return Object.entries(filters).reduce<Record<string, unknown>>((out, [key, value]) => {
+    if (
+      value !== null
+      && value !== undefined
+      && (!Array.isArray(value) || value.length > 0)
+      && (typeof value !== 'string' || value.length > 0)
+    ) {
+      return { ...out, [key]: value };
+    }
+    return out;
+  }, {});
 }
 
 function isDeepEqual(a: unknown, b: unknown): boolean {
@@ -31,8 +36,8 @@ function isDeepEqual(a: unknown, b: unknown): boolean {
     return a.every((item, index) => isDeepEqual(item, b[index]));
   }
   if (a && b && typeof a === 'object' && typeof b === 'object') {
-    const aKeys = Object.keys(a as Record<string, unknown>);
-    const bKeys = Object.keys(b as Record<string, unknown>);
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
     if (aKeys.length !== bKeys.length) return false;
     return aKeys.every((key) => isDeepEqual(
       (a as Record<string, unknown>)[key],

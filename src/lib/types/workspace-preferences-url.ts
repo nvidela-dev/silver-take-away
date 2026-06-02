@@ -22,17 +22,15 @@ export function buildSavedPreferencesUrl({
   params.set(tabParam, tabValue);
   // Filters: arrays go in as comma-joined strings (matches nuqs's
   // parseAsArrayOf default); scalars as themselves; null/empty omitted.
-  for (const [key, value] of Object.entries(preferences.filters)) {
-    if (value === null || value === undefined) continue;
+  Object.entries(preferences.filters).forEach(([key, value]) => {
+    if (value === null || value === undefined) return;
     if (Array.isArray(value)) {
-      if (value.length === 0) continue;
-      params.set(key, value.join(','));
-      continue;
+      if (value.length > 0) params.set(key, value.join(','));
+      return;
     }
     const str = String(value);
-    if (str.length === 0) continue;
-    params.set(key, str);
-  }
+    if (str.length > 0) params.set(key, str);
+  });
   params.set('sort', preferences.sort.by);
   params.set('dir', preferences.sort.dir);
   params.set('pageSize', String(preferences.pageSize));
