@@ -12,7 +12,7 @@ interface SurfaceTabsProps {
 
 export function SurfaceTabs({ actions = null, activeValue, tabs }: SurfaceTabsProps) {
   return (
-    <div className="flex items-end justify-between gap-4 border-b border-slate-200">
+    <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200">
       <nav aria-label="Surface tabs" className="flex gap-8 overflow-x-auto">
         {tabs.map((tab) => (
           <Link
@@ -32,7 +32,7 @@ export function SurfaceTabs({ actions = null, activeValue, tabs }: SurfaceTabsPr
           </Link>
         ))}
       </nav>
-      {actions ? <div className="flex shrink-0 gap-2 pb-2">{actions}</div> : null}
+      {actions ? <div className="flex shrink-0 flex-wrap gap-2 pb-2">{actions}</div> : null}
     </div>
   );
 }

@@ -4,7 +4,7 @@ const SKELETON_ROW_COUNT = 10;
 
 export default function BillsLoading() {
   return (
-    <main className="grid gap-6">
+    <main className="grid grid-cols-1 gap-6">
       <div className="grid gap-2">
         <div className="h-4 w-16 animate-pulse rounded bg-slate-100" />
         <div className="h-8 w-24 animate-pulse rounded bg-slate-100" />

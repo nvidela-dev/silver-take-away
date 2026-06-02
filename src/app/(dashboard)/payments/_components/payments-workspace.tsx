@@ -249,7 +249,7 @@ export function PaymentsWorkspace({
     .filter((id) => PAYMENT_EXPORT_COLUMN_ID_SET.has(id));
 
   return (
-    <main className="grid gap-6">
+    <main className="grid grid-cols-1 gap-6">
       <PageHeader eyebrow="Bill Pay" title="Payments" />
       <SurfaceTabs
         actions={(
