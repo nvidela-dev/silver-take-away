@@ -1,7 +1,13 @@
 'use client';
 
-import { ChevronDown, RotateCcw, Save } from 'lucide-react';
+import {
+  ChevronDown,
+  Filter,
+  Plus,
+  RotateCcw,
+} from 'lucide-react';
 import { useRef, useState } from 'react';
+import type { ComponentType } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
 import { usePopoverDismiss } from '@/app/_components/hooks/use-popover-dismiss';
@@ -10,6 +16,37 @@ import type { SavedViewController } from '@/app/_components/hooks/use-saved-view
 
 interface SavedViewControlsProps {
   controller: SavedViewController;
+}
+
+interface OptionItemProps {
+  label: string;
+  icon: ComponentType<{ className?: string }>;
+  disabled: boolean;
+  onSelect: () => void;
+}
+
+function OptionItem({
+  label,
+  icon: Icon,
+  disabled,
+  onSelect,
+}: OptionItemProps) {
+  return (
+    <button
+      className={[
+        'flex w-full items-center justify-between gap-6 rounded-sm px-3 py-2',
+        'text-left text-xs text-slate-700 hover:bg-slate-50',
+        'disabled:pointer-events-none disabled:opacity-40',
+      ].join(' ')}
+      disabled={disabled}
+      onClick={onSelect}
+      role="menuitem"
+      type="button"
+    >
+      {label}
+      <Icon aria-hidden className="size-3.5 text-slate-500" />
+    </button>
+  );
 }
 
 export function SavedViewControls({ controller }: SavedViewControlsProps) {
@@ -25,80 +62,70 @@ export function SavedViewControls({ controller }: SavedViewControlsProps) {
   const {
     hasSaved,
     currentMatchesSaved,
+    hasActiveFilters,
     isPending,
     error,
     save,
     resetToSaved,
-    deleteSaved,
+    resetFilters,
   } = controller;
 
-  // "Save view" is shown until there's a saved snapshot that already
-  // matches current state — after that, saving again would be a no-op.
+  // "Save as new view" stays available until a saved snapshot already
+  // matches current state — saving again would be a no-op.
   const canSave = !currentMatchesSaved;
-  // "Reset to saved" only makes sense once a saved snapshot exists *and*
+  // "Reset view" only makes sense once a saved snapshot exists *and*
   // current state differs from it.
-  const canReset = hasSaved && !currentMatchesSaved;
+  const canResetView = hasSaved && !currentMatchesSaved;
+  const canResetFilters = hasActiveFilters;
+
+  const runItem = (action: () => void) => {
+    setMenuOpen(false);
+    action();
+  };
 
   return (
     <div className="flex items-center gap-2">
       {error ? (
         <span className="text-xs text-rose-700" role="status">{error}</span>
       ) : null}
-      <Button
-        disabled={!canSave || isPending}
-        onClick={save}
-        size="sm"
-        type="button"
-        variant="secondary"
-      >
-        <Save aria-hidden className="size-3.5" />
-        Save view
-      </Button>
-      {canReset ? (
-        <div className="relative inline-flex" ref={menuRef}>
-          <Button
-            className="rounded-r-none"
-            disabled={isPending}
-            onClick={resetToSaved}
-            size="sm"
-            type="button"
-            variant="secondary"
-          >
-            <RotateCcw aria-hidden className="size-3.5" />
-            Reset to saved
-          </Button>
-          <Button
-            aria-expanded={isMenuOpen}
-            aria-haspopup="menu"
-            aria-label="Saved view options"
-            className="rounded-l-none border-l-0 px-1.5"
-            disabled={isPending}
-            onClick={() => setMenuOpen((open) => !open)}
-            size="sm"
-            type="button"
-            variant="secondary"
-          >
-            <ChevronDown aria-hidden className="size-3.5" />
-          </Button>
-          {isMenuOpen ? (
-            <PopoverPanel align="right">
-              <div className="p-1" role="menu">
-                <button
-                  className="block w-full rounded-sm px-3 py-2 text-left text-xs text-rose-700 hover:bg-rose-50"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    deleteSaved();
-                  }}
-                  role="menuitem"
-                  type="button"
-                >
-                  Delete saved values
-                </button>
-              </div>
-            </PopoverPanel>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="relative inline-flex" ref={menuRef}>
+        <Button
+          aria-expanded={isMenuOpen}
+          aria-haspopup="menu"
+          disabled={isPending}
+          onClick={() => setMenuOpen((open) => !open)}
+          size="sm"
+          type="button"
+          variant="outline"
+        >
+          Options
+          <ChevronDown aria-hidden className="size-3.5" />
+        </Button>
+        {isMenuOpen ? (
+          <PopoverPanel align="right">
+            <div className="p-1" role="menu">
+              <OptionItem
+                disabled={isPending || !canResetFilters}
+                icon={Filter}
+                label="Reset filters"
+                onSelect={() => runItem(resetFilters)}
+              />
+              <OptionItem
+                disabled={isPending || !canResetView}
+                icon={RotateCcw}
+                label="Reset view"
+                onSelect={() => runItem(resetToSaved)}
+              />
+              <OptionItem
+                disabled={isPending || !canSave}
+                icon={Plus}
+                label="Save as new view"
+                onSelect={() => runItem(save)}
+              />
+            </div>
+          </PopoverPanel>
+        ) : null}
+      </div>
     </div>
   );
 }

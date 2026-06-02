@@ -59,10 +59,12 @@ interface UseSavedViewOptions {
 export interface SavedViewController {
   hasSaved: boolean;
   currentMatchesSaved: boolean;
+  hasActiveFilters: boolean;
   isPending: boolean;
   error: string | null;
   save: () => void;
   resetToSaved: () => void;
+  resetFilters: () => void;
   deleteSaved: () => void;
   // The local copy of saved prefs; updated optimistically so the UI
   // reflects changes immediately even though the server-rendered prop
@@ -110,6 +112,11 @@ export function useSavedView({
     normalisedSaved !== null && isDeepEqual(currentSnapshot, normalisedSaved)
   ), [currentSnapshot, normalisedSaved]);
 
+  const hasActiveFilters = useMemo(
+    () => Object.keys(currentSnapshot.filters).length > 0,
+    [currentSnapshot.filters],
+  );
+
   const save = useCallback(() => {
     setError(null);
     const snapshot = currentSnapshot;
@@ -136,6 +143,12 @@ export function useSavedView({
     router.refresh();
   }, [applyFilters, applyHiddenColumns, applyPageSize, applySort, normalisedSaved, router]);
 
+  const resetFilters = useCallback(() => {
+    setError(null);
+    applyFilters({});
+    router.refresh();
+  }, [applyFilters, router]);
+
   const deleteSaved = useCallback(() => {
     setError(null);
     startTransition(async () => {
@@ -151,10 +164,12 @@ export function useSavedView({
   return {
     hasSaved: normalisedSaved !== null,
     currentMatchesSaved,
+    hasActiveFilters,
     isPending,
     error,
     save,
     resetToSaved,
+    resetFilters,
     deleteSaved,
     savedPreferences: localSaved,
   };
