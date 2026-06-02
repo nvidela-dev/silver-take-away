@@ -47,27 +47,21 @@ export const billTabs = [
 
 export const paymentTabs = [
   {
-    value: 'overview',
-    label: 'Overview',
-    href: '/payments',
-    description: 'Payment counts and operational summary.',
+    value: 'upcoming',
+    label: 'Upcoming',
+    href: '/payments?tab=upcoming',
+    description: 'Payments pending or scheduled for release.',
   },
   {
-    value: 'needs_review',
-    label: 'Needs review',
-    href: '/payments?tab=needs_review',
-    description: 'Payments needing user attention.',
+    value: 'processing',
+    label: 'Processing',
+    href: '/payments?tab=processing',
+    description: 'Payments initiated or in transit with the processor.',
   },
   {
-    value: 'pending',
-    label: 'Pending',
-    href: '/payments?tab=pending',
-    description: 'Scheduled and in-flight payments.',
-  },
-  {
-    value: 'history',
-    label: 'History',
-    href: '/payments?tab=history',
-    description: 'Completed, failed, and cancelled payments.',
+    value: 'completed',
+    label: 'Completed',
+    href: '/payments?tab=completed',
+    description: 'Paid, failed, and cancelled payments.',
   },
 ] as const satisfies readonly SurfaceTab[];
