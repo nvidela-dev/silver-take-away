@@ -12,6 +12,7 @@ import {
   type BulkActionDescriptor,
 } from '@/app/_components/molecules/bulk-actions-menu';
 import { ColumnPicker } from '@/app/_components/molecules/column-picker';
+import { ExportCsvButton } from '@/app/_components/molecules/export-csv-button';
 import { NoteDialog } from '@/app/_components/molecules/note-dialog';
 import { PageHeader } from '@/app/_components/molecules/page-header';
 import { SavedViewControls } from '@/app/_components/molecules/saved-view-controls';
@@ -31,6 +32,7 @@ import {
   PAYMENT_FILTER_FIELD_KEYS,
   type PaymentFilters,
 } from '@/lib/validators/payment-filter-spec';
+import { PAYMENT_EXPORT_COLUMN_IDS } from '@/lib/export/columns';
 
 import { PaymentFilterBar } from './filters/payment-filter-bar';
 import { usePaymentBulkActions } from './hooks/use-payment-bulk-actions';
@@ -240,6 +242,9 @@ export function PaymentsWorkspace({
   ];
 
   const isTableLoading = isPending || filtersController.isPending;
+  const exportColumnIds = activeVisibility.visibleColumns
+    .map((column) => column.id)
+    .filter((id) => (PAYMENT_EXPORT_COLUMN_IDS as readonly string[]).includes(id));
 
   return (
     <main className="grid gap-6">
@@ -248,6 +253,11 @@ export function PaymentsWorkspace({
         actions={(
           <>
             <SavedViewControls controller={savedView} />
+            <ExportCsvButton
+              columnIds={exportColumnIds}
+              resource="payments"
+              tab={activeTab}
+            />
             {activeTab === 'upcoming' ? (
               <>
                 <BulkActionsMenu

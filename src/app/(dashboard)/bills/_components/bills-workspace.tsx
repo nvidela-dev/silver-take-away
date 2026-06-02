@@ -25,6 +25,7 @@ import {
   type BulkActionDescriptor,
 } from '@/app/_components/molecules/bulk-actions-menu';
 import { ColumnPicker } from '@/app/_components/molecules/column-picker';
+import { ExportCsvButton } from '@/app/_components/molecules/export-csv-button';
 import { PageHeader } from '@/app/_components/molecules/page-header';
 import { SavedViewControls } from '@/app/_components/molecules/saved-view-controls';
 import { SurfaceTabs } from '@/app/_components/molecules/surface-tabs';
@@ -48,6 +49,7 @@ import {
   BILL_FILTER_FIELD_KEYS,
   type BillFilters,
 } from '@/lib/validators/bill-filter-spec';
+import { BILL_EXPORT_COLUMN_IDS } from '@/lib/export/columns';
 
 import { BulkConfirmDialog } from '@/app/_components/molecules/bulk-confirm-dialog';
 import { NoteDialog } from '@/app/_components/molecules/note-dialog';
@@ -342,6 +344,9 @@ export function BillsWorkspace({
     },
   ];
   const isTableLoading = isPending || filtersController.isPending;
+  const exportColumnIds = activeVisibility?.visibleColumns
+    .map((column) => column.id)
+    .filter((id) => (BILL_EXPORT_COLUMN_IDS as readonly string[]).includes(id)) ?? [];
 
   return (
     <main className="grid gap-6">
@@ -360,6 +365,13 @@ export function BillsWorkspace({
           <>
             {activeTab !== 'overview' ? (
               <SavedViewControls controller={savedView} />
+            ) : null}
+            {activeTab !== 'overview' && activeTab !== 'drafts' ? (
+              <ExportCsvButton
+                columnIds={exportColumnIds}
+                resource="bills"
+                tab={activeTab}
+              />
             ) : null}
             {activeTab === 'drafts' ? (
               <BulkActionsMenu
