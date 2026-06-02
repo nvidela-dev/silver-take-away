@@ -39,7 +39,9 @@ import type {
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
 import type { BillListItem } from '@/lib/types/bill/views';
 
-import { BillNoteDialog } from './bill-note-dialog';
+import { BulkConfirmDialog } from '@/app/_components/molecules/bulk-confirm-dialog';
+import { NoteDialog } from '@/app/_components/molecules/note-dialog';
+
 import { BillTransitionDialog } from './bill-transition-dialog';
 import { BillsStatusOverview } from './bills-status-overview';
 import { BillsTable } from './bills-table';
@@ -49,7 +51,6 @@ import {
   draftActionsColumn,
   selectionColumn,
 } from './bills-table-columns';
-import { BulkConfirmDialog } from './bulk-confirm-dialog';
 import { BulkEditDialog } from './bulk-edit-dialog';
 import { DraftBillForm } from './draft-bill-form';
 import { BillFilterBar } from './filters/bill-filter-bar';
@@ -449,7 +450,7 @@ export function BillsWorkspace({
       <BillTransitionDialog isPending={isPending} transitions={transitions} />
 
       {bulk.pending?.kind === 'approve' ? (
-        <BillNoteDialog
+        <NoteDialog
           confirmLabel="Approve bills"
           confirmVariant="accent"
           description={`${bulk.pending.billIds.length} bills selected`}
@@ -464,7 +465,7 @@ export function BillsWorkspace({
       ) : null}
 
       {bulk.pending?.kind === 'reject' ? (
-        <BillNoteDialog
+        <NoteDialog
           confirmLabel="Reject bills"
           confirmVariant="destructive"
           description={`${bulk.pending.billIds.length} bills selected`}

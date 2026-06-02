@@ -1,6 +1,7 @@
 'use client';
 
-import { BillNoteDialog } from './bill-note-dialog';
+import { NoteDialog } from '@/app/_components/molecules/note-dialog';
+
 import type { BillTransitions, PendingBillTransition } from './hooks/use-bill-transitions';
 
 const TRANSITION_DISPLAY = {
@@ -43,7 +44,7 @@ export function BillTransitionDialog({
   const display = TRANSITION_DISPLAY[pendingTransition.kind];
 
   return (
-    <BillNoteDialog
+    <NoteDialog
       confirmLabel={display.confirmLabel}
       confirmVariant={display.confirmVariant}
       description={`Vendor: ${pendingTransition.bill.vendor.name}`}

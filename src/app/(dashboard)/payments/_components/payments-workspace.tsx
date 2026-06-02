@@ -1,8 +1,17 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useMemo, useState, useTransition } from 'react';
+
 import { Alert } from '@/app/_components/atoms/alert';
 import { useColumnVisibility } from '@/app/_components/hooks/use-column-visibility';
+import { useTableSelection } from '@/app/_components/hooks/use-table-selection';
+import {
+  BulkActionsMenu,
+  type BulkActionDescriptor,
+} from '@/app/_components/molecules/bulk-actions-menu';
 import { ColumnPicker } from '@/app/_components/molecules/column-picker';
+import { NoteDialog } from '@/app/_components/molecules/note-dialog';
 import { PageHeader } from '@/app/_components/molecules/page-header';
 import { SurfaceTabs } from '@/app/_components/molecules/surface-tabs';
 import { paymentTabs } from '@/app/_navigation';
@@ -14,9 +23,18 @@ import type { PaymentFilterTab } from '@/lib/types/payment/tabs';
 import type { PaymentListItem } from '@/lib/types/payment/views';
 
 import { PaymentFilterBar } from './filters/payment-filter-bar';
+import { usePaymentBulkActions } from './hooks/use-payment-bulk-actions';
 import { usePaymentFilters } from './hooks/use-payment-filters';
+import { usePaymentTransitions } from './hooks/use-payment-transitions';
+import { PaymentTransitionDialog } from './payment-transition-dialog';
 import { PaymentsTable } from './payments-table';
-import { paymentReadColumns } from './payments-table-columns';
+import {
+  completedActionsColumn,
+  paymentReadColumns,
+  processingActionsColumn,
+  selectionColumn,
+  upcomingActionsColumn,
+} from './payments-table-columns';
 
 interface PaymentsWorkspaceProps {
   activePayments: PaymentListResult<PaymentListItem>;
@@ -43,21 +61,176 @@ export function PaymentsWorkspace({
   loadError,
   referenceData,
 }: PaymentsWorkspaceProps) {
+  const router = useRouter();
   const filtersController = usePaymentFilters();
-  const columns = paymentReadColumns;
-  const visibility = useColumnVisibility(columns);
-  const isTableLoading = filtersController.isPending;
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const transitions = usePaymentTransitions({
+    startTransition,
+    router,
+    onDirectError: setActionError,
+  });
+
+  const bulk = usePaymentBulkActions({
+    startTransition,
+    router,
+    onDirectError: setActionError,
+  });
+
+  const activeIds = useMemo(
+    () => activePayments.items.map((payment) => payment.id),
+    [activePayments.items],
+  );
+
+  // Per-tab selection state. Only the active tab's selection is wired to
+  // the on-screen rows; the others stay zero-length and never collide.
+  const upcomingSelection = useTableSelection(activeTab === 'upcoming' ? activeIds : []);
+  const processingSelection = useTableSelection(activeTab === 'processing' ? activeIds : []);
+  const completedSelection = useTableSelection(activeTab === 'completed' ? activeIds : []);
+
+  const upcomingColumns = [
+    selectionColumn(upcomingSelection),
+    ...paymentReadColumns,
+    upcomingActionsColumn({
+      onInitiate: transitions.initiate,
+      onCancel: transitions.requestCancel,
+    }),
+  ];
+  const processingColumns = [
+    selectionColumn(processingSelection),
+    ...paymentReadColumns,
+    processingActionsColumn({
+      onMarkPaid: transitions.requestMarkPaid,
+      onMarkFailed: transitions.requestMarkFailed,
+    }),
+  ];
+  const completedColumns = [
+    selectionColumn(completedSelection),
+    ...paymentReadColumns,
+    completedActionsColumn({
+      onRetry: transitions.retry,
+    }),
+  ];
+
+  const upcomingVisibility = useColumnVisibility(upcomingColumns);
+  const processingVisibility = useColumnVisibility(processingColumns);
+  const completedVisibility = useColumnVisibility(completedColumns);
+
+  const upcomingBulkActions: BulkActionDescriptor[] = [
+    {
+      id: 'initiate',
+      label: 'Initiate',
+      variant: 'accent',
+      onClick: () => bulk.initiate({
+        paymentIds: [...upcomingSelection.selectedIds],
+        onSuccess: upcomingSelection.clear,
+      }),
+    },
+    {
+      id: 'cancel',
+      label: 'Cancel',
+      variant: 'destructive',
+      onClick: () => bulk.requestCancel({
+        paymentIds: [...upcomingSelection.selectedIds],
+        onSuccess: upcomingSelection.clear,
+      }),
+    },
+  ];
+
+  const processingBulkActions: BulkActionDescriptor[] = [
+    {
+      id: 'mark_paid',
+      label: 'Mark paid',
+      variant: 'accent',
+      onClick: () => bulk.requestMarkPaid({
+        paymentIds: [...processingSelection.selectedIds],
+        onSuccess: processingSelection.clear,
+      }),
+    },
+    {
+      id: 'mark_failed',
+      label: 'Mark failed',
+      variant: 'destructive',
+      onClick: () => bulk.requestMarkFailed({
+        paymentIds: [...processingSelection.selectedIds],
+        onSuccess: processingSelection.clear,
+      }),
+    },
+  ];
+
+  // Completed-tab retry only applies to failed rows; bulk-retry will silently
+  // skip non-failed selections at the DB layer (the bulk update is scoped to
+  // status='failed').
+  const completedBulkActions: BulkActionDescriptor[] = [
+    {
+      id: 'retry',
+      label: 'Retry failed',
+      variant: 'accent',
+      onClick: () => bulk.retry({
+        paymentIds: [...completedSelection.selectedIds],
+        onSuccess: completedSelection.clear,
+      }),
+    },
+  ];
+
+  const isTableLoading = isPending || filtersController.isPending;
 
   return (
     <main className="grid gap-6">
       <PageHeader eyebrow="Bill Pay" title="Payments" />
       <SurfaceTabs
         actions={(
-          <ColumnPicker
-            columns={visibility.configurableColumns}
-            hiddenIds={visibility.hiddenIds}
-            onToggle={visibility.toggle}
-          />
+          <>
+            {activeTab === 'upcoming' ? (
+              <>
+                <BulkActionsMenu
+                  actions={upcomingBulkActions}
+                  count={upcomingSelection.selectedCount}
+                  entityLabel="payment"
+                  isPending={isPending}
+                  onClear={upcomingSelection.clear}
+                />
+                <ColumnPicker
+                  columns={upcomingVisibility.configurableColumns}
+                  hiddenIds={upcomingVisibility.hiddenIds}
+                  onToggle={upcomingVisibility.toggle}
+                />
+              </>
+            ) : null}
+            {activeTab === 'processing' ? (
+              <>
+                <BulkActionsMenu
+                  actions={processingBulkActions}
+                  count={processingSelection.selectedCount}
+                  entityLabel="payment"
+                  isPending={isPending}
+                  onClear={processingSelection.clear}
+                />
+                <ColumnPicker
+                  columns={processingVisibility.configurableColumns}
+                  hiddenIds={processingVisibility.hiddenIds}
+                  onToggle={processingVisibility.toggle}
+                />
+              </>
+            ) : null}
+            {activeTab === 'completed' ? (
+              <>
+                <BulkActionsMenu
+                  actions={completedBulkActions}
+                  count={completedSelection.selectedCount}
+                  entityLabel="payment"
+                  isPending={isPending}
+                  onClear={completedSelection.clear}
+                />
+                <ColumnPicker
+                  columns={completedVisibility.configurableColumns}
+                  hiddenIds={completedVisibility.hiddenIds}
+                  onToggle={completedVisibility.toggle}
+                />
+              </>
+            ) : null}
+          </>
         )}
         activeValue={activeTab}
         tabs={paymentTabs}
@@ -69,28 +242,124 @@ export function PaymentsWorkspace({
       />
 
       {loadError ? <Alert>{loadError}</Alert> : null}
+      {actionError ? <Alert>{actionError}</Alert> : null}
 
-      <div>
-        <PaymentsTable
-          amountTotal={activePayments.amountTotal}
-          columns={visibility.visibleColumns}
-          currentPage={filtersController.pagination.page}
-          emptyMessage={EMPTY_MESSAGE_BY_TAB[activeTab]}
-          isLoading={isTableLoading}
-          loadingMessage={LOADING_MESSAGE_BY_TAB[activeTab]}
-          onPageSizeChange={(pageSize) => {
-            void filtersController.setPageSize(pageSize);
-          }}
-          onSortChange={(key) => {
-            void filtersController.toggleSort(key);
-          }}
-          pageSize={filtersController.pagination.pageSize}
-          pageSizeOptions={filtersController.pageSizeOptions}
-          payments={activePayments.items}
-          sort={filtersController.sort}
-          totalPayments={activePayments.total}
+      {activeTab === 'upcoming' ? (
+        <div>
+          <PaymentsTable
+            amountTotal={activePayments.amountTotal}
+            columns={upcomingVisibility.visibleColumns}
+            currentPage={filtersController.pagination.page}
+            emptyMessage={EMPTY_MESSAGE_BY_TAB.upcoming}
+            isLoading={isTableLoading}
+            loadingMessage={LOADING_MESSAGE_BY_TAB.upcoming}
+            onPageSizeChange={(pageSize) => {
+              void filtersController.setPageSize(pageSize);
+            }}
+            onSortChange={(key) => {
+              void filtersController.toggleSort(key);
+            }}
+            pageSize={filtersController.pagination.pageSize}
+            pageSizeOptions={filtersController.pageSizeOptions}
+            payments={activePayments.items}
+            sort={filtersController.sort}
+            totalPayments={activePayments.total}
+          />
+        </div>
+      ) : null}
+      {activeTab === 'processing' ? (
+        <div>
+          <PaymentsTable
+            amountTotal={activePayments.amountTotal}
+            columns={processingVisibility.visibleColumns}
+            currentPage={filtersController.pagination.page}
+            emptyMessage={EMPTY_MESSAGE_BY_TAB.processing}
+            isLoading={isTableLoading}
+            loadingMessage={LOADING_MESSAGE_BY_TAB.processing}
+            onPageSizeChange={(pageSize) => {
+              void filtersController.setPageSize(pageSize);
+            }}
+            onSortChange={(key) => {
+              void filtersController.toggleSort(key);
+            }}
+            pageSize={filtersController.pagination.pageSize}
+            pageSizeOptions={filtersController.pageSizeOptions}
+            payments={activePayments.items}
+            sort={filtersController.sort}
+            totalPayments={activePayments.total}
+          />
+        </div>
+      ) : null}
+      {activeTab === 'completed' ? (
+        <div>
+          <PaymentsTable
+            amountTotal={activePayments.amountTotal}
+            columns={completedVisibility.visibleColumns}
+            currentPage={filtersController.pagination.page}
+            emptyMessage={EMPTY_MESSAGE_BY_TAB.completed}
+            isLoading={isTableLoading}
+            loadingMessage={LOADING_MESSAGE_BY_TAB.completed}
+            onPageSizeChange={(pageSize) => {
+              void filtersController.setPageSize(pageSize);
+            }}
+            onSortChange={(key) => {
+              void filtersController.toggleSort(key);
+            }}
+            pageSize={filtersController.pagination.pageSize}
+            pageSizeOptions={filtersController.pageSizeOptions}
+            payments={activePayments.items}
+            sort={filtersController.sort}
+            totalPayments={activePayments.total}
+          />
+        </div>
+      ) : null}
+
+      <PaymentTransitionDialog isPending={isPending} transitions={transitions} />
+
+      {bulk.pending?.kind === 'cancel' ? (
+        <NoteDialog
+          confirmLabel="Cancel payments"
+          confirmVariant="destructive"
+          description={`${bulk.pending.paymentIds.length} payments selected`}
+          error={bulk.bulkError}
+          isPending={isPending}
+          noteRequired={false}
+          notePlaceholder="Optional reason for cancelling these payments."
+          onCancel={bulk.cancel}
+          onConfirm={bulk.confirmCancel}
+          title="Bulk cancel payments"
         />
-      </div>
+      ) : null}
+
+      {bulk.pending?.kind === 'mark_paid' ? (
+        <NoteDialog
+          confirmLabel="Mark as paid"
+          confirmVariant="accent"
+          description={`${bulk.pending.paymentIds.length} payments selected`}
+          error={bulk.bulkError}
+          isPending={isPending}
+          noteRequired={false}
+          notePlaceholder="Optional confirmation reference or context."
+          onCancel={bulk.cancel}
+          onConfirm={bulk.confirmMarkPaid}
+          title="Bulk mark payments as paid"
+        />
+      ) : null}
+
+      {bulk.pending?.kind === 'mark_failed' ? (
+        <NoteDialog
+          confirmLabel="Mark as failed"
+          confirmVariant="destructive"
+          description={`${bulk.pending.paymentIds.length} payments selected`}
+          error={bulk.bulkError}
+          isPending={isPending}
+          noteRequired
+          notePlaceholder="Why did these payments fail?"
+          onCancel={bulk.cancel}
+          onConfirm={bulk.confirmMarkFailed}
+          title="Bulk mark payments as failed"
+        />
+      ) : null}
     </main>
   );
 }
