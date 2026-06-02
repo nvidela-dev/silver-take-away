@@ -72,34 +72,38 @@ export async function applyPaymentStatusTransition(
     now,
   });
 
-  const [updatedPayments] = await db.batch([
-    db
-      .update(payments)
-      .set({
-        status: input.nextStatus,
-        updatedAt: now,
-        ...sideEffects,
-      })
-      .where(and(
-        eq(payments.id, input.paymentId),
-        eq(payments.status, input.currentStatus),
-      ))
-      .returning(),
-    db.insert(paymentActivityLog).values(
-      toPaymentActivityLogInsert({
-        id: createUuid(),
-        paymentId: input.paymentId,
-        actorId: input.actor.id,
-        action: input.action,
-        metadata,
-      }),
-    ),
-  ]);
+  // Guarded update: the `status` predicate scopes the write to a payment that
+  // is still in its expected status, so a concurrent change matches no rows
+  // and surfaces as a conflict instead of clobbering newer state.
+  const [payment] = await db
+    .update(payments)
+    .set({
+      status: input.nextStatus,
+      updatedAt: now,
+      ...sideEffects,
+    })
+    .where(and(
+      eq(payments.id, input.paymentId),
+      eq(payments.status, input.currentStatus),
+    ))
+    .returning();
 
-  const [payment] = updatedPayments;
+  // Bail before touching the audit log: neon-http has no interactive
+  // transaction, so the only way to avoid logging an action that never
+  // happened is to confirm the transition landed before writing the entry.
   if (!payment) {
     throw new PaymentConflictError();
   }
+
+  await db.insert(paymentActivityLog).values(
+    toPaymentActivityLogInsert({
+      id: createUuid(),
+      paymentId: input.paymentId,
+      actorId: input.actor.id,
+      action: input.action,
+      metadata,
+    }),
+  );
 
   return payment;
 }
@@ -127,7 +131,7 @@ export async function applyBulkPaymentStatusTransition(
     now,
   });
 
-  const updateStatement = db
+  const updatedPayments = await db
     .update(payments)
     .set({
       status: input.nextStatus,
@@ -140,17 +144,21 @@ export async function applyBulkPaymentStatusTransition(
     ))
     .returning();
 
-  const logInserts = input.paymentIds.map((paymentId) => db.insert(paymentActivityLog).values(
-    toPaymentActivityLogInsert({
-      id: createUuid(),
-      paymentId,
-      actorId: input.actor.id,
-      action: input.action,
-      metadata,
-    }),
-  ));
-
-  const [updatedPayments] = await db.batch([updateStatement, ...logInserts]);
+  // Log exactly the payments that transitioned, keyed off the update result
+  // rather than the requested ids, so conflicted rows never receive a
+  // spurious audit entry. A partial match still logs what genuinely changed
+  // before the conflict is raised below.
+  if (updatedPayments.length > 0) {
+    await db.insert(paymentActivityLog).values(
+      updatedPayments.map((payment) => toPaymentActivityLogInsert({
+        id: createUuid(),
+        paymentId: payment.id,
+        actorId: input.actor.id,
+        action: input.action,
+        metadata,
+      })),
+    );
+  }
 
   if (updatedPayments.length !== input.paymentIds.length) {
     throw new PaymentBulkConflictError(input.paymentIds.length, updatedPayments.length);
