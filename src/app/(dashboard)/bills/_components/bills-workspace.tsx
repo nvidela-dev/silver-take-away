@@ -18,6 +18,7 @@ import { Alert } from '@/app/_components/atoms/alert';
 import { Button } from '@/app/_components/atoms/button';
 import { useColumnVisibility } from '@/app/_components/hooks/use-column-visibility';
 import { useDialogBehavior } from '@/app/_components/hooks/use-dialog-behavior';
+import { useSavedView } from '@/app/_components/hooks/use-saved-view';
 import { useTableSelection } from '@/app/_components/hooks/use-table-selection';
 import {
   BulkActionsMenu,
@@ -25,6 +26,7 @@ import {
 } from '@/app/_components/molecules/bulk-actions-menu';
 import { ColumnPicker } from '@/app/_components/molecules/column-picker';
 import { PageHeader } from '@/app/_components/molecules/page-header';
+import { SavedViewControls } from '@/app/_components/molecules/saved-view-controls';
 import { SurfaceTabs } from '@/app/_components/molecules/surface-tabs';
 import { createBill } from '@/lib/actions/bills/create-bill';
 import { deleteBill } from '@/lib/actions/bills/delete-bill';
@@ -38,6 +40,14 @@ import type {
 } from '@/lib/types/bill/filters';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
 import type { BillListItem } from '@/lib/types/bill/views';
+import type {
+  WorkspaceKey,
+  WorkspaceTabPreferences,
+} from '@/lib/types/workspace-preferences';
+import {
+  BILL_FILTER_FIELD_KEYS,
+  type BillFilters,
+} from '@/lib/validators/bill-filter-spec';
 
 import { BulkConfirmDialog } from '@/app/_components/molecules/bulk-confirm-dialog';
 import { NoteDialog } from '@/app/_components/molecules/note-dialog';
@@ -66,7 +76,14 @@ interface BillsWorkspaceProps {
   overviewGroups: BillOverviewGroup[];
   loadError: string | null;
   referenceData: BillReferenceData;
+  savedPreferences: WorkspaceTabPreferences | null;
 }
+
+const BILL_TAB_TO_WORKSPACE_KEY: Record<BillFilterTab, WorkspaceKey> = {
+  drafts: 'bills.drafts',
+  approvals: 'bills.approvals',
+  payment: 'bills.payment',
+};
 
 export function BillsWorkspace({
   activeBills,
@@ -74,6 +91,7 @@ export function BillsWorkspace({
   overviewGroups,
   loadError,
   referenceData,
+  savedPreferences,
 }: BillsWorkspaceProps) {
   const router = useRouter();
   const dialogTitleId = useId();
@@ -202,9 +220,64 @@ export function BillsWorkspace({
   ];
   const paymentColumns = billReadColumns;
 
-  const draftVisibility = useColumnVisibility(draftColumns);
-  const approvalVisibility = useColumnVisibility(approvalColumns);
-  const paymentVisibility = useColumnVisibility(paymentColumns);
+  const initialHiddenColumns = savedPreferences?.hiddenColumns ?? [];
+  const draftVisibility = useColumnVisibility(
+    draftColumns,
+    activeTab === 'drafts' ? initialHiddenColumns : [],
+  );
+  const approvalVisibility = useColumnVisibility(
+    approvalColumns,
+    activeTab === 'approvals' ? initialHiddenColumns : [],
+  );
+  const paymentVisibility = useColumnVisibility(
+    paymentColumns,
+    activeTab === 'payment' ? initialHiddenColumns : [],
+  );
+
+  const activeVisibility = (() => {
+    if (activeTab === 'drafts') return draftVisibility;
+    if (activeTab === 'approvals') return approvalVisibility;
+    if (activeTab === 'payment') return paymentVisibility;
+    return null;
+  })();
+
+  // Build apply* adapters so the saved-view controller can push a saved
+  // snapshot back into the URL + column state. Filters are pushed as a
+  // single setValues call that explicitly nulls keys not present in the
+  // snapshot, so partial overlaps don't leak old filter values.
+  const applyFilters = useCallback((filters: Record<string, unknown>) => {
+    const updates: Partial<BillFilters> = {};
+    for (const key of BILL_FILTER_FIELD_KEYS) {
+      (updates as Record<string, unknown>)[key] = filters[key] ?? null;
+    }
+    void filtersController.setValues(updates as Partial<BillFilters>);
+  }, [filtersController]);
+  const applySort = useCallback((sort: { by: string; dir: 'asc' | 'desc' }) => {
+    void filtersController.setSort(sort as Parameters<typeof filtersController.setSort>[0]);
+  }, [filtersController]);
+  const applyPageSize = useCallback((pageSize: number) => {
+    void filtersController.setPageSize(pageSize);
+  }, [filtersController]);
+  const applyHiddenColumns = useCallback((hidden: readonly string[]) => {
+    activeVisibility?.setHidden(hidden);
+  }, [activeVisibility]);
+
+  const savedView = useSavedView({
+    workspaceKey: activeTab !== 'overview'
+      ? BILL_TAB_TO_WORKSPACE_KEY[activeTab]
+      // Inactive on overview; the controls don't render there.
+      : 'bills.drafts',
+    savedPreferences,
+    currentFilters: filtersController.values as unknown as Record<string, unknown>,
+    currentSort: filtersController.sort,
+    currentPageSize: filtersController.pagination.pageSize,
+    currentHiddenColumns: activeVisibility ? [...activeVisibility.hiddenIds] : [],
+    applyFilters,
+    applySort,
+    applyPageSize,
+    applyHiddenColumns,
+    router,
+  });
 
   const draftBulkActions: BulkActionDescriptor[] = [
     {
@@ -273,6 +346,9 @@ export function BillsWorkspace({
       <SurfaceTabs
         actions={(
           <>
+            {activeTab !== 'overview' ? (
+              <SavedViewControls controller={savedView} />
+            ) : null}
             {activeTab === 'drafts' ? (
               <BulkActionsMenu
                 actions={draftBulkActions}

@@ -8,13 +8,15 @@ export interface ColumnVisibility<TRow, TSortKey extends string> {
   configurableColumns: DataTableColumn<TRow, TSortKey>[];
   hiddenIds: Set<string>;
   toggle: (id: string) => void;
+  setHidden: (ids: readonly string[]) => void;
   visibleColumns: DataTableColumn<TRow, TSortKey>[];
 }
 
 export function useColumnVisibility<TRow, TSortKey extends string>(
   columns: DataTableColumn<TRow, TSortKey>[],
+  initialHiddenIds: readonly string[] = [],
 ): ColumnVisibility<TRow, TSortKey> {
-  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set(initialHiddenIds));
 
   const toggle = useCallback((id: string) => {
     setHiddenIds((prev) => {
@@ -23,6 +25,10 @@ export function useColumnVisibility<TRow, TSortKey extends string>(
       else next.add(id);
       return next;
     });
+  }, []);
+
+  const setHidden = useCallback((ids: readonly string[]) => {
+    setHiddenIds(new Set(ids));
   }, []);
 
   const configurableColumns = useMemo(
@@ -41,6 +47,7 @@ export function useColumnVisibility<TRow, TSortKey extends string>(
     configurableColumns,
     hiddenIds,
     toggle,
+    setHidden,
     visibleColumns,
   };
 }

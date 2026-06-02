@@ -1,3 +1,5 @@
+import { redirect } from 'next/navigation';
+
 import {
   UnauthorizedError,
   ForbiddenError,
@@ -5,10 +7,12 @@ import {
 import { billTabs } from '@/app/_navigation';
 import {
   getBillReferenceData,
+  getCurrentUserWorkspaceTabPreference,
   listBillOverviewGroups,
   listBillsForTab,
 } from '@/lib/queries';
 import {
+  BILL_FILTER_FIELD_KEYS,
   billFiltersSchema,
   billPaginationSchema,
   DEFAULT_BILL_PAGE_SIZE,
@@ -27,8 +31,33 @@ import type {
   BillSort,
 } from '@/lib/types/bill/filters';
 import type { BillListItem } from '@/lib/types/bill/views';
+import type {
+  WorkspaceKey,
+  WorkspaceTabPreferences,
+} from '@/lib/types/workspace-preferences';
+import {
+  buildSavedPreferencesUrl,
+  urlHasViewParams,
+} from '@/lib/types/workspace-preferences-url';
 
 import { BillsWorkspace } from './_components';
+
+const BILL_TAB_TO_WORKSPACE_KEY: Record<BillFilterTab, WorkspaceKey> = {
+  drafts: 'bills.drafts',
+  approvals: 'bills.approvals',
+  payment: 'bills.payment',
+};
+
+// Keys whose presence in the URL means the user explicitly chose a view;
+// when none are present we treat the URL as "bare" and hydrate from saved
+// prefs via redirect.
+const BILL_VIEW_PARAM_KEYS: readonly string[] = [
+  ...BILL_FILTER_FIELD_KEYS,
+  'sort',
+  'dir',
+  'page',
+  'pageSize',
+];
 
 interface BillsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -154,21 +183,47 @@ async function loadBillWorkspaceData(
   }
 }
 
+async function loadSavedTabPreference(
+  activeTab: BillTabValue,
+): Promise<WorkspaceTabPreferences | null> {
+  if (activeTab === 'overview') return null;
+  try {
+    return await getCurrentUserWorkspaceTabPreference(BILL_TAB_TO_WORKSPACE_KEY[activeTab]);
+  } catch {
+    // Don't let a prefs read failure block the page; the workspace just
+    // renders without saved-view controls until next load.
+    return null;
+  }
+}
+
 export default async function BillsPage({ searchParams }: BillsPageProps) {
   const params = await searchParams;
   const activeTab = resolveActiveTab(params.tab);
   const flatParams = flattenSearchParams(params);
+
+  // Hydrate the URL from saved prefs on a bare visit (e.g. /bills with no
+  // view params). URL still wins whenever the user lands with any filter
+  // / sort / pagination key explicitly set.
+  if (activeTab !== 'overview' && !urlHasViewParams(flatParams, BILL_VIEW_PARAM_KEYS)) {
+    const savedPrefs = await loadSavedTabPreference(activeTab);
+    if (savedPrefs) {
+      redirect(buildSavedPreferencesUrl({
+        basePath: '/bills',
+        tabParam: 'tab',
+        tabValue: activeTab,
+        preferences: savedPrefs,
+      }));
+    }
+  }
+
   const filters = parseFilters(flatParams);
   const pagination = parsePagination(flatParams);
   const sort = parseSort(flatParams);
   const overviewPages = parseOverviewPages(flatParams);
-  const workspaceData = await loadBillWorkspaceData(
-    activeTab,
-    filters,
-    pagination,
-    sort,
-    overviewPages,
-  );
+  const [workspaceData, savedPreferences] = await Promise.all([
+    loadBillWorkspaceData(activeTab, filters, pagination, sort, overviewPages),
+    loadSavedTabPreference(activeTab),
+  ]);
 
   return (
     <BillsWorkspace
@@ -177,6 +232,7 @@ export default async function BillsPage({ searchParams }: BillsPageProps) {
       overviewGroups={workspaceData.overviewGroups}
       loadError={workspaceData.loadError}
       referenceData={workspaceData.referenceData}
+      savedPreferences={savedPreferences}
     />
   );
 }

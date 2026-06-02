@@ -8,6 +8,10 @@ export interface User {
   email: string;
   fullName: string;
   role: UserRole;
+  // Map of saved workspace preferences keyed by workspace+tab (e.g.
+  // `bills.drafts`). Stored as jsonb on the `users` table; the typed
+  // shape of each entry lives in `@/lib/types/workspace-preferences`.
+  workspacePreferences: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
