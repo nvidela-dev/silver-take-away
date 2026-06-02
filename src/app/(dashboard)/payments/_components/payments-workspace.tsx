@@ -1,10 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useMemo, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 
 import { Alert } from '@/app/_components/atoms/alert';
 import { useColumnVisibility } from '@/app/_components/hooks/use-column-visibility';
+import { useSavedView } from '@/app/_components/hooks/use-saved-view';
 import { useTableSelection } from '@/app/_components/hooks/use-table-selection';
 import {
   BulkActionsMenu,
@@ -13,6 +14,7 @@ import {
 import { ColumnPicker } from '@/app/_components/molecules/column-picker';
 import { NoteDialog } from '@/app/_components/molecules/note-dialog';
 import { PageHeader } from '@/app/_components/molecules/page-header';
+import { SavedViewControls } from '@/app/_components/molecules/saved-view-controls';
 import { SurfaceTabs } from '@/app/_components/molecules/surface-tabs';
 import { paymentTabs } from '@/app/_navigation';
 import type {
@@ -21,6 +23,14 @@ import type {
 } from '@/lib/types/payment/filters';
 import type { PaymentFilterTab } from '@/lib/types/payment/tabs';
 import type { PaymentListItem } from '@/lib/types/payment/views';
+import type {
+  WorkspaceKey,
+  WorkspaceTabPreferences,
+} from '@/lib/types/workspace-preferences';
+import {
+  PAYMENT_FILTER_FIELD_KEYS,
+  type PaymentFilters,
+} from '@/lib/validators/payment-filter-spec';
 
 import { PaymentFilterBar } from './filters/payment-filter-bar';
 import { usePaymentBulkActions } from './hooks/use-payment-bulk-actions';
@@ -41,7 +51,14 @@ interface PaymentsWorkspaceProps {
   activeTab: PaymentFilterTab;
   loadError: string | null;
   referenceData: PaymentReferenceData;
+  savedPreferences: WorkspaceTabPreferences | null;
 }
+
+const PAYMENT_TAB_TO_WORKSPACE_KEY: Record<PaymentFilterTab, WorkspaceKey> = {
+  upcoming: 'payments.upcoming',
+  processing: 'payments.processing',
+  completed: 'payments.completed',
+};
 
 const EMPTY_MESSAGE_BY_TAB: Record<PaymentFilterTab, string> = {
   upcoming: 'No upcoming payments match this view.',
@@ -60,6 +77,7 @@ export function PaymentsWorkspace({
   activeTab,
   loadError,
   referenceData,
+  savedPreferences,
 }: PaymentsWorkspaceProps) {
   const router = useRouter();
   const filtersController = usePaymentFilters();
@@ -113,9 +131,56 @@ export function PaymentsWorkspace({
     }),
   ];
 
-  const upcomingVisibility = useColumnVisibility(upcomingColumns);
-  const processingVisibility = useColumnVisibility(processingColumns);
-  const completedVisibility = useColumnVisibility(completedColumns);
+  const initialHiddenColumns = savedPreferences?.hiddenColumns ?? [];
+  const upcomingVisibility = useColumnVisibility(
+    upcomingColumns,
+    activeTab === 'upcoming' ? initialHiddenColumns : [],
+  );
+  const processingVisibility = useColumnVisibility(
+    processingColumns,
+    activeTab === 'processing' ? initialHiddenColumns : [],
+  );
+  const completedVisibility = useColumnVisibility(
+    completedColumns,
+    activeTab === 'completed' ? initialHiddenColumns : [],
+  );
+
+  const activeVisibility = (() => {
+    if (activeTab === 'upcoming') return upcomingVisibility;
+    if (activeTab === 'processing') return processingVisibility;
+    return completedVisibility;
+  })();
+
+  const applyFilters = useCallback((filters: Record<string, unknown>) => {
+    const updates: Partial<PaymentFilters> = {};
+    for (const key of PAYMENT_FILTER_FIELD_KEYS) {
+      (updates as Record<string, unknown>)[key] = filters[key] ?? null;
+    }
+    void filtersController.setValues(updates as Partial<PaymentFilters>);
+  }, [filtersController]);
+  const applySort = useCallback((sort: { by: string; dir: 'asc' | 'desc' }) => {
+    void filtersController.setSort(sort as Parameters<typeof filtersController.setSort>[0]);
+  }, [filtersController]);
+  const applyPageSize = useCallback((pageSize: number) => {
+    void filtersController.setPageSize(pageSize);
+  }, [filtersController]);
+  const applyHiddenColumns = useCallback((hidden: readonly string[]) => {
+    activeVisibility.setHidden(hidden);
+  }, [activeVisibility]);
+
+  const savedView = useSavedView({
+    workspaceKey: PAYMENT_TAB_TO_WORKSPACE_KEY[activeTab],
+    savedPreferences,
+    currentFilters: filtersController.values as unknown as Record<string, unknown>,
+    currentSort: filtersController.sort,
+    currentPageSize: filtersController.pagination.pageSize,
+    currentHiddenColumns: [...activeVisibility.hiddenIds],
+    applyFilters,
+    applySort,
+    applyPageSize,
+    applyHiddenColumns,
+    router,
+  });
 
   const upcomingBulkActions: BulkActionDescriptor[] = [
     {
@@ -182,6 +247,7 @@ export function PaymentsWorkspace({
       <SurfaceTabs
         actions={(
           <>
+            <SavedViewControls controller={savedView} />
             {activeTab === 'upcoming' ? (
               <>
                 <BulkActionsMenu

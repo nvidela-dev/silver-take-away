@@ -1,14 +1,18 @@
+import { redirect } from 'next/navigation';
+
 import {
   UnauthorizedError,
   ForbiddenError,
 } from '@/lib/auth';
 import { paymentTabs } from '@/app/_navigation';
 import {
+  getCurrentUserWorkspaceTabPreference,
   getPaymentReferenceData,
   listPaymentsForTab,
 } from '@/lib/queries';
 import {
   DEFAULT_PAYMENT_PAGE_SIZE,
+  PAYMENT_FILTER_FIELD_KEYS,
   paymentFiltersSchema,
   paymentPaginationSchema,
   scopedFiltersForTab,
@@ -22,8 +26,30 @@ import type {
   PaymentSort,
 } from '@/lib/types/payment/filters';
 import type { PaymentListItem } from '@/lib/types/payment/views';
+import type {
+  WorkspaceKey,
+  WorkspaceTabPreferences,
+} from '@/lib/types/workspace-preferences';
+import {
+  buildSavedPreferencesUrl,
+  urlHasViewParams,
+} from '@/lib/types/workspace-preferences-url';
 
 import { PaymentsWorkspace } from './_components';
+
+const PAYMENT_TAB_TO_WORKSPACE_KEY: Record<PaymentFilterTab, WorkspaceKey> = {
+  upcoming: 'payments.upcoming',
+  processing: 'payments.processing',
+  completed: 'payments.completed',
+};
+
+const PAYMENT_VIEW_PARAM_KEYS: readonly string[] = [
+  ...PAYMENT_FILTER_FIELD_KEYS,
+  'sort',
+  'dir',
+  'page',
+  'pageSize',
+];
 
 interface PaymentsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -112,14 +138,40 @@ async function loadPaymentWorkspaceData(
   }
 }
 
+async function loadSavedTabPreference(
+  activeTab: PaymentFilterTab,
+): Promise<WorkspaceTabPreferences | null> {
+  try {
+    return await getCurrentUserWorkspaceTabPreference(PAYMENT_TAB_TO_WORKSPACE_KEY[activeTab]);
+  } catch {
+    return null;
+  }
+}
+
 export default async function PaymentsPage({ searchParams }: PaymentsPageProps) {
   const params = await searchParams;
   const activeTab = resolveActiveTab(params.tab);
   const flatParams = flattenSearchParams(params);
+
+  if (!urlHasViewParams(flatParams, PAYMENT_VIEW_PARAM_KEYS)) {
+    const savedPrefs = await loadSavedTabPreference(activeTab);
+    if (savedPrefs) {
+      redirect(buildSavedPreferencesUrl({
+        basePath: '/payments',
+        tabParam: 'tab',
+        tabValue: activeTab,
+        preferences: savedPrefs,
+      }));
+    }
+  }
+
   const filters = parseFilters(flatParams);
   const pagination = parsePagination(flatParams);
   const sort = parseSort(flatParams);
-  const workspaceData = await loadPaymentWorkspaceData(activeTab, filters, pagination, sort);
+  const [workspaceData, savedPreferences] = await Promise.all([
+    loadPaymentWorkspaceData(activeTab, filters, pagination, sort),
+    loadSavedTabPreference(activeTab),
+  ]);
 
   return (
     <PaymentsWorkspace
@@ -127,6 +179,7 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
       activeTab={activeTab}
       loadError={workspaceData.loadError}
       referenceData={workspaceData.referenceData}
+      savedPreferences={savedPreferences}
     />
   );
 }

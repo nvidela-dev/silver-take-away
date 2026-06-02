@@ -11,6 +11,12 @@ import {
   getPaymentStatusAggregates as getPaymentStatusAggregatesFromRepo,
   listPayments as listPaymentsFromRepo,
 } from '@/lib/repositories/payments';
+import { deserializeWorkspacePreferences } from '@/lib/repositories/user-preferences.repo';
+import type {
+  WorkspaceKey,
+  WorkspacePreferencesMap,
+  WorkspaceTabPreferences,
+} from '@/lib/types/workspace-preferences';
 import { OVERVIEW_GROUP_PAGE_SIZE } from '@/lib/types/bill/overview';
 import { STATUSES_BY_TAB } from '@/lib/types/bill/tabs';
 import { STATUSES_BY_TAB as PAYMENT_STATUSES_BY_TAB } from '@/lib/types/payment/tabs';
@@ -146,4 +152,17 @@ const PAYMENT_OVERVIEW_STATUSES: readonly PaymentStatus[] = [
 export async function getPaymentOverviewAggregates(): Promise<PaymentStatusAggregate[]> {
   await gatePaymentRead();
   return getPaymentStatusAggregatesFromRepo(PAYMENT_OVERVIEW_STATUSES);
+}
+
+export async function getCurrentUserWorkspacePreferences(): Promise<WorkspacePreferencesMap> {
+  assertDatabaseConfigured();
+  const actor = await requireAuth();
+  return deserializeWorkspacePreferences(actor.workspacePreferences);
+}
+
+export async function getCurrentUserWorkspaceTabPreference(
+  workspaceKey: WorkspaceKey,
+): Promise<WorkspaceTabPreferences | null> {
+  const map = await getCurrentUserWorkspacePreferences();
+  return map[workspaceKey] ?? null;
 }
