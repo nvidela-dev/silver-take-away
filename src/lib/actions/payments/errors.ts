@@ -8,9 +8,13 @@ import {
   PaymentNotFoundError,
 } from '@/lib/repositories/payments';
 import { InvalidPaymentTransitionError } from '@/lib/services/payment-state-machine';
+import { reportUnexpectedError } from '@/lib/observability';
 import type { ActionResult } from '@/lib/types/common';
 
-export function toPaymentActionError(error: unknown): ActionResult<never> {
+export function toPaymentActionError(
+  error: unknown,
+  context = 'payment action',
+): ActionResult<never> {
   if (
     error instanceof UnauthorizedError
     || error instanceof ForbiddenError
@@ -38,6 +42,9 @@ export function toPaymentActionError(error: unknown): ActionResult<never> {
     };
   }
 
+  // Anything past the typed branches above is unexpected: log it server-side
+  // (full stack) before returning the safe generic message to the client.
+  reportUnexpectedError(context, error);
   return {
     ok: false,
     error: {

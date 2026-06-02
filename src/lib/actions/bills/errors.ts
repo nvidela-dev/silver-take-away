@@ -9,9 +9,13 @@ import {
 } from '@/lib/repositories/bills';
 import { DraftBillGuardError } from '@/lib/services/bill-transitions';
 import { InvalidTransitionError } from '@/lib/services/state-machine';
+import { reportUnexpectedError } from '@/lib/observability';
 import type { ActionResult } from '@/lib/types/common';
 
-export function toBillActionError(error: unknown): ActionResult<never> {
+export function toBillActionError(
+  error: unknown,
+  context = 'bill action',
+): ActionResult<never> {
   if (
     error instanceof UnauthorizedError
     || error instanceof ForbiddenError
@@ -40,6 +44,9 @@ export function toBillActionError(error: unknown): ActionResult<never> {
     };
   }
 
+  // Anything past the typed branches above is unexpected: log it server-side
+  // (full stack) before returning the safe generic message to the client.
+  reportUnexpectedError(context, error);
   return {
     ok: false,
     error: {
