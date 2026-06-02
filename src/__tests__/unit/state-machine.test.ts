@@ -45,14 +45,17 @@ describe('assertValidTransition', () => {
     ['draft', 'archive', 'archived'],
     ['awaiting_approval', 'approve', 'approved'],
     ['awaiting_approval', 'reject', 'rejected'],
+    ['awaiting_approval', 'archive', 'archived'],
     ['approved', 'schedule_payment', 'scheduled'],
     ['approved', 'mark_as_paid', 'paid'],
     ['approved', 'archive', 'archived'],
     ['scheduled', 'initiate_payment', 'initiated'],
     ['scheduled', 'cancel_payment', 'approved'],
     ['scheduled', 'unschedule', 'approved'],
+    ['scheduled', 'archive', 'archived'],
     ['initiated', 'mark_as_paid', 'paid'],
     ['initiated', 'cancel_payment', 'approved'],
+    ['initiated', 'archive', 'archived'],
     ['paid', 'archive', 'archived'],
     ['rejected', 'archive', 'archived'],
     ['payment_failed', 'retry_payment', 'initiated'],
@@ -109,10 +112,10 @@ describe('assertValidTransition', () => {
 describe('getAvailableActions', () => {
   it('returns the configured actions for each non-deletable status', () => {
     expect(new Set(getAvailableActions('awaiting_approval'))).toEqual(
-      new Set(['approve', 'reject']),
+      new Set(['approve', 'reject', 'archive']),
     );
     expect(new Set(getAvailableActions('scheduled'))).toEqual(
-      new Set(['initiate_payment', 'cancel_payment', 'unschedule']),
+      new Set(['initiate_payment', 'cancel_payment', 'unschedule', 'archive']),
     );
     expect(new Set(getAvailableActions('archived'))).toEqual(new Set());
   });
@@ -135,18 +138,17 @@ describe('canDelete', () => {
 });
 
 describe('canArchive', () => {
-  const ARCHIVABLE: BillStatus[] = ['approved', 'paid', 'rejected', 'payment_failed'];
+  // Every status except draft (deleted, not archived) and archived (terminal).
+  const NON_ARCHIVABLE: BillStatus[] = ['draft', 'archived'];
 
-  it('permits archive from terminal-or-approved statuses, excluding draft', () => {
-    for (const status of ARCHIVABLE) {
+  it('permits archive from any non-draft, non-archived status', () => {
+    for (const status of ALL_STATUSES.filter((s) => !NON_ARCHIVABLE.includes(s))) {
       expect(canArchive(status)).toBe(true);
     }
   });
 
-  it('blocks archive from draft, in-flight, and already-archived statuses', () => {
-    for (const status of ALL_STATUSES.filter((s) => !ARCHIVABLE.includes(s))) {
-      expect(canArchive(status)).toBe(false);
-    }
+  it('blocks archive from draft and already-archived statuses', () => {
+    expect(canArchive('archived')).toBe(false);
     // Draft is excluded even though the raw transition map allows it.
     expect('archive' in TRANSITION_MAP.draft).toBe(true);
     expect(canArchive('draft')).toBe(false);

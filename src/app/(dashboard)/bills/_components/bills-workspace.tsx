@@ -218,6 +218,7 @@ export function BillsWorkspace({
     approvalActionsColumn({
       onApprove: transitions.requestApprove,
       onReject: transitions.requestReject,
+      onArchive: transitions.requestArchive,
     }),
   ];
   const paymentColumns = [
@@ -571,8 +572,9 @@ export function BillsWorkspace({
           confirmLabel="Archive bill"
           confirmVariant="destructive"
           description={`Archive the ${transitions.archiveCandidate.vendor.name} bill? `
-            + 'It is removed from your active queue and marked closed without payment. '
-            + 'It moves to History as Archived and cannot be undone.'}
+            + 'It is removed from your active queue and connected accounting provider '
+            + 'and marked closed without payment. It moves to History as Archived for '
+            + 'audit and cannot be undone.'}
           error={transitions.archiveError}
           isPending={isPending}
           onCancel={transitions.cancelArchive}

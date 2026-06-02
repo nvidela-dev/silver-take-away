@@ -7,6 +7,11 @@ import type { BillStatus } from '@/lib/types/enums';
  * `delete` is omitted intentionally — it is a hard-delete operation rather than
  * a status transition, and is gated via `canDelete()` below.
  *
+ * Archive is available from every status except `draft` (which is deleted,
+ * not archived) and `archived` (already terminal). It closes the bill out of
+ * the active queue regardless of where it sits — including in-flight payment
+ * stages. See `canArchive()` below for the UI-facing gate.
+ *
  * Payment-failure transitions (e.g. `initiated -> payment_failed`) are not
  * user-driven and are owned by the payment lifecycle service. They are not
  * represented here.
@@ -19,6 +24,7 @@ export const TRANSITION_MAP = {
   awaiting_approval: {
     approve: 'approved',
     reject: 'rejected',
+    archive: 'archived',
   },
   approved: {
     schedule_payment: 'scheduled',
@@ -29,10 +35,12 @@ export const TRANSITION_MAP = {
     initiate_payment: 'initiated',
     cancel_payment: 'approved',
     unschedule: 'approved',
+    archive: 'archived',
   },
   initiated: {
     mark_as_paid: 'paid',
     cancel_payment: 'approved',
+    archive: 'archived',
   },
   paid: {
     archive: 'archived',
