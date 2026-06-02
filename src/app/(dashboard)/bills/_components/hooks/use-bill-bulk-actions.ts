@@ -8,6 +8,8 @@ import { bulkDeleteBills } from '@/lib/actions/bills/bulk-delete-bills';
 import { bulkRejectBills } from '@/lib/actions/bills/bulk-reject-bills';
 import { bulkSubmitForApproval } from '@/lib/actions/bills/bulk-submit-for-approval';
 import { bulkUpdateBills } from '@/lib/actions/bills/bulk-update-bills';
+import { notify } from '@/app/_components/feedback/notify';
+import { pluralize } from '@/lib/utils';
 import type { BulkEditBillsInput } from '@/lib/types/bill/inputs';
 
 export type BulkPendingKind = 'approve' | 'reject' | 'delete' | 'edit';
@@ -78,6 +80,7 @@ export function useBillBulkActions({
         onDirectError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(billIds.length, 'bill')} submitted for approval`);
       onSuccess();
       router.refresh();
     });
@@ -101,6 +104,7 @@ export function useBillBulkActions({
         setBulkError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(billIds.length, 'bill')} approved`);
       finishSuccess();
     });
   }, [finishSuccess, pending, startTransition]);
@@ -115,6 +119,7 @@ export function useBillBulkActions({
         setBulkError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(billIds.length, 'bill')} rejected`);
       finishSuccess();
     });
   }, [finishSuccess, pending, startTransition]);
@@ -129,6 +134,7 @@ export function useBillBulkActions({
         setBulkError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(billIds.length, 'bill')} deleted`);
       finishSuccess();
     });
   }, [finishSuccess, pending, startTransition]);
@@ -142,6 +148,7 @@ export function useBillBulkActions({
         setBulkError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(input.billIds.length, 'bill')} updated`);
       finishSuccess();
     });
   }, [finishSuccess, pending, startTransition]);

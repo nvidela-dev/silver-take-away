@@ -13,6 +13,14 @@ export function formatDate(value: string, locale = 'en-US'): string {
 }
 
 /**
+ * Formats a count with its noun: `pluralize(1, 'bill')` → "1 bill",
+ * `pluralize(3, 'bill')` → "3 bills". Pass an explicit plural for irregulars.
+ */
+export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+/**
  * Formats a money decimal string (`numeric(12,2)` shape) for display.
  */
 export function formatMoney(

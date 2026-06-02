@@ -8,6 +8,8 @@ import { bulkInitiatePayments } from '@/lib/actions/payments/bulk-initiate-payme
 import { bulkMarkPaymentsFailed } from '@/lib/actions/payments/bulk-mark-failed-payments';
 import { bulkMarkPaymentsPaid } from '@/lib/actions/payments/bulk-mark-paid-payments';
 import { bulkRetryPayments } from '@/lib/actions/payments/bulk-retry-payments';
+import { notify } from '@/app/_components/feedback/notify';
+import { pluralize } from '@/lib/utils';
 
 export type BulkPaymentPendingKind = 'cancel' | 'mark_paid' | 'mark_failed';
 
@@ -78,6 +80,7 @@ export function usePaymentBulkActions({
         onDirectError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(paymentIds.length, 'payment')} initiated`);
       onSuccess();
       router.refresh();
     });
@@ -92,6 +95,7 @@ export function usePaymentBulkActions({
         onDirectError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(paymentIds.length, 'payment')} retried`);
       onSuccess();
       router.refresh();
     });
@@ -114,6 +118,7 @@ export function usePaymentBulkActions({
         setBulkError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(paymentIds.length, 'payment')} cancelled`);
       finishSuccess();
     });
   }, [finishSuccess, pending, startTransition]);
@@ -131,6 +136,7 @@ export function usePaymentBulkActions({
         setBulkError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(paymentIds.length, 'payment')} marked as paid`);
       finishSuccess();
     });
   }, [finishSuccess, pending, startTransition]);
@@ -145,6 +151,7 @@ export function usePaymentBulkActions({
         setBulkError(result.error.message);
         return;
       }
+      notify.success(`${pluralize(paymentIds.length, 'payment')} marked as failed`);
       finishSuccess();
     });
   }, [finishSuccess, pending, startTransition]);
