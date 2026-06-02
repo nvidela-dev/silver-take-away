@@ -4,7 +4,7 @@
 // from here in the opposite direction, so no cycles are introduced.
 
 import type { Category } from '../category';
-import type { Payment } from '../payment';
+import type { Payment } from '../payment/payment';
 import type { User } from '../user';
 import type { Vendor } from '../vendor';
 

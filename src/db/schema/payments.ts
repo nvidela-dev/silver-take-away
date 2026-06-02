@@ -24,6 +24,7 @@ export const payments = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'restrict' }),
     amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+    currency: text('currency').notNull().default('USD'),
     paymentMethod: paymentMethodTypeEnum('payment_method').notNull(),
     status: paymentStatusEnum('status').notNull().default('pending'),
     scheduledDate: date('scheduled_date'),
