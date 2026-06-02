@@ -1,5 +1,8 @@
 'use client';
 
+import { Button } from '@/app/_components/atoms/button';
+import { SelectionCheckbox } from '@/app/_components/atoms/selection-checkbox';
+import type { TableSelection } from '@/app/_components/hooks/use-table-selection';
 import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import { paymentMethodDisplay, paymentStatusDisplay } from '@/app/_display';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
@@ -135,3 +138,133 @@ export const paymentReadColumns: PaymentsTableColumn[] = [
   invoiceNumberColumn,
   createdAtColumn,
 ];
+
+export function selectionColumn(selection: TableSelection): PaymentsTableColumn {
+  return {
+    id: 'selection',
+    header: 'Select',
+    isConfigurable: false,
+    headerClassName: 'py-3 pl-4 pr-2',
+    cellClassName: 'py-3 pl-4 pr-2',
+    renderHeader: () => (
+      <SelectionCheckbox
+        ariaLabel="Select all visible payments"
+        checked={selection.isAllSelected}
+        indeterminate={selection.isSomeSelected}
+        onChange={selection.toggleAll}
+      />
+    ),
+    render: (payment) => (
+      <SelectionCheckbox
+        ariaLabel={`Select ${payment.vendor.name} payment`}
+        checked={selection.isSelected(payment.id)}
+        onChange={() => selection.toggle(payment.id)}
+      />
+    ),
+  };
+}
+
+interface UpcomingActionsHandlers {
+  onInitiate: (payment: PaymentListItem) => void;
+  onCancel: (payment: PaymentListItem) => void;
+}
+
+export function upcomingActionsColumn(handlers: UpcomingActionsHandlers): PaymentsTableColumn {
+  const { onInitiate, onCancel } = handlers;
+  return {
+    id: 'upcoming-actions',
+    header: 'Actions',
+    srOnlyHeader: true,
+    isConfigurable: false,
+    render: (payment) => (
+      <div className="flex justify-end gap-2">
+        <Button
+          onClick={() => onInitiate(payment)}
+          size="sm"
+          type="button"
+          variant="accent"
+        >
+          Initiate
+        </Button>
+        <Button
+          onClick={() => onCancel(payment)}
+          size="sm"
+          type="button"
+          variant="destructive"
+        >
+          Cancel
+        </Button>
+      </div>
+    ),
+  };
+}
+
+interface ProcessingActionsHandlers {
+  onMarkPaid: (payment: PaymentListItem) => void;
+  onMarkFailed: (payment: PaymentListItem) => void;
+}
+
+export function processingActionsColumn(
+  handlers: ProcessingActionsHandlers,
+): PaymentsTableColumn {
+  const { onMarkPaid, onMarkFailed } = handlers;
+  return {
+    id: 'processing-actions',
+    header: 'Actions',
+    srOnlyHeader: true,
+    isConfigurable: false,
+    render: (payment) => (
+      <div className="flex justify-end gap-2">
+        <Button
+          onClick={() => onMarkPaid(payment)}
+          size="sm"
+          type="button"
+          variant="accent"
+        >
+          Mark paid
+        </Button>
+        <Button
+          onClick={() => onMarkFailed(payment)}
+          size="sm"
+          type="button"
+          variant="destructive"
+        >
+          Mark failed
+        </Button>
+      </div>
+    ),
+  };
+}
+
+interface CompletedActionsHandlers {
+  onRetry: (payment: PaymentListItem) => void;
+}
+
+export function completedActionsColumn(
+  handlers: CompletedActionsHandlers,
+): PaymentsTableColumn {
+  const { onRetry } = handlers;
+  return {
+    id: 'completed-actions',
+    header: 'Actions',
+    srOnlyHeader: true,
+    isConfigurable: false,
+    render: (payment) => {
+      // Retry is only meaningful for failed payments. Paid and cancelled
+      // rows render an empty cell so the column width stays consistent.
+      if (payment.status !== 'failed') return null;
+      return (
+        <div className="flex justify-end gap-2">
+          <Button
+            onClick={() => onRetry(payment)}
+            size="sm"
+            type="button"
+            variant="accent"
+          >
+            Retry
+          </Button>
+        </div>
+      );
+    },
+  };
+}

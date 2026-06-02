@@ -6,7 +6,7 @@ import { Button } from '@/app/_components/atoms/button';
 import { Textarea } from '@/app/_components/atoms/textarea';
 import { Modal } from '@/app/_components/molecules/modal';
 
-interface BillNoteDialogProps {
+interface NoteDialogProps {
   confirmLabel: string;
   confirmVariant?: 'accent' | 'destructive';
   description?: string;
@@ -19,7 +19,7 @@ interface BillNoteDialogProps {
   title: string;
 }
 
-export function BillNoteDialog({
+export function NoteDialog({
   confirmLabel,
   confirmVariant = 'accent',
   description = '',
@@ -30,7 +30,7 @@ export function BillNoteDialog({
   onCancel,
   onConfirm,
   title,
-}: BillNoteDialogProps) {
+}: NoteDialogProps) {
   const noteId = useId();
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
