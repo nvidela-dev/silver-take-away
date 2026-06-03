@@ -29,7 +29,7 @@ export function BulkEditDialog({
   error,
   onConfirm,
   onCancel,
-}: BulkEditDialogProps) {
+}: BulkEditDialogProps): React.ReactElement {
   const amountId = useId();
   const dueDateId = useId();
   const invoiceDateId = useId();
@@ -42,7 +42,7 @@ export function BulkEditDialog({
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
 
-  const handleConfirm = () => {
+  const handleConfirm = (): void => {
     const input: BulkEditBillsInput = { billIds };
     const amountValue = trimOrUndefined(amount);
     const dueDateValue = trimOrUndefined(dueDate);

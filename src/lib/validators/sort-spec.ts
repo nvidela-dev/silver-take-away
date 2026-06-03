@@ -45,7 +45,7 @@ export function createSortSpec<TKey extends string>(opts: {
       sort: parseAsStringLiteral(allowedKeys).withDefault(defaultKey),
       dir: parseAsStringLiteral(SORT_DIRECTIONS).withDefault(defaultDir),
     },
-    parseSearchParams(params) {
+    parseSearchParams(params: Record<string, string>) {
       const result = schema.safeParse(params);
       const parsed = result.success ? result.data : {};
       return {

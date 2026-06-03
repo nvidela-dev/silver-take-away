@@ -21,11 +21,11 @@ export function MultiSelectEditor<TValue extends string>({
   options,
   onApply,
   onCancel,
-}: MultiSelectEditorProps<TValue>) {
+}: MultiSelectEditorProps<TValue>): React.ReactElement {
   const groupId = useId();
   const [selected, setSelected] = useState<Set<TValue>>(new Set(value ?? []));
 
-  const toggle = (id: TValue) => {
+  const toggle = (id: TValue): void => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -37,7 +37,7 @@ export function MultiSelectEditor<TValue extends string>({
     });
   };
 
-  const handleApply = () => {
+  const handleApply = (): void => {
     onApply(selected.size > 0 ? Array.from(selected) : null);
   };
 

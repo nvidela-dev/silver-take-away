@@ -23,7 +23,7 @@ export function BulkConfirmDialog({
   onCancel,
   onConfirm,
   title,
-}: BulkConfirmDialogProps) {
+}: BulkConfirmDialogProps): React.ReactElement {
   return (
     <Modal
       description={description}

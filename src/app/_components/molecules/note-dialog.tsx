@@ -30,7 +30,7 @@ export function NoteDialog({
   onCancel,
   onConfirm,
   title,
-}: NoteDialogProps) {
+}: NoteDialogProps): React.ReactElement {
   const noteId = useId();
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);

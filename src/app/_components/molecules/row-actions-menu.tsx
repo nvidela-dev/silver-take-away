@@ -19,7 +19,10 @@ interface RowActionsMenuProps {
   actions: RowAction[];
 }
 
-export function RowActionsMenu({ ariaLabel, actions }: RowActionsMenuProps) {
+export function RowActionsMenu({
+  ariaLabel,
+  actions,
+}: RowActionsMenuProps): React.ReactElement | null {
   const [isOpen, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 

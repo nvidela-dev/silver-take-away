@@ -18,7 +18,10 @@ const protectedProxy = clerkMiddleware(async (auth, req) => {
   }
 });
 
-export default function proxy(req: NextRequest, evt: NextFetchEvent) {
+export default function proxy(
+  req: NextRequest,
+  evt: NextFetchEvent,
+): ReturnType<typeof protectedProxy> {
   if (!isClerkConfigured) {
     return NextResponse.next();
   }

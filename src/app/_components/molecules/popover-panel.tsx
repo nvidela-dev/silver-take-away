@@ -12,7 +12,7 @@ export function PopoverPanel({
   className,
   width = 'sm',
   ...props
-}: PopoverPanelProps) {
+}: PopoverPanelProps): React.ReactElement {
   return (
     <div
       className={cn(

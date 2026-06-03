@@ -13,7 +13,7 @@ import type { ActionResult } from '@/lib/types/common';
 
 export function toPaymentActionError(
   error: unknown,
-  context = 'payment action',
+  context: string = 'payment action',
 ): ActionResult<never> {
   if (
     error instanceof UnauthorizedError

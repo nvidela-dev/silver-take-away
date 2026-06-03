@@ -46,7 +46,7 @@ export function Button({
   size,
   variant,
   ...props
-}: ButtonProps) {
+}: ButtonProps): React.ReactElement {
   const Comp = asChild ? Slot : 'button';
 
   return (

@@ -39,7 +39,7 @@ interface PaymentTransitionDialogProps {
 export function PaymentTransitionDialog({
   transitions,
   isPending,
-}: PaymentTransitionDialogProps) {
+}: PaymentTransitionDialogProps): React.ReactElement | null {
   const {
     pendingTransition,
     transitionError,

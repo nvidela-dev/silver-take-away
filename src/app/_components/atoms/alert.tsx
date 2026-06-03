@@ -11,7 +11,7 @@ export function Alert({
   role = 'alert',
   tone = 'error',
   ...props
-}: AlertProps) {
+}: AlertProps): React.ReactElement {
   return (
     <div
       className={cn(

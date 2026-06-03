@@ -26,7 +26,7 @@ export const dynamic = 'force-dynamic';
 
 const exportableBillTabSchema = z.enum(['approvals', 'payment', 'history']);
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const params = searchParamsToRecord(request.nextUrl.searchParams);
   const tabResult = exportableBillTabSchema.safeParse(params.tab);
   const filtersResult = billFiltersSchema.safeParse(params);

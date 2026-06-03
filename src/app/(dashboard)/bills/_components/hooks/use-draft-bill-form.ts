@@ -11,6 +11,13 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form';
+import type {
+  FieldArrayWithId,
+  FormState,
+  UseFormHandleSubmit,
+  UseFormRegister,
+  UseFormRegisterReturn,
+} from 'react-hook-form';
 
 import {
   draftBillFormSchema,
@@ -27,6 +34,20 @@ import type { BillListItem } from '@/lib/types/bill/views';
 interface UseDraftBillFormOptions {
   editingBill: BillListItem | null;
   onSubmit: (input: CreateBillInput) => void;
+}
+
+export interface UseDraftBillFormController {
+  fields: FieldArrayWithId<DraftBillFormInput, 'lineItems'>[];
+  formState: FormState<DraftBillFormInput>;
+  handleSubmit: UseFormHandleSubmit<DraftBillFormInput, DraftBillFormValues>;
+  lineItemTotal: number;
+  register: UseFormRegister<DraftBillFormInput>;
+  registerCurrency: () => UseFormRegisterReturn<'currency'>;
+  appendLineItem: () => void;
+  removeLineItem: (index: number) => void;
+  submitDraftBill: (values: DraftBillFormValues) => void;
+  totalsMatch: boolean;
+  currency: string;
 }
 
 const emptyDraftBillLineItem: DraftBillFormInput['lineItems'][number] = {
@@ -55,8 +76,7 @@ function draftBillToFormValues(bill: BillListItem): DraftBillFormInput {
       description: lineItem.description ?? '',
       amount: lineItem.amount,
       categoryId: lineItem.categoryId ?? '',
-    }))
-    : [{ ...emptyDraftBillLineItem }];
+    })) : [{ ...emptyDraftBillLineItem }];
 
   return {
     vendorId: bill.vendorId,
@@ -74,7 +94,7 @@ function draftBillToFormValues(bill: BillListItem): DraftBillFormInput {
 export function useDraftBillForm({
   editingBill,
   onSubmit,
-}: UseDraftBillFormOptions) {
+}: UseDraftBillFormOptions): UseDraftBillFormController {
   const form = useForm<DraftBillFormInput, unknown, DraftBillFormValues>({
     resolver: zodResolver(draftBillFormSchema),
     defaultValues: createDefaultDraftBillFormValues(),
@@ -140,8 +160,7 @@ export function useDraftBillForm({
   useEffect(() => {
     reset(
       editingBill
-        ? draftBillToFormValues(editingBill)
-        : createDefaultDraftBillFormValues(),
+        ? draftBillToFormValues(editingBill) : createDefaultDraftBillFormValues(),
     );
   }, [editingBill, reset]);
 

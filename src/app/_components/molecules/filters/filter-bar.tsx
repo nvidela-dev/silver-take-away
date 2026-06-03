@@ -25,7 +25,7 @@ export function FilterBar<TOption extends FilterOption>({
   onClear,
   onClearAll,
   onPick,
-}: FilterBarProps<TOption>) {
+}: FilterBarProps<TOption>): React.ReactElement {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {activeFilters.map((filter) => (

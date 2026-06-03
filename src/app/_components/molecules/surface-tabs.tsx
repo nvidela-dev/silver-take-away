@@ -10,7 +10,11 @@ interface SurfaceTabsProps {
   actions?: ReactNode;
 }
 
-export function SurfaceTabs({ actions = null, activeValue, tabs }: SurfaceTabsProps) {
+export function SurfaceTabs({
+  actions = null,
+  activeValue,
+  tabs,
+}: SurfaceTabsProps): React.ReactElement {
   return (
     <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200">
       <nav aria-label="Surface tabs" className="flex gap-8 overflow-x-auto">

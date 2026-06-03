@@ -30,7 +30,7 @@ function OptionItem({
   icon: Icon,
   disabled,
   onSelect,
-}: OptionItemProps) {
+}: OptionItemProps): React.ReactElement {
   return (
     <button
       className={[
@@ -49,7 +49,7 @@ function OptionItem({
   );
 }
 
-export function SavedViewControls({ controller }: SavedViewControlsProps) {
+export function SavedViewControls({ controller }: SavedViewControlsProps): React.ReactElement {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -78,7 +78,7 @@ export function SavedViewControls({ controller }: SavedViewControlsProps) {
   const canResetView = hasSaved && !currentMatchesSaved;
   const canResetFilters = hasActiveFilters;
 
-  const runItem = (action: () => void) => {
+  const runItem = (action: () => void): void => {
     setMenuOpen(false);
     action();
   };

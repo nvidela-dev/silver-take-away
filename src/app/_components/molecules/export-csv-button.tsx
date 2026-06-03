@@ -16,7 +16,7 @@ export function ExportCsvButton({
   columnIds,
   resource,
   tab,
-}: ExportCsvButtonProps) {
+}: ExportCsvButtonProps): React.ReactElement {
   const searchParams = useSearchParams();
   const href = useMemo(() => {
     const params = new URLSearchParams(searchParams.toString());

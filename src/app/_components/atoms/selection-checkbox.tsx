@@ -14,7 +14,7 @@ export function SelectionCheckbox({
   checked,
   indeterminate = false,
   onChange,
-}: SelectionCheckboxProps) {
+}: SelectionCheckboxProps): React.ReactElement {
   const ref = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

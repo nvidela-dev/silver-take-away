@@ -34,7 +34,7 @@ export function DraftBillLineItems({
   onAppendLineItem,
   onRemoveLineItem,
   register,
-}: DraftBillLineItemsProps) {
+}: DraftBillLineItemsProps): React.ReactElement {
   return (
     <div className="grid gap-3">
       <div className="flex items-center justify-between gap-3">

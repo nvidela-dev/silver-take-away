@@ -6,7 +6,17 @@ export interface CreateBillActivityLogRecord {
   metadata?: Record<string, unknown> | null;
 }
 
-export function toBillActivityLogInsert(record: CreateBillActivityLogRecord) {
+export interface BillActivityLogInsert {
+  id: string;
+  billId: string;
+  actorId: string;
+  action: string;
+  metadata: Record<string, unknown> | null;
+}
+
+export function toBillActivityLogInsert(
+  record: CreateBillActivityLogRecord,
+): BillActivityLogInsert {
   return {
     id: record.id,
     billId: record.billId,

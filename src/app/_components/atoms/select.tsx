@@ -10,7 +10,7 @@ export function Select({
   className,
   controlSize = 'default',
   ...props
-}: SelectProps) {
+}: SelectProps): React.ReactElement {
   return (
     <select
       className={cn(

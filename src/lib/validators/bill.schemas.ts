@@ -36,7 +36,7 @@ const draftLineItemFormSchema = z.object({
 
 const draftBillOptionalTextFieldSchema = z.string().max(2000);
 
-function optionalFormString(value: string) {
+function optionalFormString(value: string): string | undefined {
   const trimmed = value.trim();
   return trimmed || undefined;
 }

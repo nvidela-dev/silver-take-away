@@ -67,6 +67,32 @@ const eslintConfig = defineConfig([
     },
   },
 
+  // Production code exposes explicit function and parameter contracts. Tests
+  // keep contextual callback inference so specs stay readable.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/__tests__/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowDirectConstAssertionInArrowFunctions: true,
+          allowExpressions: true,
+          allowHigherOrderFunctions: true,
+          allowTypedFunctionExpressions: true,
+        },
+      ],
+      '@typescript-eslint/typedef': [
+        'error',
+        { parameter: true, arrowParameter: false },
+      ],
+      '@typescript-eslint/no-inferrable-types': [
+        'error',
+        { ignoreParameters: true, ignoreProperties: false },
+      ],
+    },
+  },
+
   // Top-level config files import devDependencies (drizzle-kit, jest, etc.).
   // That's the convention — they're not shipped to the runtime.
   {

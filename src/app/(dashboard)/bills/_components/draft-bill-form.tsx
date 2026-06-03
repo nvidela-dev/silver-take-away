@@ -25,7 +25,7 @@ interface DraftBillFormProps {
   options: BillFormOptions;
 }
 
-function FieldError({ message = undefined }: { message?: string }) {
+function FieldError({ message = undefined }: { message?: string }): React.ReactElement | null {
   if (!message) {
     return null;
   }
@@ -44,7 +44,7 @@ export function DraftBillForm({
   onCancelEdit,
   onSubmit,
   options,
-}: DraftBillFormProps) {
+}: DraftBillFormProps): React.ReactElement {
   const formDisabled = Boolean(loadError)
     || options.vendors.length === 0
     || options.categories.length === 0;

@@ -11,7 +11,7 @@ const dotToneClass: Record<SurfaceTone, string> = {
   violet: 'bg-violet-500',
 };
 
-export function StatusBadge({ status }: { status: StatusDisplayMeta }) {
+export function StatusBadge({ status }: { status: StatusDisplayMeta }): React.ReactElement {
   return (
     <Badge tone={status.tone}>
       <span

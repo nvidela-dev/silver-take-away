@@ -22,7 +22,7 @@ interface AddFilterPopoverProps<TOption extends FilterOption> {
 export function AddFilterPopover<TOption extends FilterOption>({
   dimensions,
   onPick,
-}: AddFilterPopoverProps<TOption>) {
+}: AddFilterPopoverProps<TOption>): React.ReactElement | null {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 

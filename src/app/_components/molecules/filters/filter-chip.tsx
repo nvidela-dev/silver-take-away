@@ -28,7 +28,7 @@ export function FilterChip({
   onClear,
   initialOpen = false,
   renderEditor,
-}: FilterChipProps) {
+}: FilterChipProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(initialOpen);
   const containerRef = useRef<HTMLDivElement>(null);
 

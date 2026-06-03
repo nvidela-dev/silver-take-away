@@ -21,7 +21,7 @@ export function useDialogBehavior({
   containerRef,
   enabled = true,
   onClose,
-}: UseDialogBehaviorOptions) {
+}: UseDialogBehaviorOptions): void {
   useEffect(() => {
     if (!enabled) {
       return undefined;
@@ -39,7 +39,7 @@ export function useDialogBehavior({
       target.focus();
     }
 
-    const onKeyDown = (event: KeyboardEvent) => {
+    const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         event.stopPropagation();
         onClose();

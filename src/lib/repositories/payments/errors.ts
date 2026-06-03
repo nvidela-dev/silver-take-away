@@ -1,7 +1,7 @@
 export class PaymentNotFoundError extends Error {
   readonly code = 'PAYMENT_NOT_FOUND';
 
-  constructor(message = 'Payment was not found.') {
+  constructor(message: string = 'Payment was not found.') {
     super(message);
     this.name = 'PaymentNotFoundError';
   }
@@ -10,7 +10,7 @@ export class PaymentNotFoundError extends Error {
 export class PaymentConflictError extends Error {
   readonly code = 'PAYMENT_CONFLICT';
 
-  constructor(message = 'Payment changed before this operation completed.') {
+  constructor(message: string = 'Payment changed before this operation completed.') {
     super(message);
     this.name = 'PaymentConflictError';
   }
@@ -22,7 +22,7 @@ export class PaymentBulkConflictError extends Error {
   constructor(
     readonly expected: number,
     readonly actual: number,
-    message = `Expected ${expected} payments to match, but only ${actual} did. `
+    message: string = `Expected ${expected} payments to match, but only ${actual} did. `
       + 'Some payments changed before this operation completed.',
   ) {
     super(message);

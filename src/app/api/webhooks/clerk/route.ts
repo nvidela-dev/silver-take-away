@@ -26,7 +26,7 @@ const clerkWebhookUserSchema = z.object({
   })),
 });
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     assertDatabaseConfigured();
   } catch (error) {

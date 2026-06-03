@@ -2,7 +2,7 @@ import { Card } from '@/app/_components/atoms/card';
 
 const SKELETON_ROW_COUNT = 10;
 
-export default function BillsLoading() {
+export default function BillsLoading(): React.ReactElement {
   return (
     <main className="grid grid-cols-1 gap-6">
       <div className="grid gap-2">

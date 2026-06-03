@@ -12,20 +12,20 @@ export function usePopoverDismiss({
   containerRef,
   enabled,
   onDismiss,
-}: UsePopoverDismissOptions) {
+}: UsePopoverDismissOptions): void {
   useEffect(() => {
     if (!enabled) {
       return undefined;
     }
 
-    const onPointerDown = (event: MouseEvent) => {
+    const onPointerDown = (event: MouseEvent): void => {
       const node = containerRef.current;
       if (node && !node.contains(event.target instanceof Node ? event.target : null)) {
         onDismiss();
       }
     };
 
-    const onKeyDown = (event: KeyboardEvent) => {
+    const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         onDismiss();
       }

@@ -41,7 +41,7 @@ export function BulkActionsMenu({
   entityLabel,
   isPending = false,
   onClear,
-}: BulkActionsMenuProps) {
+}: BulkActionsMenuProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const labelId = useId();
@@ -50,12 +50,12 @@ export function BulkActionsMenu({
 
   usePopoverDismiss({ containerRef, enabled: isOpen, onDismiss: close });
 
-  const handleActionClick = (action: BulkActionDescriptor) => {
+  const handleActionClick = (action: BulkActionDescriptor): void => {
     close();
     action.onClick();
   };
 
-  const handleClear = () => {
+  const handleClear = (): void => {
     close();
     onClear();
   };

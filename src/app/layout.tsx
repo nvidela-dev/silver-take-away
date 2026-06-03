@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Accounts payable workflow management.',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }): React.ReactElement {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   return (

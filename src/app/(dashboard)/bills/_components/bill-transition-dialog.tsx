@@ -29,7 +29,7 @@ interface BillTransitionDialogProps {
 export function BillTransitionDialog({
   transitions,
   isPending,
-}: BillTransitionDialogProps) {
+}: BillTransitionDialogProps): React.ReactElement | null {
   const {
     pendingTransition,
     transitionError,
