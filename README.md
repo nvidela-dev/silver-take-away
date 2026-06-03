@@ -1,14 +1,69 @@
 # Bill Pay MVP
 
-Accounts payable management with role-based access, bill and payment lifecycles, bulk operations, configurable table views, and filtered CSV exports.
+> A bill-pay workspace for small finance and AP teams, covering the invoice-to-payment lifecycle in a single tool.
 
-See [REQUIREMENTS.md](./docs/REQUIREMENTS.md) for the full spec and [PR-PLAN.md](./docs/PR-PLAN.md) for the delivery plan.
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](#) <!-- placeholder -->
+[![License](https://img.shields.io/badge/license-TBD-lightgrey)](#license) <!-- placeholder -->
+[![Made with Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 
-## Stack
+## Demo
 
-Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Clerk · Drizzle ORM · NeonDB · Zod · TanStack Table · React Hook Form · nuqs · Tailwind CSS · Vitest · ESLint (Airbnb)
+- [Hosted app](https://silver-take-away.vercel.app/)
+- [Walkthrough — Part 1](https://www.loom.com/share/e08042ac619b4172b3b0c4a46a803841)
+- [Walkthrough — Part 2](https://www.loom.com/share/a526e57fdced499baebfc5625a6df52a)
 
-## Setup
+## About the Project
+
+A bill-pay workspace for small finance and AP teams, covering the invoice-to-payment lifecycle in a single tool: enter bills, route them for approval, schedule and track payments, and export filtered reports.
+
+Built as a take-home MVP. See the [requirements spec](./docs/REQUIREMENTS.md) and the [delivery plan](./docs/PR-PLAN.md) for full context.
+
+### Built With
+
+- [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
+- [React 19](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/) (strict)
+- [Clerk](https://clerk.com/)
+- [Drizzle ORM](https://orm.drizzle.team/)
+- [NeonDB](https://neon.tech/)
+- [Zod](https://zod.dev/)
+- [TanStack Table](https://tanstack.com/table)
+- [React Hook Form](https://react-hook-form.com/)
+- [nuqs](https://nuqs.47ng.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Vitest](https://vitest.dev/)
+- ESLint (Airbnb)
+
+## Features
+
+- Explicit bill and payment lifecycles backed by pure state machines
+- Bulk operations across bills and payments
+- Configurable, per-user table views (filters, sort, page size, hidden columns) saved per workspace tab
+- Filtered CSV exports that reuse list semantics
+- Activity logs for bill and payment status changes
+- Optimistic-concurrency-safe lifecycle writes
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) <!-- placeholder: version -->
+- [Corepack](https://nodejs.org/api/corepack.html) (ships with Node) for Yarn
+- A [Neon](https://neon.tech/) Postgres project
+- A [Clerk](https://clerk.com/) application
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in the following:
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Neon pooled Postgres connection string |
+| `CLERK_SECRET_KEY` | Clerk backend secret key |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk frontend publishable key |
+| `CLERK_WEBHOOK_SECRET` | Shared secret used to verify incoming Clerk webhooks |
+
+### Installation & Setup
 
 ```bash
 # 1. Install dependencies
@@ -23,10 +78,10 @@ cp .env.example .env.local
 yarn db:push
 ```
 
-## Deploy to Vercel (Neon + Clerk)
+### Deploy to Vercel (Neon + Clerk)
 
 1. Create a Neon Postgres project and copy the pooled connection string into `DATABASE_URL`.
-   Example format: `postgresql://neondb_owner:<password>@ep-example-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
+   - Example format: `postgresql://neondb_owner:<password>@ep-example-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
 2. In Clerk, create a Next.js application and copy:
    - `CLERK_SECRET_KEY`
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
@@ -35,23 +90,33 @@ yarn db:push
    - `Production`
    - `Preview`
    - `Development` (optional if you use local env only)
-4. In Clerk webhooks, add endpoint:
-   - `https://<your-vercel-domain>/api/webhooks/clerk`
-   - subscribe to `user.created` and `user.updated`
-   - use the matching `CLERK_WEBHOOK_SECRET`
+4. In Clerk webhooks, add an endpoint:
+   - URL: `https://<your-vercel-domain>/api/webhooks/clerk`
+   - Subscribe to `user.created` and `user.updated`
+   - Use the matching `CLERK_WEBHOOK_SECRET`
 5. Keep Clerk sign-in/sign-up redirects pointed at `/`.
-   The root route forwards authenticated users to `/bills?tab=drafts`.
+   - The root route forwards authenticated users to `/bills?tab=drafts`.
 6. Run schema migration against Neon before first production usage:
-   - locally: `yarn db:push`
-   - or CI/release job: `yarn db:migrate`
+   - Locally: `yarn db:push`
+   - Or via CI/release job: `yarn db:migrate`
 7. Deploy to Vercel and verify:
    - `/sign-in` renders Clerk sign-in
    - `/api/health/db` returns `{ "ok": true }`
-   - signing in creates or updates a row in Neon `users`
-   - protected routes redirect unauthenticated users
-   - webhook delivery succeeds in Clerk dashboard logs
+   - Signing in creates or updates a row in Neon `users`
+   - Protected routes redirect unauthenticated users
+   - Webhook delivery succeeds in Clerk dashboard logs
 
-## Scripts
+## Usage
+
+Common day-to-day commands:
+
+```bash
+yarn dev         # Run the dev server on localhost:3000
+yarn test        # Run all Vitest projects
+yarn build       # Production build
+```
+
+Full script reference:
 
 | Command | Purpose |
 |---|---|
@@ -70,7 +135,7 @@ yarn db:push
 
 The application keeps framework-facing code thin and moves domain work through explicit layers:
 
-```
+```text
 App Router pages and components
         |
 Server actions and route handlers
@@ -84,7 +149,7 @@ Pure lifecycle state machines + repositories
 Drizzle ORM over Neon HTTP
 ```
 
-### Layer responsibilities
+### Layer Responsibilities
 
 | Layer | Responsibility |
 |---|---|
@@ -95,7 +160,7 @@ Drizzle ORM over Neon HTTP
 | `src/lib/repositories/` | Drizzle reads and writes. Repositories own filtering, sorting, pagination, optimistic concurrency checks, and activity-log persistence. |
 | `src/db/schema/` | PostgreSQL contracts, split one table or enum group per file. |
 
-### Key architecture decisions
+### Key Architecture Decisions
 
 - **Clerk is the identity provider; Neon is the application authorization source.** Clerk users are synced into `users`, and role checks use the local `users.role` value.
 - **Lifecycle transitions are explicit state machines.** Bills and payments each have a pure transition map. User-driven actions must pass through the map before a repository write.
@@ -123,7 +188,7 @@ erDiagram
     PAYMENTS ||--o{ PAYMENT_ACTIVITY_LOG : records
 ```
 
-| Table | Purpose | Important relationships and behavior |
+| Table | Purpose | Important Relationships and Behavior |
 |---|---|---|
 | `users` | Local application user synced from Clerk. Stores the authorization role and saved workspace preferences. | `clerk_id` is unique. |
 | `vendors` | Supplier master record. | Optional owner points to `users`; deleting an owner leaves the vendor intact. |
@@ -135,14 +200,14 @@ erDiagram
 | `bill_activity_log` | Append-only bill audit history. | Cascades with its bill; actor deletion is restricted. |
 | `payment_activity_log` | Append-only payment audit history. | Cascades with its payment; actor deletion is restricted. |
 
-### Lifecycle enums
+### Lifecycle Enums
 
 - Bills: `draft`, `awaiting_approval`, `approved`, `scheduled`, `initiated`, `paid`, `archived`, `rejected`, `payment_failed`.
 - Payments: `pending`, `scheduled`, `initiated`, `in_transit`, `paid`, `failed`, `cancelled`.
 - Payment methods: `ach`, `wire`, `check`, `card`.
 - User roles: `admin`, `owner`, `ap_clerk`, `approver`, `employee`.
 
-### Current modeling boundaries
+### Current Modeling Boundaries
 
 - The schema does not currently contain an organization or tenant table. All data is application-wide.
 - Vendor payment instructions are normalized in `vendor_payment_methods`, but `payments` currently stores a payment-method enum rather than a foreign key to a specific vendor payment method.
@@ -156,4 +221,21 @@ erDiagram
 
 ## Status
 
-The repository currently includes the protected Bills and Payments workspaces, lifecycle actions, filters, sorting, pagination, bulk actions, saved per-user tab preferences, activity logs, and filtered CSV exports. See [PR-PLAN.md](./docs/PR-PLAN.md) for the delivery plan.
+The repository currently includes the protected Bills and Payments workspaces, lifecycle actions, filters, sorting, pagination, bulk actions, saved per-user tab preferences, activity logs, and filtered CSV exports. See the [delivery plan](./docs/PR-PLAN.md) for what shipped in each step.
+
+## Contributing
+
+<!-- placeholder: confirm whether external contributions are accepted for this take-home -->
+
+1. Fork the repository and create a feature branch from `main`.
+2. Make your changes with tests where applicable (`yarn test`).
+3. Run `yarn lint` and `yarn typecheck` before pushing.
+4. Open a pull request describing the change and linking any related issue.
+
+For bugs or feature requests, open an issue on the repository's issue tracker.
+
+## License
+
+<!-- placeholder: choose a license (e.g., MIT, Apache 2.0) and add a LICENSE file -->
+
+This project is currently unlicensed. A license will be added before any public distribution.
