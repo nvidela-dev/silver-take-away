@@ -1,9 +1,12 @@
 'use client';
 
-import { Edit2, Trash2, X } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
+import { useRef } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
+import { usePopoverDismiss } from '@/app/_components/hooks/use-popover-dismiss';
 import { SelectionCheckbox } from '@/app/_components/atoms/selection-checkbox';
+import { PopoverPanel } from '@/app/_components/molecules/popover-panel';
 import type { TableSelection } from '@/app/_components/hooks/use-table-selection';
 import { RowActionsMenu, type RowAction } from '@/app/_components/molecules/row-actions-menu';
 import { StatusBadge } from '@/app/_components/molecules/status-badge';
@@ -169,6 +172,78 @@ interface DraftActionsHandlers {
   onSubmit?: (bill: BillListItem) => void;
 }
 
+interface DraftDeleteActionProps {
+  bill: BillListItem;
+  isOpen: boolean;
+  onCancel: () => void;
+  onConfirm: (id: string) => void;
+  onRequest: (id: string) => void;
+}
+
+function DraftDeleteAction({
+  bill,
+  isOpen,
+  onCancel,
+  onConfirm,
+  onRequest,
+}: DraftDeleteActionProps): React.ReactElement {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  usePopoverDismiss({
+    containerRef,
+    enabled: isOpen,
+    onDismiss: onCancel,
+  });
+
+  return (
+    <div className="relative inline-flex" ref={containerRef}>
+      <Button
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-label={`Delete ${bill.vendor.name} draft`}
+        onClick={() => {
+          if (isOpen) {
+            onCancel();
+            return;
+          }
+          onRequest(bill.id);
+        }}
+        size="icon"
+        type="button"
+        variant="ghost"
+      >
+        <Trash2 aria-hidden className="size-4" />
+      </Button>
+      {isOpen ? (
+        <PopoverPanel
+          align="right"
+          aria-label={`Confirm deleting ${bill.vendor.name} draft`}
+          className="w-64 p-3"
+          role="dialog"
+        >
+          <p className="text-sm font-medium text-slate-950">Delete this draft?</p>
+          <p className="mt-1 text-xs text-slate-500">
+            This removes the draft bill and cannot be undone.
+          </p>
+          <div className="mt-3 flex justify-end gap-2">
+            <Button onClick={onCancel} size="sm" type="button" variant="ghost">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => onConfirm(bill.id)}
+              size="sm"
+              type="button"
+              variant="destructive"
+            >
+              Delete
+            </Button>
+          </div>
+        </PopoverPanel>
+      ) : null}
+    </div>
+  );
+}
+
 export function draftActionsColumn(handlers: DraftActionsHandlers): BillsTableColumn {
   const {
     deleteCandidateId,
@@ -208,37 +283,13 @@ export function draftActionsColumn(handlers: DraftActionsHandlers): BillsTableCo
           >
             <Edit2 aria-hidden className="size-4" />
           </Button>
-          {isDeleteCandidate ? (
-            <>
-              <Button
-                onClick={() => onDelete(bill.id)}
-                size="sm"
-                type="button"
-                variant="destructive"
-              >
-                Delete
-              </Button>
-              <Button
-                aria-label="Cancel delete"
-                onClick={onCancelDelete}
-                size="icon"
-                type="button"
-                variant="ghost"
-              >
-                <X aria-hidden className="size-4" />
-              </Button>
-            </>
-          ) : (
-            <Button
-              aria-label={`Delete ${bill.vendor.name} draft`}
-              onClick={() => onRequestDelete(bill.id)}
-              size="icon"
-              type="button"
-              variant="ghost"
-            >
-              <Trash2 aria-hidden className="size-4" />
-            </Button>
-          )}
+          <DraftDeleteAction
+            bill={bill}
+            isOpen={isDeleteCandidate}
+            onCancel={onCancelDelete}
+            onConfirm={onDelete}
+            onRequest={onRequestDelete}
+          />
         </div>
       );
     },
