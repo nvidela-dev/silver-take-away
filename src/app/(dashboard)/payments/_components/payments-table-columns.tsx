@@ -1,5 +1,7 @@
 'use client';
 
+import { Eye } from 'lucide-react';
+
 import { Button } from '@/app/_components/atoms/button';
 import { SelectionCheckbox } from '@/app/_components/atoms/selection-checkbox';
 import type { TableSelection } from '@/app/_components/hooks/use-table-selection';
@@ -138,6 +140,37 @@ export const paymentReadColumns: PaymentsTableColumn[] = [
   invoiceNumberColumn,
   createdAtColumn,
 ];
+
+interface DetailsHandlers {
+  onViewDetails: (payment: PaymentListItem) => void;
+}
+
+export function paymentDetailsColumn(handlers: DetailsHandlers): PaymentsTableColumn {
+  const { onViewDetails } = handlers;
+
+  return {
+    id: 'details',
+    header: 'Details',
+    srOnlyHeader: true,
+    isConfigurable: false,
+    render: (payment) => (
+      <div className="flex justify-end">
+        <Button
+          aria-label={payment.bill.invoiceNumber
+            ? `View details for invoice ${payment.bill.invoiceNumber} payment`
+            : `View details for ${payment.vendor.name} payment`}
+          onClick={() => onViewDetails(payment)}
+          size="sm"
+          type="button"
+          variant="ghost"
+        >
+          <Eye aria-hidden className="size-4" />
+          View details
+        </Button>
+      </div>
+    ),
+  };
+}
 
 export function selectionColumn(selection: TableSelection): PaymentsTableColumn {
   return {

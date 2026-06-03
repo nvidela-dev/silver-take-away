@@ -28,6 +28,7 @@ import { formatOwnerDate, vendorInitials, vendorTone } from './bills-table-colum
 
 interface BillsStatusOverviewProps {
   groups: BillOverviewGroup[];
+  onViewDetails: (bill: BillListItem) => void;
 }
 
 interface GroupMeta {
@@ -68,14 +69,13 @@ function VendorOwnerCell({ bill }: { bill: BillListItem }): React.ReactElement {
   );
 }
 
-export function BillsStatusOverview({ groups }: BillsStatusOverviewProps): React.ReactElement {
+export function BillsStatusOverview({
+  groups,
+  onViewDetails,
+}: BillsStatusOverviewProps): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-
-  const openBill = (id: string): void => {
-    router.push(`/bills/${id}`);
-  };
 
   const goToGroupPage = (tab: BillFilterTab, page: number): void => {
     const params = new URLSearchParams(searchParams.toString());
@@ -135,14 +135,14 @@ export function BillsStatusOverview({ groups }: BillsStatusOverviewProps): React
                           'hover:bg-slate-50',
                         )}
                         key={bill.id}
-                        onClick={() => openBill(bill.id)}
+                        onClick={() => onViewDetails(bill)}
                         onKeyDown={(event) => {
                           if (event.key === 'Enter' || event.key === ' ') {
                             event.preventDefault();
-                            openBill(bill.id);
+                            onViewDetails(bill);
                           }
                         }}
-                        role="link"
+                        role="button"
                         tabIndex={0}
                       >
                         <td className="py-3 pl-4 pr-4">

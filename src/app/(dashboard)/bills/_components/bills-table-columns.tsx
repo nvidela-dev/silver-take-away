@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Eye, Trash2 } from 'lucide-react';
 import { useRef } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
@@ -137,6 +137,37 @@ export const billReadColumns: BillsTableColumn[] = [
   invoiceNumberColumn,
   linesColumn,
 ];
+
+interface DetailsHandlers {
+  onViewDetails: (bill: BillListItem) => void;
+}
+
+export function billDetailsColumn(handlers: DetailsHandlers): BillsTableColumn {
+  const { onViewDetails } = handlers;
+
+  return {
+    id: 'details',
+    header: 'Details',
+    srOnlyHeader: true,
+    isConfigurable: false,
+    render: (bill) => (
+      <div className="flex justify-end">
+        <Button
+          aria-label={bill.invoiceNumber
+            ? `View details for invoice ${bill.invoiceNumber}`
+            : `View details for ${bill.vendor.name} bill`}
+          onClick={() => onViewDetails(bill)}
+          size="sm"
+          type="button"
+          variant="ghost"
+        >
+          <Eye aria-hidden className="size-4" />
+          View details
+        </Button>
+      </div>
+    ),
+  };
+}
 
 export function selectionColumn(selection: TableSelection): BillsTableColumn {
   return {
