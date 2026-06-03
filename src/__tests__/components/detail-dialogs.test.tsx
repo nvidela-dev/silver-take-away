@@ -159,9 +159,13 @@ describe('detail dialogs', () => {
     expect(billName).toHaveClass('cursor-pointer');
     expect(paymentName).toHaveClass('cursor-pointer');
     expect(screen.queryByRole('link', { name: 'Acme Supplies' })).not.toBeInTheDocument();
-    expect(screen.getAllByRole('tooltip', { name: 'Click to view details' })).toHaveLength(2);
+    const tooltips = screen.getAllByRole('tooltip', { name: 'Click to view details' });
+    expect(tooltips).toHaveLength(2);
 
+    await user.hover(billName);
+    expect(tooltips[0]).toHaveClass('opacity-100');
     await user.click(billName);
+    expect(tooltips[0]).toHaveClass('opacity-0');
     await user.click(paymentName);
 
     expect(onViewBill).toHaveBeenCalledWith(bill);

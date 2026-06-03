@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useState } from 'react';
 
 interface DetailNameTriggerProps {
   ariaLabel: string;
@@ -14,9 +14,19 @@ export function DetailNameTrigger({
   onClick,
 }: DetailNameTriggerProps): React.ReactElement {
   const tooltipId = useId();
+  const [isTooltipVisible, setTooltipVisible] = useState(false);
+
+  const handleClick = (): void => {
+    setTooltipVisible(false);
+    onClick();
+  };
 
   return (
-    <span className="group relative inline-flex min-w-0 max-w-full">
+    <span
+      className="relative inline-flex min-w-0 max-w-full"
+      onMouseEnter={() => setTooltipVisible(true)}
+      onMouseLeave={() => setTooltipVisible(false)}
+    >
       <button
         aria-describedby={tooltipId}
         aria-label={ariaLabel}
@@ -25,7 +35,9 @@ export function DetailNameTrigger({
           'hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2',
           'focus-visible:ring-slate-400',
         ].join(' ')}
-        onClick={onClick}
+        onBlur={() => setTooltipVisible(false)}
+        onClick={handleClick}
+        onFocus={() => setTooltipVisible(true)}
         type="button"
       >
         {label}
@@ -34,7 +46,8 @@ export function DetailNameTrigger({
         className={[
           'pointer-events-none absolute left-0 top-full z-40 mt-1 whitespace-nowrap',
           'rounded bg-slate-950 px-2 py-1 text-xs font-medium text-white shadow-md',
-          'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100',
+          'transition-opacity',
+          isTooltipVisible ? 'opacity-100' : 'opacity-0',
         ].join(' ')}
         id={tooltipId}
         role="tooltip"
