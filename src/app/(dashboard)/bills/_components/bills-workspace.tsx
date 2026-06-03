@@ -99,7 +99,7 @@ export function BillsWorkspace({
   loadError,
   referenceData,
   savedPreferences,
-}: BillsWorkspaceProps) {
+}: BillsWorkspaceProps): React.ReactElement {
   const router = useRouter();
   const dialogTitleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -169,8 +169,7 @@ export function BillsWorkspace({
           ...input,
           id: editingBill.id,
           expectedUpdatedAt: editingBill.updatedAt.toISOString(),
-        })
-        : await createBill(input);
+        }) : await createBill(input);
 
       if (!result.ok) {
         setFormError(result.error.message);

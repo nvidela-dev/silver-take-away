@@ -10,7 +10,7 @@ export function Input({
   className,
   controlSize = 'default',
   ...props
-}: InputProps) {
+}: InputProps): React.ReactElement {
   return (
     <input
       className={cn(

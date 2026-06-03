@@ -84,7 +84,7 @@ export function PaymentsWorkspace({
   loadError,
   referenceData,
   savedPreferences,
-}: PaymentsWorkspaceProps) {
+}: PaymentsWorkspaceProps): React.ReactElement {
   const router = useRouter();
   const filtersController = usePaymentFilters();
   const [actionError, setActionError] = useState<string | null>(null);

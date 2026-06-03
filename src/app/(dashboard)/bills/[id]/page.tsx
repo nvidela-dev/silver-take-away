@@ -2,7 +2,9 @@ interface BillDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function BillDetailPage({ params }: BillDetailPageProps) {
+export default async function BillDetailPage({
+  params,
+}: BillDetailPageProps): Promise<React.ReactElement> {
   const { id } = await params;
   return (
     <main className="grid gap-2">

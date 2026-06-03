@@ -2,7 +2,7 @@ import type { HTMLAttributes } from 'react';
 
 import { cn } from '@/lib/utils';
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>): React.ReactElement {
   return (
     <div
       className={cn(
@@ -17,11 +17,14 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 export function CardHeader({
   className,
   ...props
-}: HTMLAttributes<HTMLDivElement>) {
+}: HTMLAttributes<HTMLDivElement>): React.ReactElement {
   return <div className={cn('p-4 pb-3', className)} {...props} />;
 }
 
-export function CardTitle({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function CardTitle({
+  className,
+  ...props
+}: HTMLAttributes<HTMLDivElement>): React.ReactElement {
   return (
     <div
       className={cn(
@@ -36,7 +39,7 @@ export function CardTitle({ className, ...props }: HTMLAttributes<HTMLDivElement
 export function CardDescription({
   className,
   ...props
-}: HTMLAttributes<HTMLParagraphElement>) {
+}: HTMLAttributes<HTMLParagraphElement>): React.ReactElement {
   return (
     <p
       className={cn('mt-1 text-sm leading-5 text-slate-500', className)}
@@ -48,6 +51,6 @@ export function CardDescription({
 export function CardContent({
   className,
   ...props
-}: HTMLAttributes<HTMLDivElement>) {
+}: HTMLAttributes<HTMLDivElement>): React.ReactElement {
   return <div className={cn('p-4 pt-3', className)} {...props} />;
 }

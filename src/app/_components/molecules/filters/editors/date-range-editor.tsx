@@ -26,13 +26,13 @@ export function DateRangeEditor({
   to,
   onApply,
   onCancel,
-}: DateRangeEditorProps) {
+}: DateRangeEditorProps): React.ReactElement {
   const fromId = useId();
   const toId = useId();
   const [fromDraft, setFromDraft] = useState(toInputValue(from));
   const [toDraft, setToDraft] = useState(toInputValue(to));
 
-  const handleApply = () => {
+  const handleApply = (): void => {
     onApply({
       from: fromInputValue(fromDraft),
       to: fromInputValue(toDraft),

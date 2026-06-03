@@ -16,7 +16,7 @@ export function PageHeader({
   description = undefined,
   eyebrow = undefined,
   title,
-}: PageHeaderProps) {
+}: PageHeaderProps): React.ReactElement {
   return (
     <header
       className={cn(

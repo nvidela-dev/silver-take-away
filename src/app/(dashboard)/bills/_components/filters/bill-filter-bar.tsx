@@ -13,7 +13,11 @@ interface BillFilterBarProps {
   tab: BillFilterTab | 'overview';
 }
 
-export function BillFilterBar({ controller, options, tab }: BillFilterBarProps) {
+export function BillFilterBar({
+  controller,
+  options,
+  tab,
+}: BillFilterBarProps): React.ReactElement {
   const bar = useBillFilterBar({ controller, tab });
   // Overview borrows the drafts dimension set; coerce so editors always
   // receive a concrete list tab.

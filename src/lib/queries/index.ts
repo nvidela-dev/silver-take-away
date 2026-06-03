@@ -53,7 +53,7 @@ interface BillListArgs {
   sort?: BillSort;
 }
 
-async function gateBillRead() {
+async function gateBillRead(): Promise<void> {
   assertDatabaseConfigured();
   const actor = await requireAuth();
   requireRole(actor, BILL_VIEWER_ROLES);
@@ -119,7 +119,7 @@ interface PaymentListArgs {
   sort?: PaymentSort;
 }
 
-async function gatePaymentRead() {
+async function gatePaymentRead(): Promise<void> {
   assertDatabaseConfigured();
   const actor = await requireAuth();
   requireRole(actor, PAYMENT_VIEWER_ROLES);

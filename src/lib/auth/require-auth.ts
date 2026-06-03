@@ -10,7 +10,7 @@ import { syncCurrentClerkUserToNeon } from './user-sync';
 export class UnauthorizedError extends Error {
   readonly code = 'UNAUTHENTICATED';
 
-  constructor(message = 'You must be signed in to perform this action.') {
+  constructor(message: string = 'You must be signed in to perform this action.') {
     super(message);
     this.name = 'UnauthorizedError';
   }

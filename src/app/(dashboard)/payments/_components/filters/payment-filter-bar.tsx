@@ -13,7 +13,11 @@ interface PaymentFilterBarProps {
   tab: PaymentFilterTab;
 }
 
-export function PaymentFilterBar({ controller, options, tab }: PaymentFilterBarProps) {
+export function PaymentFilterBar({
+  controller,
+  options,
+  tab,
+}: PaymentFilterBarProps): React.ReactElement {
   const bar = usePaymentFilterBar({ controller, tab });
   const activeFilters = bar.activeDimensions.map((dimension) => {
     const { Editor } = dimension;

@@ -4,7 +4,7 @@ import type { User } from '@/lib/types/user';
 export class ForbiddenError extends Error {
   readonly code = 'FORBIDDEN';
 
-  constructor(message = 'You are not authorized to perform this action.') {
+  constructor(message: string = 'You are not authorized to perform this action.') {
     super(message);
     this.name = 'ForbiddenError';
   }

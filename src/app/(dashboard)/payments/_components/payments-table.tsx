@@ -37,7 +37,7 @@ export function PaymentsTable({
   payments,
   sort = undefined,
   totalPayments = payments.length,
-}: PaymentsTableProps) {
+}: PaymentsTableProps): React.ReactElement {
   const total = amountTotal
     ?? payments.reduce((sum, payment) => sum + Number(payment.amount), 0).toFixed(2);
   const currency = payments[0]?.currency ?? 'USD';

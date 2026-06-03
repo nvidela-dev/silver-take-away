@@ -22,7 +22,7 @@ const navIconMap = {
   'credit-card': CreditCard,
 } as const;
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default function DashboardLayout({ children }: { children: ReactNode }): React.ReactElement {
   const pathname = usePathname();
   const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 

@@ -2,7 +2,7 @@ import { SignUp } from '@clerk/nextjs';
 
 export const dynamic = 'force-dynamic';
 
-export default function SignUpPage() {
+export default function SignUpPage(): React.ReactElement {
   const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (

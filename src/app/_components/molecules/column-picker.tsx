@@ -24,7 +24,7 @@ export function ColumnPicker<TRow, TSortKey extends string>({
   columns,
   hiddenIds,
   onToggle,
-}: ColumnPickerProps<TRow, TSortKey>) {
+}: ColumnPickerProps<TRow, TSortKey>): React.ReactElement | null {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const labelId = useId();

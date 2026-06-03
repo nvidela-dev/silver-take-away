@@ -17,7 +17,7 @@ export function TextEditor({
   placeholder = '',
   onApply,
   onCancel,
-}: TextEditorProps) {
+}: TextEditorProps): React.ReactElement {
   const [draft, setDraft] = useState(value ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -25,7 +25,7 @@ export function TextEditor({
     inputRef.current?.focus();
   }, []);
 
-  const handleApply = () => {
+  const handleApply = (): void => {
     const trimmed = draft.trim();
     onApply(trimmed.length > 0 ? trimmed : null);
   };

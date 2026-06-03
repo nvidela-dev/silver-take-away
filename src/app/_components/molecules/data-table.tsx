@@ -52,7 +52,7 @@ function DataTableSkeletonRows<TRow, TSortKey extends string>({
   columns: DataTableColumn<TRow, TSortKey>[];
   count: number;
   loadingLabel: string;
-}) {
+}): React.ReactElement[] {
   return Array.from({ length: count }, (_, index) => (
     <tr className="h-14 border-b border-slate-100 last:border-0" key={index}>
       {columns.map((column) => (
@@ -76,7 +76,10 @@ function DataTableSkeletonRows<TRow, TSortKey extends string>({
   ));
 }
 
-function DataTableFillerRows({ count, colSpan }: { count: number; colSpan: number }) {
+function DataTableFillerRows({
+  count,
+  colSpan,
+}: { count: number; colSpan: number }): React.ReactElement[] {
   return Array.from({ length: count }, (_, index) => (
     <tr aria-hidden className="h-14 border-b border-slate-100 last:border-0" key={index}>
       <td aria-label="Reserved table row" colSpan={colSpan} />
@@ -90,7 +93,7 @@ function SortIndicator({
 }: {
   active: boolean;
   direction: 'asc' | 'desc';
-}) {
+}): React.ReactElement {
   if (!active) return <ArrowUpDown aria-hidden className="size-3.5 opacity-40" />;
   return direction === 'asc'
     ? <ArrowUp aria-hidden className="size-3.5" />
@@ -107,7 +110,7 @@ function SortableHeader<TRow, TSortKey extends string>({
   direction: 'asc' | 'desc';
   isActive: boolean;
   onSort: (key: TSortKey) => void;
-}) {
+}): string | React.ReactElement {
   if (!column.sortKey) return column.header;
   const { sortKey } = column;
   const nextDir = isActive && direction === 'desc' ? 'asc' : 'desc';
@@ -145,7 +148,7 @@ function DataTableHeaderCell<TRow, TSortKey extends string>({
   column: DataTableColumn<TRow, TSortKey>;
   onSortChange?: (key: TSortKey) => void;
   sort?: SortValue<TSortKey>;
-}) {
+}): React.ReactElement {
   const isSortable = Boolean(column.sortKey && onSortChange);
   const isActive = isSortable && sort?.by === column.sortKey;
   const ariaSort = resolveAriaSort(isActive, sort?.dir);
@@ -190,7 +193,7 @@ export function DataTable<TRow, TSortKey extends string>({
   rows,
   sort = undefined,
   totalRows = rows.length,
-}: DataTableProps<TRow, TSortKey>) {
+}: DataTableProps<TRow, TSortKey>): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageSizeId = useId();
@@ -199,7 +202,7 @@ export function DataTable<TRow, TSortKey extends string>({
   const pageCount = Math.max(1, Math.ceil(totalRows / pageSize));
   const showSkeleton = isLoading || isNavigating;
 
-  const goToPage = (page: number) => {
+  const goToPage = (page: number): void => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(page));
     startNavigation(() => {
@@ -261,8 +264,7 @@ export function DataTable<TRow, TSortKey extends string>({
                     </td>
                   ))}
                 </tr>
-              ))
-              : null}
+              )) : null}
             {!showSkeleton && rows.length > 0 && rows.length < pageSize ? (
               <DataTableFillerRows count={pageSize - rows.length} colSpan={colSpan} />
             ) : null}

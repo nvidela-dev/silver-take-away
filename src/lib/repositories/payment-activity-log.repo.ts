@@ -6,7 +6,17 @@ export interface CreatePaymentActivityLogRecord {
   metadata?: Record<string, unknown> | null;
 }
 
-export function toPaymentActivityLogInsert(record: CreatePaymentActivityLogRecord) {
+export interface PaymentActivityLogInsert {
+  id: string;
+  paymentId: string;
+  actorId: string;
+  action: string;
+  metadata: Record<string, unknown> | null;
+}
+
+export function toPaymentActivityLogInsert(
+  record: CreatePaymentActivityLogRecord,
+): PaymentActivityLogInsert {
   return {
     id: record.id,
     paymentId: record.paymentId,

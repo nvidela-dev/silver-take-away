@@ -1,14 +1,14 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-export function cn(...inputs: ClassValue[]) {
+export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
 /**
  * Formats an ISO date (`YYYY-MM-DD`) into a locale-aware date string.
  */
-export function formatDate(value: string, locale = 'en-US'): string {
+export function formatDate(value: string, locale: string = 'en-US'): string {
   return new Date(`${value}T00:00:00.000Z`).toLocaleDateString(locale);
 }
 
@@ -16,7 +16,11 @@ export function formatDate(value: string, locale = 'en-US'): string {
  * Formats a count with its noun: `pluralize(1, 'bill')` → "1 bill",
  * `pluralize(3, 'bill')` → "3 bills". Pass an explicit plural for irregulars.
  */
-export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+export function pluralize(
+  count: number,
+  singular: string,
+  plural: string = `${singular}s`,
+): string {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
@@ -25,8 +29,8 @@ export function pluralize(count: number, singular: string, plural = `${singular}
  */
 export function formatMoney(
   amount: string,
-  currency = 'USD',
-  locale = 'en-US',
+  currency: string = 'USD',
+  locale: string = 'en-US',
 ): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',

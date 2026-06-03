@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
 
 const paymentTabSchema = z.enum(['upcoming', 'processing', 'history']);
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const params = searchParamsToRecord(request.nextUrl.searchParams);
   const tabResult = paymentTabSchema.safeParse(params.tab);
   const filtersResult = paymentFiltersSchema.safeParse(params);

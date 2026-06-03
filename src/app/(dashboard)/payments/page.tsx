@@ -23,6 +23,7 @@ import type { PaymentFilterTab } from '@/lib/types/payment/tabs';
 import type {
   PaymentListResult,
   PaymentPagination,
+  PaymentReferenceData,
   PaymentSort,
 } from '@/lib/types/payment/filters';
 import type { PaymentListItem } from '@/lib/types/payment/views';
@@ -102,6 +103,13 @@ const emptyListResult: PaymentListResult<PaymentListItem> = {
   items: [],
   total: 0,
 };
+const emptyReferenceData: PaymentReferenceData = { vendors: [], owners: [], categories: [] };
+
+interface PaymentWorkspaceData {
+  activePayments: PaymentListResult<PaymentListItem>;
+  referenceData: PaymentReferenceData;
+  loadError: string | null;
+}
 
 const errorMessages = {
   unauthorized: 'Sign in before viewing payments.',
@@ -120,7 +128,7 @@ async function loadPaymentWorkspaceData(
   filters: PaymentFilters,
   pagination: PaymentPagination,
   sort: PaymentSort,
-) {
+): Promise<PaymentWorkspaceData> {
   try {
     const [activePayments, referenceData] = await Promise.all([
       listPaymentsForTab(activeTab, {
@@ -138,7 +146,7 @@ async function loadPaymentWorkspaceData(
   } catch (error) {
     return {
       activePayments: emptyListResult,
-      referenceData: { vendors: [], owners: [], categories: [] },
+      referenceData: emptyReferenceData,
       loadError: resolveLoadError(error),
     };
   }
@@ -154,7 +162,9 @@ async function loadSavedTabPreference(
   }
 }
 
-export default async function PaymentsPage({ searchParams }: PaymentsPageProps) {
+export default async function PaymentsPage({
+  searchParams,
+}: PaymentsPageProps): Promise<React.ReactElement> {
   const params = await searchParams;
   const activeTab = resolveActiveTab(params.tab);
   const flatParams = flattenSearchParams(params);

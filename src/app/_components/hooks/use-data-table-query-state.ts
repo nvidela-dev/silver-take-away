@@ -42,6 +42,23 @@ interface UseDataTableQueryStateOptions<
   sortParsers: SortParsers<TSortKey>;
 }
 
+interface DataTableQueryState<
+  TFilterParsers extends UseQueryStatesKeysMap,
+  TSortKey extends string,
+> {
+  clearAll: () => Promise<URLSearchParams>;
+  isPending: boolean;
+  pageSizeOptions: readonly number[];
+  pagination: { page: number; pageSize: number };
+  setPage: (page: number) => Promise<URLSearchParams>;
+  setPageSize: (pageSize: number) => Promise<URLSearchParams>;
+  setSort: (next: SortValue<TSortKey>) => Promise<URLSearchParams>;
+  setValues: (updates: Partial<Values<TFilterParsers>>) => Promise<URLSearchParams>;
+  sort: SortValue<TSortKey>;
+  toggleSort: (key: TSortKey) => Promise<URLSearchParams>;
+  values: Values<TFilterParsers>;
+}
+
 export function useDataTableQueryState<
   TFilterParsers extends UseQueryStatesKeysMap,
   TSortKey extends string,
@@ -54,7 +71,7 @@ export function useDataTableQueryState<
 }: UseDataTableQueryStateOptions<
   TFilterParsers,
   TSortKey
->) {
+>): DataTableQueryState<TFilterParsers, TSortKey> {
   const [isPending, startTransition] = useTransition();
   const queryOptions = useMemo(
     () => ({ shallow: false, history: 'push' as const, startTransition }),
@@ -72,10 +89,10 @@ export function useDataTableQueryState<
   }, queryOptions);
   const sort = useMemo(
     () => ({
-      by: sortRaw.sort,
-      dir: sortRaw.dir,
+      by: sortRaw.sort ?? sortParsers.sort.defaultValue,
+      dir: sortRaw.dir ?? sortParsers.dir.defaultValue,
     }),
-    [sortRaw.dir, sortRaw.sort],
+    [sortParsers.dir.defaultValue, sortParsers.sort.defaultValue, sortRaw.dir, sortRaw.sort],
   );
 
   const setValues = useCallback(

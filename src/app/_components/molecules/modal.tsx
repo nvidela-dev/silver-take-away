@@ -33,7 +33,7 @@ export function Modal({
   maxWidth = 'lg',
   onClose,
   title,
-}: ModalProps) {
+}: ModalProps): React.ReactElement {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
 

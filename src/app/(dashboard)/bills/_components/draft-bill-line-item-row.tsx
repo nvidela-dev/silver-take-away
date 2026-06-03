@@ -34,7 +34,7 @@ export function DraftBillLineItemRow({
   isOnlyLineItem,
   onRemoveLineItem,
   register,
-}: DraftBillLineItemRowProps) {
+}: DraftBillLineItemRowProps): React.ReactElement {
   const removeLineItem = useCallback(() => {
     onRemoveLineItem(index);
   }, [index, onRemoveLineItem]);

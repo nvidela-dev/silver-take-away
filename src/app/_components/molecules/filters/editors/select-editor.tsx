@@ -27,7 +27,7 @@ export function SelectEditor({
   emptyMessage = 'No options available.',
   onApply,
   onCancel,
-}: SelectEditorProps) {
+}: SelectEditorProps): React.ReactElement {
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 

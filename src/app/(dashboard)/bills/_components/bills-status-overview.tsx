@@ -41,7 +41,7 @@ const GROUP_META: Record<OverviewGroupTab, GroupMeta> = {
   payment: { title: 'For payment', Icon: Banknote },
 };
 
-function VendorOwnerCell({ bill }: { bill: BillListItem }) {
+function VendorOwnerCell({ bill }: { bill: BillListItem }): React.ReactElement {
   return (
     <div className="flex items-center gap-3">
       <span
@@ -68,16 +68,16 @@ function VendorOwnerCell({ bill }: { bill: BillListItem }) {
   );
 }
 
-export function BillsStatusOverview({ groups }: BillsStatusOverviewProps) {
+export function BillsStatusOverview({ groups }: BillsStatusOverviewProps): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const openBill = (id: string) => {
+  const openBill = (id: string): void => {
     router.push(`/bills/${id}`);
   };
 
-  const goToGroupPage = (tab: BillFilterTab, page: number) => {
+  const goToGroupPage = (tab: BillFilterTab, page: number): void => {
     const params = new URLSearchParams(searchParams.toString());
     params.set(overviewPageParam(tab), String(page));
     startTransition(() => {
@@ -167,8 +167,7 @@ export function BillsStatusOverview({ groups }: BillsStatusOverviewProps) {
                       <tr aria-hidden className="h-14 border-b border-slate-100" key={index}>
                         <td aria-label="Reserved table row" colSpan={3} />
                       </tr>
-                    ))
-                    : null}
+                    )) : null}
                   {pageCount > 1 ? (
                     <tr className="border-b border-slate-100">
                       <td className="py-2 pl-4 pr-4" colSpan={3}>

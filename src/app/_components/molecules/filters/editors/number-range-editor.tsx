@@ -33,13 +33,13 @@ export function NumberRangeEditor({
   max,
   onApply,
   onCancel,
-}: NumberRangeEditorProps) {
+}: NumberRangeEditorProps): React.ReactElement {
   const minId = useId();
   const maxId = useId();
   const [minDraft, setMinDraft] = useState(toInputValue(min));
   const [maxDraft, setMaxDraft] = useState(toInputValue(max));
 
-  const handleApply = () => {
+  const handleApply = (): void => {
     onApply({
       min: fromInputValue(minDraft),
       max: fromInputValue(maxDraft),

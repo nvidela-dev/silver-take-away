@@ -14,7 +14,7 @@ import type { ActionResult } from '@/lib/types/common';
 
 export function toBillActionError(
   error: unknown,
-  context = 'bill action',
+  context: string = 'bill action',
 ): ActionResult<never> {
   if (
     error instanceof UnauthorizedError

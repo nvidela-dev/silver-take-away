@@ -2,7 +2,9 @@ interface PaymentDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function PaymentDetailPage({ params }: PaymentDetailPageProps) {
+export default async function PaymentDetailPage({
+  params,
+}: PaymentDetailPageProps): Promise<React.ReactElement> {
   const { id } = await params;
   return (
     <main className="grid gap-2">

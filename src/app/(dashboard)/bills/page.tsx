@@ -26,6 +26,8 @@ import {
 } from '@/lib/types/bill/overview';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
 import type {
+  BillOverviewGroup,
+  BillReferenceData,
   BillListResult,
   BillPagination,
   BillSort,
@@ -124,6 +126,14 @@ function parseOverviewPages(
 }
 
 const emptyListResult: BillListResult<BillListItem> = { amountTotal: '0', items: [], total: 0 };
+const emptyReferenceData: BillReferenceData = { vendors: [], owners: [], categories: [] };
+
+interface BillWorkspaceData {
+  activeBills: BillListResult<BillListItem>;
+  overviewGroups: BillOverviewGroup[];
+  referenceData: BillReferenceData;
+  loadError: string | null;
+}
 
 const errorMessages = {
   unauthorized: 'Sign in before creating or viewing bills.',
@@ -142,7 +152,7 @@ async function loadActiveTabBills(
   filters: BillFilters,
   pagination: BillPagination,
   sort: BillSort,
-) {
+): Promise<BillListResult<BillListItem>> {
   if (activeTab === 'overview') return emptyListResult;
   return listBillsForTab(activeTab, {
     filters: scopedFiltersForTab(activeTab, filters),
@@ -156,7 +166,7 @@ async function loadOverviewGroups(
   filters: BillFilters,
   sort: BillSort,
   pages: Partial<Record<BillFilterTab, number>>,
-) {
+): Promise<BillOverviewGroup[]> {
   if (activeTab !== 'overview') return [];
   return listBillOverviewGroups({ filters, sort, pages });
 }
@@ -167,7 +177,7 @@ async function loadBillWorkspaceData(
   pagination: BillPagination,
   sort: BillSort,
   overviewPages: Partial<Record<BillFilterTab, number>>,
-) {
+): Promise<BillWorkspaceData> {
   try {
     const [activeBills, overviewGroups, referenceData] = await Promise.all([
       loadActiveTabBills(activeTab, filters, pagination, sort),
@@ -184,7 +194,7 @@ async function loadBillWorkspaceData(
     return {
       activeBills: emptyListResult,
       overviewGroups: [],
-      referenceData: { vendors: [], owners: [], categories: [] },
+      referenceData: emptyReferenceData,
       loadError: resolveLoadError(error),
     };
   }
@@ -203,7 +213,9 @@ async function loadSavedTabPreference(
   }
 }
 
-export default async function BillsPage({ searchParams }: BillsPageProps) {
+export default async function BillsPage({
+  searchParams,
+}: BillsPageProps): Promise<React.ReactElement> {
   const params = await searchParams;
   const activeTab = resolveActiveTab(params.tab);
   const flatParams = flattenSearchParams(params);

@@ -37,7 +37,7 @@ export function BillsTable({
   pageSizeOptions = [],
   sort = undefined,
   totalBills = bills.length,
-}: BillsTableProps) {
+}: BillsTableProps): React.ReactElement {
   const total = amountTotal ?? bills.reduce((sum, bill) => sum + Number(bill.amount), 0).toFixed(2);
   const currency = bills[0]?.currency ?? 'USD';
 
