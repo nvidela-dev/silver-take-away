@@ -41,13 +41,6 @@ export function DateRangeEditor({
 
   return (
     <div className="grid gap-2 p-3">
-      {/*
-        Stacked, not side-by-side: native `type="date"` inputs have a large
-        intrinsic min-width (date text + calendar picker icon) and grid items
-        default to `min-width: auto`, so two columns overflow the fixed-width
-        popover and get clipped by the dashboard's `overflow-x-hidden`. One
-        column per row lets each input take the full popover width.
-      */}
       <div className="grid gap-2">
         <label className="grid gap-1" htmlFor={fromId}>
           <span className="text-xs font-medium text-slate-700">From</span>
