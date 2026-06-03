@@ -1,6 +1,8 @@
 # Bill Pay MVP
 
-Accounts payable management with role-based access, bill and payment lifecycles, bulk operations, configurable table views, and filtered CSV exports.
+A bill-pay workspace for small finance and AP teams, covering the invoice-to-payment lifecycle in a single tool: enter bills, route them for approval, schedule and track payments, and export filtered reports.
+
+Built as a take-home MVP. Highlights: role-based access, explicit bill and payment lifecycles, bulk operations, configurable table views, and filtered CSV exports.
 
 ## Demo
 
@@ -35,7 +37,7 @@ yarn db:push
 ## Deploy to Vercel (Neon + Clerk)
 
 1. Create a Neon Postgres project and copy the pooled connection string into `DATABASE_URL`.
-   Example format: `postgresql://neondb_owner:<password>@ep-example-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
+   - Example format: `postgresql://neondb_owner:<password>@ep-example-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
 2. In Clerk, create a Next.js application and copy:
    - `CLERK_SECRET_KEY`
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
@@ -44,21 +46,21 @@ yarn db:push
    - `Production`
    - `Preview`
    - `Development` (optional if you use local env only)
-4. In Clerk webhooks, add endpoint:
-   - `https://<your-vercel-domain>/api/webhooks/clerk`
-   - subscribe to `user.created` and `user.updated`
-   - use the matching `CLERK_WEBHOOK_SECRET`
+4. In Clerk webhooks, add an endpoint:
+   - URL: `https://<your-vercel-domain>/api/webhooks/clerk`
+   - Subscribe to `user.created` and `user.updated`
+   - Use the matching `CLERK_WEBHOOK_SECRET`
 5. Keep Clerk sign-in/sign-up redirects pointed at `/`.
-   The root route forwards authenticated users to `/bills?tab=drafts`.
+   - The root route forwards authenticated users to `/bills?tab=drafts`.
 6. Run schema migration against Neon before first production usage:
-   - locally: `yarn db:push`
-   - or CI/release job: `yarn db:migrate`
+   - Locally: `yarn db:push`
+   - Or via CI/release job: `yarn db:migrate`
 7. Deploy to Vercel and verify:
    - `/sign-in` renders Clerk sign-in
    - `/api/health/db` returns `{ "ok": true }`
-   - signing in creates or updates a row in Neon `users`
-   - protected routes redirect unauthenticated users
-   - webhook delivery succeeds in Clerk dashboard logs
+   - Signing in creates or updates a row in Neon `users`
+   - Protected routes redirect unauthenticated users
+   - Webhook delivery succeeds in Clerk dashboard logs
 
 ## Scripts
 
