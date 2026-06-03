@@ -76,17 +76,6 @@ function DataTableSkeletonRows<TRow, TSortKey extends string>({
   ));
 }
 
-function DataTableFillerRows({
-  count,
-  colSpan,
-}: { count: number; colSpan: number }): React.ReactElement[] {
-  return Array.from({ length: count }, (_, index) => (
-    <tr aria-hidden className="h-14 border-b border-slate-100 last:border-0" key={index}>
-      <td aria-label="Reserved table row" colSpan={colSpan} />
-    </tr>
-  ));
-}
-
 function SortIndicator({
   active,
   direction,
@@ -265,9 +254,6 @@ export function DataTable<TRow, TSortKey extends string>({
                   ))}
                 </tr>
               )) : null}
-            {!showSkeleton && rows.length > 0 && rows.length < pageSize ? (
-              <DataTableFillerRows count={pageSize - rows.length} colSpan={colSpan} />
-            ) : null}
           </tbody>
         </table>
       </div>
