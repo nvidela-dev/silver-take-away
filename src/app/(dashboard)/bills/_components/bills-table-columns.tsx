@@ -1,9 +1,10 @@
 'use client';
 
-import { Edit2, Eye, Trash2 } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 import { useRef } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
+import { DetailNameTrigger } from '@/app/_components/molecules/detail-name-trigger';
 import { usePopoverDismiss } from '@/app/_components/hooks/use-popover-dismiss';
 import { SelectionCheckbox } from '@/app/_components/atoms/selection-checkbox';
 import { PopoverPanel } from '@/app/_components/molecules/popover-panel';
@@ -47,39 +48,49 @@ export function formatOwnerDate(date: Date): string {
   }).format(date);
 }
 
-export const vendorOwnerColumn: BillsTableColumn = {
-  id: 'vendor',
-  header: 'Vendor / owner',
-  headerClassName: 'py-3 pl-4 pr-4 font-medium',
-  cellClassName: 'py-3 pl-4 pr-4',
-  isConfigurable: false,
-  skeletonClassName: 'h-8',
-  sortKey: 'vendor',
-  render: (bill) => (
-    <div className="flex items-center gap-3">
-      <span
-        aria-hidden
-        className={cn(
-          'grid size-8 shrink-0 place-items-center rounded-full',
-          'text-xs font-semibold',
-          vendorTone(bill.vendor.name),
-        )}
-      >
-        {vendorInitials(bill.vendor.name)}
-      </span>
-      <div className="min-w-0">
-        <p className="truncate font-medium text-slate-950">
-          {bill.vendor.name}
-        </p>
-        <p className="truncate text-xs text-slate-500">
-          {bill.creator.fullName}
-          {' · '}
-          {formatOwnerDate(bill.createdAt)}
-        </p>
+interface DetailsHandlers {
+  onViewDetails: (bill: BillListItem) => void;
+}
+
+export function vendorOwnerColumn(handlers: DetailsHandlers): BillsTableColumn {
+  const { onViewDetails } = handlers;
+
+  return {
+    id: 'vendor',
+    header: 'Vendor / owner',
+    headerClassName: 'py-3 pl-4 pr-4 font-medium',
+    cellClassName: 'py-3 pl-4 pr-4',
+    isConfigurable: false,
+    skeletonClassName: 'h-8',
+    sortKey: 'vendor',
+    render: (bill) => (
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden
+          className={cn(
+            'grid size-8 shrink-0 place-items-center rounded-full',
+            'text-xs font-semibold',
+            vendorTone(bill.vendor.name),
+          )}
+        >
+          {vendorInitials(bill.vendor.name)}
+        </span>
+        <div className="min-w-0">
+          <DetailNameTrigger
+            ariaLabel={`View bill details for ${bill.vendor.name}`}
+            label={bill.vendor.name}
+            onClick={() => onViewDetails(bill)}
+          />
+          <p className="truncate text-xs text-slate-500">
+            {bill.creator.fullName}
+            {' · '}
+            {formatOwnerDate(bill.createdAt)}
+          </p>
+        </div>
       </div>
-    </div>
-  ),
-};
+    ),
+  };
+}
 
 export const statusColumn: BillsTableColumn = {
   id: 'status',
@@ -128,45 +139,16 @@ export const linesColumn: BillsTableColumn = {
   render: (bill) => bill.lineItemCount,
 };
 
-export const billReadColumns: BillsTableColumn[] = [
-  vendorOwnerColumn,
-  statusColumn,
-  amountColumn,
-  invoiceDateColumn,
-  dueDateColumn,
-  invoiceNumberColumn,
-  linesColumn,
-];
-
-interface DetailsHandlers {
-  onViewDetails: (bill: BillListItem) => void;
-}
-
-export function billDetailsColumn(handlers: DetailsHandlers): BillsTableColumn {
-  const { onViewDetails } = handlers;
-
-  return {
-    id: 'details',
-    header: 'Details',
-    srOnlyHeader: true,
-    isConfigurable: false,
-    render: (bill) => (
-      <div className="flex justify-end">
-        <Button
-          aria-label={bill.invoiceNumber
-            ? `View details for invoice ${bill.invoiceNumber}`
-            : `View details for ${bill.vendor.name} bill`}
-          onClick={() => onViewDetails(bill)}
-          size="sm"
-          type="button"
-          variant="ghost"
-        >
-          <Eye aria-hidden className="size-4" />
-          View details
-        </Button>
-      </div>
-    ),
-  };
+export function billReadColumns(handlers: DetailsHandlers): BillsTableColumn[] {
+  return [
+    vendorOwnerColumn(handlers),
+    statusColumn,
+    amountColumn,
+    invoiceDateColumn,
+    dueDateColumn,
+    invoiceNumberColumn,
+    linesColumn,
+  ];
 }
 
 export function selectionColumn(selection: TableSelection): BillsTableColumn {

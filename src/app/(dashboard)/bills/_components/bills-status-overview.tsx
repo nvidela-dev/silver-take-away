@@ -12,6 +12,7 @@ import { Fragment, useTransition, type ComponentType } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
 import { Card } from '@/app/_components/atoms/card';
+import { DetailNameTrigger } from '@/app/_components/molecules/detail-name-trigger';
 import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import { billStatusDisplay } from '@/app/_display';
 import { cn, formatMoney } from '@/lib/utils';
@@ -42,7 +43,15 @@ const GROUP_META: Record<OverviewGroupTab, GroupMeta> = {
   payment: { title: 'For payment', Icon: Banknote },
 };
 
-function VendorOwnerCell({ bill }: { bill: BillListItem }): React.ReactElement {
+interface VendorOwnerCellProps {
+  bill: BillListItem;
+  onViewDetails: (bill: BillListItem) => void;
+}
+
+function VendorOwnerCell({
+  bill,
+  onViewDetails,
+}: VendorOwnerCellProps): React.ReactElement {
   return (
     <div className="flex items-center gap-3">
       <span
@@ -56,9 +65,11 @@ function VendorOwnerCell({ bill }: { bill: BillListItem }): React.ReactElement {
         {vendorInitials(bill.vendor.name)}
       </span>
       <div className="min-w-0">
-        <p className="truncate font-medium text-slate-950">
-          {bill.vendor.name}
-        </p>
+        <DetailNameTrigger
+          ariaLabel={`View bill details for ${bill.vendor.name}`}
+          label={bill.vendor.name}
+          onClick={() => onViewDetails(bill)}
+        />
         <p className="truncate text-xs text-slate-500">
           {bill.creator.fullName}
           {' · '}
@@ -130,23 +141,11 @@ export function BillsStatusOverview({
                   ) : (
                     items.map((bill) => (
                       <tr
-                        className={cn(
-                          'h-14 cursor-pointer border-b border-slate-100',
-                          'hover:bg-slate-50',
-                        )}
+                        className="h-14 border-b border-slate-100 hover:bg-slate-50"
                         key={bill.id}
-                        onClick={() => onViewDetails(bill)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            onViewDetails(bill);
-                          }
-                        }}
-                        role="button"
-                        tabIndex={0}
                       >
                         <td className="py-3 pl-4 pr-4">
-                          <VendorOwnerCell bill={bill} />
+                          <VendorOwnerCell bill={bill} onViewDetails={onViewDetails} />
                         </td>
                         <td className="py-3 pr-4">
                           <StatusBadge status={billStatusDisplay[bill.status]} />

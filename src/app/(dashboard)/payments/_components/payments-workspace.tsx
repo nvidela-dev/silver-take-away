@@ -46,7 +46,6 @@ import { PaymentTransitionDialog } from './payment-transition-dialog';
 import { PaymentsTable } from './payments-table';
 import {
   historyActionsColumn,
-  paymentDetailsColumn,
   paymentReadColumns,
   processingActionsColumn,
   selectionColumn,
@@ -127,29 +126,26 @@ export function PaymentsWorkspace({
 
   const upcomingColumns = [
     selectionColumn(upcomingSelection),
-    ...paymentReadColumns,
+    ...paymentReadColumns({ onViewDetails: selectPaymentForDetails }),
     upcomingActionsColumn({
       onInitiate: transitions.initiate,
       onCancel: transitions.requestCancel,
     }),
-    paymentDetailsColumn({ onViewDetails: selectPaymentForDetails }),
   ];
   const processingColumns = [
     selectionColumn(processingSelection),
-    ...paymentReadColumns,
+    ...paymentReadColumns({ onViewDetails: selectPaymentForDetails }),
     processingActionsColumn({
       onMarkPaid: transitions.requestMarkPaid,
       onMarkFailed: transitions.requestMarkFailed,
     }),
-    paymentDetailsColumn({ onViewDetails: selectPaymentForDetails }),
   ];
   const historyColumns = [
     selectionColumn(historySelection),
-    ...paymentReadColumns,
+    ...paymentReadColumns({ onViewDetails: selectPaymentForDetails }),
     historyActionsColumn({
       onRetry: transitions.retry,
     }),
-    paymentDetailsColumn({ onViewDetails: selectPaymentForDetails }),
   ];
 
   const initialHiddenColumns = savedPreferences?.hiddenColumns ?? [];

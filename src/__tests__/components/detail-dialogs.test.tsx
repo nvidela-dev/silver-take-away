@@ -4,10 +4,12 @@ import { afterEach, vi } from 'vitest';
 
 import { BillDetailDialog } from '@/app/(dashboard)/bills/_components/bill-detail-dialog';
 import { BillsStatusOverview } from '@/app/(dashboard)/bills/_components/bills-status-overview';
-import { billDetailsColumn } from '@/app/(dashboard)/bills/_components/bills-table-columns';
+import {
+  vendorOwnerColumn as billVendorOwnerColumn,
+} from '@/app/(dashboard)/bills/_components/bills-table-columns';
 import { PaymentDetailDialog } from '@/app/(dashboard)/payments/_components/payment-detail-dialog';
 import {
-  paymentDetailsColumn,
+  vendorOwnerColumn as paymentVendorOwnerColumn,
 } from '@/app/(dashboard)/payments/_components/payments-table-columns';
 import type { BillListItem } from '@/lib/types/bill/views';
 import type { PaymentListItem } from '@/lib/types/payment/views';
@@ -136,28 +138,37 @@ describe('detail dialogs', () => {
     expect(screen.getByText('Monthly operating supplies.')).toBeInTheDocument();
   });
 
-  it('exposes explicit table controls for opening bill and payment details', async () => {
+  it('opens bill and payment details from vendor name buttons', async () => {
     const user = userEvent.setup();
     const onViewBill = vi.fn();
     const onViewPayment = vi.fn();
 
     render(
       <>
-        {billDetailsColumn({ onViewDetails: onViewBill }).render(bill)}
-        {paymentDetailsColumn({ onViewDetails: onViewPayment }).render(payment)}
+        {billVendorOwnerColumn({ onViewDetails: onViewBill }).render(bill)}
+        {paymentVendorOwnerColumn({ onViewDetails: onViewPayment }).render(payment)}
       </>,
     );
 
-    await user.click(screen.getByRole('button', { name: 'View details for invoice INV-1001' }));
-    await user.click(
-      screen.getByRole('button', { name: 'View details for invoice INV-1001 payment' }),
+    const billName = screen.getByRole('button', { name: 'View bill details for Acme Supplies' });
+    const paymentName = screen.getByRole(
+      'button',
+      { name: 'View payment details for Acme Supplies' },
     );
+
+    expect(billName).toHaveClass('cursor-pointer');
+    expect(paymentName).toHaveClass('cursor-pointer');
+    expect(screen.queryByRole('link', { name: 'Acme Supplies' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('tooltip', { name: 'Click to view details' })).toHaveLength(2);
+
+    await user.click(billName);
+    await user.click(paymentName);
 
     expect(onViewBill).toHaveBeenCalledWith(bill);
     expect(onViewPayment).toHaveBeenCalledWith(payment);
   });
 
-  it('opens bill details from an overview row without navigating', async () => {
+  it('opens bill details from the overview vendor name only', async () => {
     const user = userEvent.setup();
     const onViewDetails = vi.fn();
 
@@ -175,13 +186,17 @@ describe('detail dialogs', () => {
       />,
     );
 
-    const row = screen.getByText('Acme Supplies').closest('tr');
+    const nameButton = screen.getByRole('button', { name: 'View bill details for Acme Supplies' });
+    const row = nameButton.closest('tr');
     expect(row).not.toBeNull();
     if (!row) {
       throw new Error('Expected an overview bill row');
     }
 
-    await user.click(row);
+    await user.click(screen.getByText('Awaiting approval'));
+    expect(onViewDetails).not.toHaveBeenCalled();
+
+    await user.click(nameButton);
 
     expect(onViewDetails).toHaveBeenCalledWith(bill);
     expect(push).not.toHaveBeenCalled();

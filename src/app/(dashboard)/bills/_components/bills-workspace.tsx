@@ -61,7 +61,6 @@ import { BillsStatusOverview } from './bills-status-overview';
 import { BillsTable } from './bills-table';
 import {
   approvalActionsColumn,
-  billDetailsColumn,
   billReadColumns,
   billRowActionsColumn,
   draftActionsColumn,
@@ -219,7 +218,7 @@ export function BillsWorkspace({
 
   const draftColumns = [
     selectionColumn(draftSelection),
-    ...billReadColumns,
+    ...billReadColumns({ onViewDetails: selectBillForDetails }),
     draftActionsColumn({
       deleteCandidateId,
       onCancelDelete: cancelDelete,
@@ -228,27 +227,21 @@ export function BillsWorkspace({
       onRequestDelete: requestDelete,
       onSubmit: transitions.submitForApproval,
     }),
-    billDetailsColumn({ onViewDetails: selectBillForDetails }),
   ];
   const approvalColumns = [
     selectionColumn(approvalSelection),
-    ...billReadColumns,
+    ...billReadColumns({ onViewDetails: selectBillForDetails }),
     approvalActionsColumn({
       onApprove: transitions.requestApprove,
       onReject: transitions.requestReject,
       onArchive: transitions.requestArchive,
     }),
-    billDetailsColumn({ onViewDetails: selectBillForDetails }),
   ];
   const paymentColumns = [
-    ...billReadColumns,
+    ...billReadColumns({ onViewDetails: selectBillForDetails }),
     billRowActionsColumn({ onArchive: transitions.requestArchive }),
-    billDetailsColumn({ onViewDetails: selectBillForDetails }),
   ];
-  const historyColumns = [
-    ...billReadColumns,
-    billDetailsColumn({ onViewDetails: selectBillForDetails }),
-  ];
+  const historyColumns = billReadColumns({ onViewDetails: selectBillForDetails });
 
   const initialHiddenColumns = savedPreferences?.hiddenColumns ?? [];
   const draftVisibility = useColumnVisibility(
