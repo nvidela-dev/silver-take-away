@@ -2,7 +2,16 @@
 
 Accounts payable management with role-based access, bill and payment lifecycles, bulk operations, configurable table views, and filtered CSV exports.
 
-See [REQUIREMENTS.md](./docs/REQUIREMENTS.md) for the full spec and [PR-PLAN.md](./docs/PR-PLAN.md) for the delivery plan.
+## Demo
+
+- Hosted app: <https://silver-take-away.vercel.app/>
+- Walkthrough part 1: <https://www.loom.com/share/e08042ac619b4172b3b0c4a46a803841>
+- Walkthrough part 2: <https://www.loom.com/share/a526e57fdced499baebfc5625a6df52a>
+
+## Docs
+
+- [Requirements](./docs/REQUIREMENTS.md) — full spec
+- [PR plan](./docs/PR-PLAN.md) — delivery plan
 
 ## Stack
 
