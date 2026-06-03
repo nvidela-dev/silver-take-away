@@ -2,11 +2,12 @@
 
 import {
   ChevronDown,
-  Filter,
-  Plus,
-  RotateCcw,
+  Columns3,
+  FolderOpen,
+  Save,
+  Trash2,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { ComponentType } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
@@ -15,10 +16,19 @@ import { PopoverPanel } from '@/app/_components/molecules/popover-panel';
 import type { SavedViewController } from '@/app/_components/hooks/use-saved-view';
 
 interface SavedViewControlsProps {
+  columns?: readonly SavedViewColumnOption[];
   controller: SavedViewController;
 }
 
+export interface SavedViewColumnOption {
+  id: string;
+  isVisible: boolean;
+  label: string;
+  onToggle: () => void;
+}
+
 interface OptionItemProps {
+  description: string;
   label: string;
   icon: ComponentType<{ className?: string }>;
   disabled: boolean;
@@ -26,6 +36,7 @@ interface OptionItemProps {
 }
 
 function OptionItem({
+  description,
   label,
   icon: Icon,
   disabled,
@@ -34,24 +45,30 @@ function OptionItem({
   return (
     <button
       className={[
-        'flex w-full items-center justify-between gap-6 rounded-sm px-3 py-2',
-        'text-left text-xs text-slate-700 hover:bg-slate-50',
+        'flex w-full items-start justify-between gap-4 rounded-sm px-3 py-2',
+        'text-left text-slate-700 hover:bg-slate-50',
         'disabled:pointer-events-none disabled:opacity-40',
       ].join(' ')}
       disabled={disabled}
       onClick={onSelect}
-      role="menuitem"
       type="button"
     >
-      {label}
-      <Icon aria-hidden className="size-3.5 text-slate-500" />
+      <span className="grid gap-0.5">
+        <span className="text-xs font-medium text-slate-800">{label}</span>
+        <span className="text-[11px] leading-4 text-slate-500">{description}</span>
+      </span>
+      <Icon aria-hidden className="mt-0.5 size-3.5 shrink-0 text-slate-500" />
     </button>
   );
 }
 
-export function SavedViewControls({ controller }: SavedViewControlsProps): React.ReactElement {
+export function SavedViewControls({
+  columns = [],
+  controller,
+}: SavedViewControlsProps): React.ReactElement {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const columnGroupId = useId();
 
   usePopoverDismiss({
     containerRef: menuRef,
@@ -62,21 +79,16 @@ export function SavedViewControls({ controller }: SavedViewControlsProps): React
   const {
     hasSaved,
     currentMatchesSaved,
-    hasActiveFilters,
     isPending,
     error,
     save,
     resetToSaved,
-    resetFilters,
+    deleteSaved,
   } = controller;
 
-  // "Save as new view" stays available until a saved snapshot already
-  // matches current state — saving again would be a no-op.
   const canSave = !currentMatchesSaved;
-  // "Reset view" only makes sense once a saved snapshot exists *and*
-  // current state differs from it.
-  const canResetView = hasSaved && !currentMatchesSaved;
-  const canResetFilters = hasActiveFilters;
+  const canLoad = hasSaved && !currentMatchesSaved;
+  const canClear = hasSaved;
 
   const runItem = (action: () => void): void => {
     setMenuOpen(false);
@@ -91,7 +103,7 @@ export function SavedViewControls({ controller }: SavedViewControlsProps): React
       <div className="relative inline-flex" ref={menuRef}>
         <Button
           aria-expanded={isMenuOpen}
-          aria-haspopup="menu"
+          aria-haspopup="dialog"
           disabled={isPending}
           onClick={() => setMenuOpen((open) => !open)}
           size="sm"
@@ -102,26 +114,76 @@ export function SavedViewControls({ controller }: SavedViewControlsProps): React
           <ChevronDown aria-hidden className="size-3.5" />
         </Button>
         {isMenuOpen ? (
-          <PopoverPanel align="right">
-            <div className="p-1" role="menu">
+          <PopoverPanel align="right" className="w-72 p-1" role="dialog">
+            <div>
+              <p
+                className={[
+                  'px-3 pb-1 pt-2 text-xs font-medium uppercase',
+                  'tracking-wide text-slate-500',
+                ].join(' ')}
+              >
+                Saved view
+              </p>
               <OptionItem
-                disabled={isPending || !canResetFilters}
-                icon={Filter}
-                label="Reset filters"
-                onSelect={() => runItem(resetFilters)}
+                description="Save filters, sort, page size, and visible columns."
+                disabled={isPending || !canSave}
+                icon={Save}
+                label="Save View"
+                onSelect={() => runItem(save)}
               />
               <OptionItem
-                disabled={isPending || !canResetView}
-                icon={RotateCcw}
-                label="Reset view"
+                description="Restore the settings from your saved view."
+                disabled={isPending || !canLoad}
+                icon={FolderOpen}
+                label="Load Saved View"
                 onSelect={() => runItem(resetToSaved)}
               />
               <OptionItem
-                disabled={isPending || !canSave}
-                icon={Plus}
-                label="Save as new view"
-                onSelect={() => runItem(save)}
+                description="Delete the saved view for this tab."
+                disabled={isPending || !canClear}
+                icon={Trash2}
+                label="Clear Saved View"
+                onSelect={() => runItem(deleteSaved)}
               />
+              {columns.length > 0 ? (
+                <>
+                  <div className="mx-2 my-1 border-t border-slate-100" />
+                  <p
+                    className={[
+                      'flex items-center gap-1.5 px-3 pb-1 pt-2 text-xs',
+                      'font-medium uppercase tracking-wide text-slate-500',
+                    ].join(' ')}
+                  >
+                    <Columns3 aria-hidden className="size-3.5" />
+                    Visible columns
+                  </p>
+                  <ul className="grid pb-1">
+                    {columns.map((column) => {
+                      const checkboxId = `${columnGroupId}-${column.id}`;
+                      return (
+                        <li key={column.id}>
+                          <label
+                            className={[
+                              'flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5',
+                              'text-sm text-slate-800 hover:bg-slate-100',
+                            ].join(' ')}
+                            htmlFor={checkboxId}
+                          >
+                            <input
+                              checked={column.isVisible}
+                              className="size-4 rounded border-slate-300"
+                              id={checkboxId}
+                              onChange={column.onToggle}
+                              type="checkbox"
+                            />
+                            <span>{column.label}</span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              ) : null}
             </div>
           </PopoverPanel>
         ) : null}

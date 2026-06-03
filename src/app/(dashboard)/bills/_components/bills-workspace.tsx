@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import {
   Plus,
+  RefreshCw,
   X,
 } from 'lucide-react';
 import {
@@ -24,7 +25,6 @@ import {
   BulkActionsMenu,
   type BulkActionDescriptor,
 } from '@/app/_components/molecules/bulk-actions-menu';
-import { ColumnPicker } from '@/app/_components/molecules/column-picker';
 import { ExportCsvButton } from '@/app/_components/molecules/export-csv-button';
 import { PageHeader } from '@/app/_components/molecules/page-header';
 import { SavedViewControls } from '@/app/_components/molecules/saved-view-controls';
@@ -349,6 +349,12 @@ export function BillsWorkspace({
   const exportColumnIds = activeVisibility?.visibleColumns
     .map((column) => column.id)
     .filter((id) => BILL_EXPORT_COLUMN_ID_SET.has(id)) ?? [];
+  const savedViewColumns = activeVisibility?.configurableColumns.map((column) => ({
+    id: column.id,
+    isVisible: !activeVisibility.hiddenIds.has(column.id),
+    label: column.header,
+    onToggle: () => activeVisibility.toggle(column.id),
+  })) ?? [];
 
   return (
     <main className="grid grid-cols-1 gap-6">
@@ -365,9 +371,6 @@ export function BillsWorkspace({
       <SurfaceTabs
         actions={(
           <>
-            {activeTab !== 'overview' ? (
-              <SavedViewControls controller={savedView} />
-            ) : null}
             {activeTab !== 'overview' && activeTab !== 'drafts' ? (
               <ExportCsvButton
                 columnIds={exportColumnIds}
@@ -393,33 +396,8 @@ export function BillsWorkspace({
                 onClear={approvalSelection.clear}
               />
             ) : null}
-            {activeTab === 'drafts' ? (
-              <ColumnPicker
-                columns={draftVisibility.configurableColumns}
-                hiddenIds={draftVisibility.hiddenIds}
-                onToggle={draftVisibility.toggle}
-              />
-            ) : null}
-            {activeTab === 'approvals' ? (
-              <ColumnPicker
-                columns={approvalVisibility.configurableColumns}
-                hiddenIds={approvalVisibility.hiddenIds}
-                onToggle={approvalVisibility.toggle}
-              />
-            ) : null}
-            {activeTab === 'payment' ? (
-              <ColumnPicker
-                columns={paymentVisibility.configurableColumns}
-                hiddenIds={paymentVisibility.hiddenIds}
-                onToggle={paymentVisibility.toggle}
-              />
-            ) : null}
-            {activeTab === 'history' ? (
-              <ColumnPicker
-                columns={historyVisibility.configurableColumns}
-                hiddenIds={historyVisibility.hiddenIds}
-                onToggle={historyVisibility.toggle}
-              />
+            {activeTab !== 'overview' ? (
+              <SavedViewControls columns={savedViewColumns} controller={savedView} />
             ) : null}
           </>
         )}
@@ -427,6 +405,18 @@ export function BillsWorkspace({
         tabs={billTabs}
       />
       <BillFilterBar
+        actions={(
+          <Button
+            disabled={isTableLoading}
+            onClick={() => startTransition(() => router.refresh())}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            <RefreshCw aria-hidden className="size-4" />
+            Refresh
+          </Button>
+        )}
         controller={filtersController}
         options={referenceData}
         tab={activeTab}

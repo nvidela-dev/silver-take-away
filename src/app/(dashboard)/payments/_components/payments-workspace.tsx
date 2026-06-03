@@ -1,11 +1,13 @@
 'use client';
 
+import { RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   useCallback, useMemo, useState, useTransition,
 } from 'react';
 
 import { Alert } from '@/app/_components/atoms/alert';
+import { Button } from '@/app/_components/atoms/button';
 import { useColumnVisibility } from '@/app/_components/hooks/use-column-visibility';
 import { useSavedView } from '@/app/_components/hooks/use-saved-view';
 import { useTableSelection } from '@/app/_components/hooks/use-table-selection';
@@ -13,7 +15,6 @@ import {
   BulkActionsMenu,
   type BulkActionDescriptor,
 } from '@/app/_components/molecules/bulk-actions-menu';
-import { ColumnPicker } from '@/app/_components/molecules/column-picker';
 import { ExportCsvButton } from '@/app/_components/molecules/export-csv-button';
 import { NoteDialog } from '@/app/_components/molecules/note-dialog';
 import { PageHeader } from '@/app/_components/molecules/page-header';
@@ -247,6 +248,12 @@ export function PaymentsWorkspace({
   const exportColumnIds = activeVisibility.visibleColumns
     .map((column) => column.id)
     .filter((id) => PAYMENT_EXPORT_COLUMN_ID_SET.has(id));
+  const savedViewColumns = activeVisibility.configurableColumns.map((column) => ({
+    id: column.id,
+    isVisible: !activeVisibility.hiddenIds.has(column.id),
+    label: column.header,
+    onToggle: () => activeVisibility.toggle(column.id),
+  }));
 
   return (
     <main className="grid grid-cols-1 gap-6">
@@ -254,66 +261,57 @@ export function PaymentsWorkspace({
       <SurfaceTabs
         actions={(
           <>
-            <SavedViewControls controller={savedView} />
             <ExportCsvButton
               columnIds={exportColumnIds}
               resource="payments"
               tab={activeTab}
             />
             {activeTab === 'upcoming' ? (
-              <>
-                <BulkActionsMenu
-                  actions={upcomingBulkActions}
-                  count={upcomingSelection.selectedCount}
-                  entityLabel="payment"
-                  isPending={isPending}
-                  onClear={upcomingSelection.clear}
-                />
-                <ColumnPicker
-                  columns={upcomingVisibility.configurableColumns}
-                  hiddenIds={upcomingVisibility.hiddenIds}
-                  onToggle={upcomingVisibility.toggle}
-                />
-              </>
+              <BulkActionsMenu
+                actions={upcomingBulkActions}
+                count={upcomingSelection.selectedCount}
+                entityLabel="payment"
+                isPending={isPending}
+                onClear={upcomingSelection.clear}
+              />
             ) : null}
             {activeTab === 'processing' ? (
-              <>
-                <BulkActionsMenu
-                  actions={processingBulkActions}
-                  count={processingSelection.selectedCount}
-                  entityLabel="payment"
-                  isPending={isPending}
-                  onClear={processingSelection.clear}
-                />
-                <ColumnPicker
-                  columns={processingVisibility.configurableColumns}
-                  hiddenIds={processingVisibility.hiddenIds}
-                  onToggle={processingVisibility.toggle}
-                />
-              </>
+              <BulkActionsMenu
+                actions={processingBulkActions}
+                count={processingSelection.selectedCount}
+                entityLabel="payment"
+                isPending={isPending}
+                onClear={processingSelection.clear}
+              />
             ) : null}
             {activeTab === 'history' ? (
-              <>
-                <BulkActionsMenu
-                  actions={historyBulkActions}
-                  count={historySelection.selectedCount}
-                  entityLabel="payment"
-                  isPending={isPending}
-                  onClear={historySelection.clear}
-                />
-                <ColumnPicker
-                  columns={historyVisibility.configurableColumns}
-                  hiddenIds={historyVisibility.hiddenIds}
-                  onToggle={historyVisibility.toggle}
-                />
-              </>
+              <BulkActionsMenu
+                actions={historyBulkActions}
+                count={historySelection.selectedCount}
+                entityLabel="payment"
+                isPending={isPending}
+                onClear={historySelection.clear}
+              />
             ) : null}
+            <SavedViewControls columns={savedViewColumns} controller={savedView} />
           </>
         )}
         activeValue={activeTab}
         tabs={paymentTabs}
       />
       <PaymentFilterBar
+        actions={(
+          <Button
+            disabled={isTableLoading}
+            onClick={() => startTransition(() => router.refresh())}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            <RefreshCw aria-hidden className="size-4" />
+            Refresh
+          </Button>
+        )}
         controller={filtersController}
         options={referenceData}
         tab={activeTab}

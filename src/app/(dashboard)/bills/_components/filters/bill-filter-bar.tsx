@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { FilterBar } from '@/app/_components/molecules/filters/filter-bar';
 import type { BillReferenceData } from '@/lib/types/bill/filters';
 import type { BillFilterTab } from '@/lib/types/bill/tabs';
@@ -8,12 +10,14 @@ import type { BillFiltersController } from '../hooks/use-bill-filters';
 import { useBillFilterBar } from '../hooks/use-bill-filter-bar';
 
 interface BillFilterBarProps {
+  actions?: ReactNode;
   controller: BillFiltersController;
   options: BillReferenceData;
   tab: BillFilterTab | 'overview';
 }
 
 export function BillFilterBar({
+  actions = null,
   controller,
   options,
   tab,
@@ -38,6 +42,7 @@ export function BillFilterBar({
   return (
     <FilterBar
       activeFilters={activeFilters}
+      actions={actions}
       inactiveFilters={bar.inactiveDimensions}
       onClear={(id) => {
         const dimension = bar.activeDimensions.find((item) => item.id === id);
