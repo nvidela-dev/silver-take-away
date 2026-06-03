@@ -41,7 +41,7 @@ export function DateRangeEditor({
 
   return (
     <div className="grid gap-2 p-3">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid gap-2">
         <label className="grid gap-1" htmlFor={fromId}>
           <span className="text-xs font-medium text-slate-700">From</span>
           <Input
