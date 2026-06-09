@@ -29,13 +29,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }): 
   return (
     <NuqsAdapter>
       <Toaster richColors closeButton position="bottom-right" />
-      <div className="min-h-dvh bg-emerald-950 p-0 text-slate-950 lg:p-8">
-        <div
-          className={[
-            'mx-auto flex min-h-dvh max-w-[1320px] overflow-hidden bg-white',
-            'shadow-2xl lg:min-h-[calc(100dvh-4rem)] lg:rounded-lg',
-          ].join(' ')}
-        >
+      <div className="min-h-dvh text-slate-950">
+        <div className="flex min-h-dvh overflow-hidden bg-white">
           <aside
             className={[
               'hidden w-60 shrink-0 flex-col border-r border-slate-200',
@@ -55,7 +50,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }): 
                   </span>
                   <div className="min-w-0">
                     <p className="text-xs text-slate-500">Workspace</p>
-                    <p className="truncate text-sm font-semibold">Silver Take Away</p>
+                    <p className="truncate text-sm font-semibold">Bill Pay</p>
                   </div>
                 </div>
                 <ChevronDown aria-hidden className="size-4 shrink-0 text-slate-400" />
