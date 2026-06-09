@@ -100,6 +100,16 @@ For production deployment, see [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
 
 ## Skipped features
 
+- **No role simulation / assignment.** Role checks are enforced server-side (see
+  [docs/LIFECYCLES.md](./docs/LIFECYCLES.md)), but there is no UI to assign or
+  switch a user's role. New users default to `employee` and roles must be set
+  directly in the database, so the permission system can't be exercised through
+  the app yet. A role simulation to act as different roles is planned.
+- **No invoice scanning.** Invoices are referenced by file URL only — there is no
+  OCR or document extraction to auto-populate bill fields from an uploaded file.
+- **No real payment execution.** Payments are modeled and driven entirely through
+  the lifecycle state machine; there is no integration with a payment processor or
+  bank rail, so no money actually moves and statuses are advanced manually.
 - **Custom saved views were not added.** Users can save one set of filters, sort
   order, page size, and hidden columns per built-in tab, but cannot create, name,
   or switch between additional custom views.
