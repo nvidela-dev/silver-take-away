@@ -7,7 +7,7 @@ App Router pages and components
         |
 Server actions and route handlers
         |
-Zod validation + Clerk-backed auth and role guards
+Zod validation + mock-user resolution and role guards
         |
 Use cases
         |
@@ -29,7 +29,11 @@ Drizzle ORM over Neon HTTP
 
 ## Key architecture decisions
 
-- **Clerk is the identity provider; Neon is the application authorization source.** Clerk users are synced into `users`, and role checks use the local `users.role` value.
+- **Identity is simulated; authorization remains server-enforced.** A dashboard
+  switcher stores one of five fixed mock-user keys in an HTTP-only cookie. The
+  server resolves that profile to a local `users` row, and role checks use the
+  row's `role` value. Anyone can switch roles, so this is a demo mechanism rather
+  than authentication.
 - **Lifecycle transitions are explicit state machines.** Bills and payments each have a pure transition map. User-driven actions must pass through the map before a repository write.
 - **Concurrent lifecycle writes fail instead of silently overwriting newer state.** Transition updates include the expected current status in their `WHERE` clause. Draft edits can also include an expected `updated_at` value.
 - **Domain history is append-only.** Bill and payment status changes write activity records with an actor, action, timestamp, and optional metadata. Repository methods pair lifecycle writes with their audit append through `db.batch()`.

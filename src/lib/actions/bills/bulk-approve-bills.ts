@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { assertDatabaseConfigured } from '@/db';
-import { requireAuth } from '@/lib/auth/require-auth';
+import { getCurrentUser } from '@/lib/auth/current-user';
 import { requireRole } from '@/lib/auth/require-role';
 import { bulkTransitionBillsUseCase } from '@/lib/use-cases/bills';
 import { bulkApproveBillsSchema } from '@/lib/validators/bill.schemas';
@@ -20,7 +20,7 @@ export async function bulkApproveBills(
   try {
     assertDatabaseConfigured();
     const parsed = bulkApproveBillsSchema.parse(input);
-    const actor = await requireAuth();
+    const actor = await getCurrentUser();
     requireRole(actor, BILL_APPROVAL_ROLES);
     const updated = await bulkTransitionBillsUseCase({
       billIds: parsed.billIds,

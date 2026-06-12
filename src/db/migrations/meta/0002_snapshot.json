@@ -15,8 +15,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "clerk_id": {
-          "name": "clerk_id",
+        "mock_user_key": {
+          "name": "mock_user_key",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -57,11 +57,11 @@
         }
       },
       "indexes": {
-        "users_clerk_id_unique": {
-          "name": "users_clerk_id_unique",
+        "users_mock_user_key_unique": {
+          "name": "users_mock_user_key_unique",
           "columns": [
             {
-              "expression": "clerk_id",
+              "expression": "mock_user_key",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

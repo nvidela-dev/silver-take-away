@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-import { UnauthorizedError } from '@/lib/auth/require-auth';
 import { ForbiddenError } from '@/lib/auth/require-role';
 import {
   BillBulkConflictError,
@@ -17,8 +16,7 @@ export function toBillActionError(
   context: string = 'bill action',
 ): ActionResult<never> {
   if (
-    error instanceof UnauthorizedError
-    || error instanceof ForbiddenError
+    error instanceof ForbiddenError
     || error instanceof BillNotFoundError
     || error instanceof BillConflictError
     || error instanceof BillBulkConflictError

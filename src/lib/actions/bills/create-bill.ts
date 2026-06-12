@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { assertDatabaseConfigured } from '@/db';
-import { requireAuth } from '@/lib/auth/require-auth';
+import { getCurrentUser } from '@/lib/auth/current-user';
 import { requireRole } from '@/lib/auth/require-role';
 import { createBillUseCase } from '@/lib/use-cases/bills';
 import { createBillSchema } from '@/lib/validators/bill.schemas';
@@ -20,7 +20,7 @@ export async function createBill(
   try {
     assertDatabaseConfigured();
     const parsed = createBillSchema.parse(input);
-    const actor = await requireAuth();
+    const actor = await getCurrentUser();
     requireRole(actor, BILL_EDITOR_ROLES);
     const bill = await createBillUseCase(parsed, actor);
     revalidatePath('/bills');

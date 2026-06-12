@@ -1,9 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import {
-  UnauthorizedError,
-  ForbiddenError,
-} from '@/lib/auth';
+import { ForbiddenError } from '@/lib/auth';
 import { paymentTabs } from '@/app/_navigation';
 import {
   getCurrentUserWorkspaceTabPreference,
@@ -112,13 +109,11 @@ interface PaymentWorkspaceData {
 }
 
 const errorMessages = {
-  unauthorized: 'Sign in before viewing payments.',
-  forbidden: 'Your account needs Bill Pay access before viewing payments.',
+  forbidden: 'The selected mock user does not have access to the Payments workspace.',
   generic: 'Payments could not be loaded. Check the database connection.',
 } as const;
 
 function resolveLoadError(error: unknown): string {
-  if (error instanceof UnauthorizedError) return errorMessages.unauthorized;
   if (error instanceof ForbiddenError) return errorMessages.forbidden;
   return errorMessages.generic;
 }

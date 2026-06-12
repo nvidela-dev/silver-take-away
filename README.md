@@ -36,8 +36,12 @@ through its own lifecycle (`pending → initiated → paid`, with cancel/fail/re
 
 Five roles (`admin`, `owner`, `ap_clerk`, `approver`, `employee`) gate the
 workspace actions: AP clerks capture and submit bills, approvers approve or
-reject them, and admins/owners can do both plus delete. Identity comes from
-Clerk; the authorization role lives on the local `users` record.
+reject them, and admins/owners can do both plus delete. The user switcher in the
+dashboard selects a mock identity so every permission level can be exercised
+without signing in.
+
+> This is an intentionally open demo. Anyone with the URL can select any role
+> and change application data.
 
 ### Working in the workspaces
 
@@ -57,11 +61,11 @@ Clerk; the authorization role lives on the local `users` record.
 | [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | Layering, key technical decisions, where logic lives. |
 | [docs/DATA-MODEL.md](./docs/DATA-MODEL.md) | Schema, relationships, enums, and modeling boundaries. |
 | [docs/LIFECYCLES.md](./docs/LIFECYCLES.md) | Bill and payment state machines and per-action roles. |
-| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) | Deploying to Vercel with Neon and Clerk. |
+| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) | Deploying to Vercel with Neon. |
 
 ## Stack
 
-Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Clerk · Drizzle ORM · NeonDB · Zod · TanStack Table · React Hook Form · nuqs · Tailwind CSS · Vitest · ESLint (Airbnb)
+Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Drizzle ORM · NeonDB · Zod · TanStack Table · React Hook Form · nuqs · Tailwind CSS · Vitest · ESLint (Airbnb)
 
 ## Setup
 
@@ -72,10 +76,10 @@ yarn install
 
 # 2. Configure environment
 cp .env.example .env.local
-# Fill in DATABASE_URL + Clerk env vars.
+# Fill in DATABASE_URL.
 
-# 3. Apply the schema to your Neon database (once DATABASE_URL is set)
-yarn db:push
+# 3. Apply migrations to your Neon database (once DATABASE_URL is set)
+yarn db:migrate
 
 # 4. Run the dev server
 yarn dev
@@ -100,11 +104,6 @@ For production deployment, see [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
 
 ## Skipped features
 
-- **No role simulation / assignment.** Role checks are enforced server-side (see
-  [docs/LIFECYCLES.md](./docs/LIFECYCLES.md)), but there is no UI to assign or
-  switch a user's role. New users default to `employee` and roles must be set
-  directly in the database, so the permission system can't be exercised through
-  the app yet. A role simulation to act as different roles is planned.
 - **No invoice scanning.** Invoices are referenced by file URL only — there is no
   OCR or document extraction to auto-populate bill fields from an uploaded file.
 - **No real payment execution.** Payments are modeled and driven entirely through

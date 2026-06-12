@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { assertDatabaseConfigured } from '@/db';
-import { requireAuth } from '@/lib/auth/require-auth';
+import { getCurrentUser } from '@/lib/auth/current-user';
 import { requireRole } from '@/lib/auth/require-role';
 import { bulkTransitionPaymentsUseCase } from '@/lib/use-cases/payments';
 import { bulkMarkFailedPaymentsSchema } from '@/lib/validators/payment.schemas';
@@ -19,7 +19,7 @@ export async function bulkMarkPaymentsFailed(
   try {
     assertDatabaseConfigured();
     const parsed = bulkMarkFailedPaymentsSchema.parse(input);
-    const actor = await requireAuth();
+    const actor = await getCurrentUser();
     requireRole(actor, PAYMENT_TRANSITION_ROLES);
     const updated = await bulkTransitionPaymentsUseCase({
       paymentIds: parsed.paymentIds,

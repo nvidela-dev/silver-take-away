@@ -1,9 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import {
-  UnauthorizedError,
-  ForbiddenError,
-} from '@/lib/auth';
+import { ForbiddenError } from '@/lib/auth';
 import { billTabs } from '@/app/_navigation';
 import {
   getBillReferenceData,
@@ -136,13 +133,11 @@ interface BillWorkspaceData {
 }
 
 const errorMessages = {
-  unauthorized: 'Sign in before creating or viewing bills.',
-  forbidden: 'Your account needs Bill Pay access before creating or viewing bills.',
+  forbidden: 'The selected mock user does not have access to the Bills workspace.',
   generic: 'Bills could not be loaded. Check the database connection.',
 } as const;
 
 function resolveLoadError(error: unknown): string {
-  if (error instanceof UnauthorizedError) return errorMessages.unauthorized;
   if (error instanceof ForbiddenError) return errorMessages.forbidden;
   return errorMessages.generic;
 }

@@ -50,6 +50,8 @@ Source: `src/lib/services/payment-state-machine.ts`
 ## Roles per action
 
 Role checks use the local `users.role` value (`src/lib/actions/*/permissions.ts`).
+The dashboard user switcher selects a mock user for each role; it is a permission
+simulation tool, not an authentication boundary.
 
 | Capability | Allowed roles |
 |---|---|

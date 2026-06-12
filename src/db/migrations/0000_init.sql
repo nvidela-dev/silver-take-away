@@ -4,7 +4,7 @@ CREATE TYPE "public"."payment_status" AS ENUM('pending', 'scheduled', 'initiated
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'owner', 'ap_clerk', 'approver', 'employee');--> statement-breakpoint
 CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"clerk_id" text NOT NULL,
+	"mock_user_key" text NOT NULL,
 	"email" text NOT NULL,
 	"full_name" text NOT NULL,
 	"role" "user_role" DEFAULT 'employee' NOT NULL,
@@ -99,7 +99,7 @@ ALTER TABLE "payments" ADD CONSTRAINT "payments_bill_id_bills_id_fk" FOREIGN KEY
 ALTER TABLE "payments" ADD CONSTRAINT "payments_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bill_activity_log" ADD CONSTRAINT "bill_activity_log_bill_id_bills_id_fk" FOREIGN KEY ("bill_id") REFERENCES "public"."bills"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bill_activity_log" ADD CONSTRAINT "bill_activity_log_actor_id_users_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."users"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "users_clerk_id_unique" ON "users" USING btree ("clerk_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "users_mock_user_key_unique" ON "users" USING btree ("mock_user_key");--> statement-breakpoint
 CREATE UNIQUE INDEX "categories_name_unique" ON "categories" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "bills_status_idx" ON "bills" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "bills_vendor_idx" ON "bills" USING btree ("vendor_id");--> statement-breakpoint

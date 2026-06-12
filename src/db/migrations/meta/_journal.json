@@ -43,6 +43,13 @@
       "when": 1780473600000,
       "tag": "0005_user_workspace_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781251200000,
+      "tag": "0006_mock_users",
+      "breakpoints": true
     }
   ]
 }

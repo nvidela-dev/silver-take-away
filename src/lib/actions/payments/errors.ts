@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-import { UnauthorizedError } from '@/lib/auth/require-auth';
 import { ForbiddenError } from '@/lib/auth/require-role';
 import {
   PaymentBulkConflictError,
@@ -16,8 +15,7 @@ export function toPaymentActionError(
   context: string = 'payment action',
 ): ActionResult<never> {
   if (
-    error instanceof UnauthorizedError
-    || error instanceof ForbiddenError
+    error instanceof ForbiddenError
     || error instanceof PaymentNotFoundError
     || error instanceof PaymentConflictError
     || error instanceof PaymentBulkConflictError
