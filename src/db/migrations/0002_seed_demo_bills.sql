@@ -6,7 +6,7 @@
 -- on a database that already has them is a no-op.
 --
 -- A dedicated seed user owns the demo data.
-INSERT INTO users (id, clerk_id, email, full_name, role)
+INSERT INTO users (id, mock_user_key, email, full_name, role)
 VALUES (
   '00000000-0000-0000-0000-000000000001',
   'seed_demo_user_v1',
@@ -14,7 +14,7 @@ VALUES (
   'Demo Seed User',
   'employee'
 )
-ON CONFLICT (clerk_id) DO NOTHING;--> statement-breakpoint
+ON CONFLICT (mock_user_key) DO NOTHING;--> statement-breakpoint
 
 INSERT INTO categories (name) VALUES
   ('Software'),
