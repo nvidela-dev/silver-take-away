@@ -1,5 +1,5 @@
 import { assertDatabaseConfigured } from '@/db';
-import { requireAuth } from '@/lib/auth/require-auth';
+import { getCurrentUser } from '@/lib/auth/current-user';
 import { requireRole } from '@/lib/auth/require-role';
 import {
   getBillReferenceData as getBillReferenceDataFromRepo,
@@ -55,7 +55,7 @@ interface BillListArgs {
 
 async function gateBillRead(): Promise<void> {
   assertDatabaseConfigured();
-  const actor = await requireAuth();
+  const actor = await getCurrentUser();
   requireRole(actor, BILL_VIEWER_ROLES);
 }
 
@@ -121,7 +121,7 @@ interface PaymentListArgs {
 
 async function gatePaymentRead(): Promise<void> {
   assertDatabaseConfigured();
-  const actor = await requireAuth();
+  const actor = await getCurrentUser();
   requireRole(actor, PAYMENT_VIEWER_ROLES);
 }
 
@@ -156,7 +156,7 @@ export async function getPaymentOverviewAggregates(): Promise<PaymentStatusAggre
 
 export async function getCurrentUserWorkspacePreferences(): Promise<WorkspacePreferencesMap> {
   assertDatabaseConfigured();
-  const actor = await requireAuth();
+  const actor = await getCurrentUser();
   return deserializeWorkspacePreferences(actor.workspacePreferences);
 }
 

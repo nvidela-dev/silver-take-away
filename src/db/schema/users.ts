@@ -9,7 +9,7 @@ export const users = pgTable(
   'users',
   {
     id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-    clerkId: text('clerk_id').notNull(),
+    mockUserKey: text('mock_user_key').notNull(),
     email: text('email').notNull(),
     fullName: text('full_name').notNull(),
     role: userRoleEnum('role').notNull().default('employee'),
@@ -27,5 +27,5 @@ export const users = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [uniqueIndex('users_clerk_id_unique').on(table.clerkId)],
+  (table) => [uniqueIndex('users_mock_user_key_unique').on(table.mockUserKey)],
 );

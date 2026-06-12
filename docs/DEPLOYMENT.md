@@ -1,27 +1,18 @@
-# Deployment (Vercel + Neon + Clerk)
+# Deployment (Vercel + Neon)
 
 1. Create a Neon Postgres project and copy the pooled connection string into `DATABASE_URL`.
    Example format: `postgresql://neondb_owner:<password>@ep-example-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
-2. In Clerk, create a Next.js application and copy:
-   - `CLERK_SECRET_KEY`
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-   - `CLERK_WEBHOOK_SECRET`
-3. In Vercel project settings, add all env vars from `.env.example` to:
+2. In Vercel project settings, add all env vars from `.env.example` to:
    - `Production`
    - `Preview`
    - `Development` (optional if you use local env only)
-4. In Clerk webhooks, add endpoint:
-   - `https://<your-vercel-domain>/api/webhooks/clerk`
-   - subscribe to `user.created` and `user.updated`
-   - use the matching `CLERK_WEBHOOK_SECRET`
-5. Keep Clerk sign-in/sign-up redirects pointed at `/`.
-   The root route forwards authenticated users to `/bills?tab=drafts`.
-6. Run schema migration against Neon before first production usage:
-   - locally: `yarn db:push`
-   - or CI/release job: `yarn db:migrate`
-7. Deploy to Vercel and verify:
-   - `/sign-in` renders Clerk sign-in
+3. Run schema migration against Neon before first production usage:
+   - locally or in a CI/release job: `yarn db:migrate`
+4. Deploy to Vercel and verify:
+   - `/` redirects to `/bills?tab=drafts`
    - `/api/health/db` returns `{ "ok": true }`
-   - signing in creates or updates a row in Neon `users`
-   - protected routes redirect unauthenticated users
-   - webhook delivery succeeds in Clerk dashboard logs
+   - changing the mock user updates the displayed role
+   - role-restricted actions return a permission error for disallowed profiles
+
+The deployed app has no authentication boundary. Anyone with the URL can choose
+any mock profile and mutate data.

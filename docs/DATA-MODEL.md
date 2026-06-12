@@ -18,7 +18,7 @@ erDiagram
 
 | Table | Purpose | Important relationships and behavior |
 |---|---|---|
-| `users` | Local application user synced from Clerk. Stores the authorization role and saved workspace preferences. | `clerk_id` is unique. |
+| `users` | Mock application identities used for role simulation, audit actors, and saved workspace preferences. | `mock_user_key` is unique. |
 | `vendors` | Supplier master record. | Optional owner points to `users`; deleting an owner leaves the vendor intact. |
 | `vendor_payment_methods` | Reusable vendor payment instructions. | Belongs to a vendor. A partial unique index allows at most one default method per vendor. |
 | `categories` | Accounting category lookup. | Category names are unique. |

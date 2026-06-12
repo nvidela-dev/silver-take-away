@@ -5,9 +5,7 @@
 -- idempotent via ON CONFLICT (id) DO NOTHING; re-running drizzle-kit migrate
 -- on a database that already has them is a no-op.
 --
--- A dedicated seed user owns the data. It is created with role 'employee'
--- so the admin-bootstrap path in lib/auth/user-sync still promotes the first
--- real Clerk signup to admin.
+-- A dedicated seed user owns the demo data.
 INSERT INTO users (id, clerk_id, email, full_name, role)
 VALUES (
   '00000000-0000-0000-0000-000000000001',

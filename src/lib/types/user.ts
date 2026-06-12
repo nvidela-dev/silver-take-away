@@ -4,7 +4,7 @@ import type { UserRole } from './enums';
 
 export interface User {
   id: string;
-  clerkId: string;
+  mockUserKey: string;
   email: string;
   fullName: string;
   role: UserRole;

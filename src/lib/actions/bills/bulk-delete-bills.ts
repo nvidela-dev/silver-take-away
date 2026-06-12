@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { assertDatabaseConfigured } from '@/db';
-import { requireAuth } from '@/lib/auth/require-auth';
+import { getCurrentUser } from '@/lib/auth/current-user';
 import { requireRole } from '@/lib/auth/require-role';
 import { bulkDeleteDraftsUseCase } from '@/lib/use-cases/bills';
 import { bulkDeleteDraftsSchema } from '@/lib/validators/bill.schemas';
@@ -19,7 +19,7 @@ export async function bulkDeleteBills(
   try {
     assertDatabaseConfigured();
     const parsed = bulkDeleteDraftsSchema.parse(input);
-    const actor = await requireAuth();
+    const actor = await getCurrentUser();
     requireRole(actor, BILL_DELETE_ROLES);
     await bulkDeleteDraftsUseCase(parsed.billIds);
     revalidatePath('/bills');

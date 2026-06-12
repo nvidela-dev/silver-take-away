@@ -3,8 +3,7 @@
 import { z } from 'zod';
 
 import { assertDatabaseConfigured } from '@/db';
-import { UnauthorizedError, requireAuth } from '@/lib/auth/require-auth';
-import { ForbiddenError } from '@/lib/auth/require-role';
+import { getCurrentUser } from '@/lib/auth/current-user';
 import { setUserWorkspaceTabPreference } from '@/lib/repositories/user-preferences.repo';
 import type { ActionResult } from '@/lib/types/common';
 import { saveWorkspaceTabPreferenceSchema } from '@/lib/validators/workspace-preferences.schemas';
@@ -15,7 +14,7 @@ export async function saveWorkspaceTabPreference(
   try {
     assertDatabaseConfigured();
     const parsed = saveWorkspaceTabPreferenceSchema.parse(input);
-    const actor = await requireAuth();
+    const actor = await getCurrentUser();
     await setUserWorkspaceTabPreference(actor.id, parsed.workspaceKey, parsed.preferences);
     return { ok: true, data: true };
   } catch (error) {
@@ -24,9 +23,6 @@ export async function saveWorkspaceTabPreference(
 }
 
 function toError(error: unknown): ActionResult<never> {
-  if (error instanceof UnauthorizedError || error instanceof ForbiddenError) {
-    return { ok: false, error: { code: error.code, message: error.message } };
-  }
   if (error instanceof z.ZodError) {
     return {
       ok: false,

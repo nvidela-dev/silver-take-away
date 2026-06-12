@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { assertDatabaseConfigured } from '@/db';
-import { requireAuth } from '@/lib/auth/require-auth';
+import { getCurrentUser } from '@/lib/auth/current-user';
 import { requireRole } from '@/lib/auth/require-role';
 import { transitionPaymentUseCase } from '@/lib/use-cases/payments';
 import { markPaidPaymentSchema } from '@/lib/validators/payment.schemas';
@@ -19,7 +19,7 @@ export async function markPaymentPaid(
   try {
     assertDatabaseConfigured();
     const parsed = markPaidPaymentSchema.parse(input);
-    const actor = await requireAuth();
+    const actor = await getCurrentUser();
     requireRole(actor, PAYMENT_TRANSITION_ROLES);
     const payment = await transitionPaymentUseCase({
       paymentId: parsed.paymentId,

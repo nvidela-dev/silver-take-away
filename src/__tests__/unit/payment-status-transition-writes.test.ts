@@ -29,7 +29,7 @@ const { PaymentConflictError, PaymentBulkConflictError } = await import(
 
 const actor: User = {
   id: 'actor-1',
-  clerkId: 'clerk-1',
+  mockUserKey: 'admin',
   email: 'actor@example.com',
   fullName: 'Actor One',
   role: 'admin',
